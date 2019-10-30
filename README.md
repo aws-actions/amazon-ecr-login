@@ -1,7 +1,7 @@
-## Amazon Ecr Login For Github Actions
+## Amazon ECR "Login" Action for GitHub Actions
 
 Logs into Amazon ECR with the local Docker client.
 
 ## License Summary
 
-This sample code is made available under the MIT license. 
+This code is made available under the MIT license.
