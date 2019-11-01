@@ -1,0 +1,37 @@
+{
+  "name": "amazon-ecr-login-for-github-actions",
+  "version": "0.0.0",
+  "description": "Logs in the local Docker client to the AWS account's ECR registry",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint index.js",
+    "package": "ncc build index.js -o dist",
+    "test": "eslint index.js && jest --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aws/amazon-ecr-login-for-github-actions.git"
+  },
+  "keywords": [
+    "AWS",
+    "GitHub",
+    "Actions",
+    "JavaScript"
+  ],
+  "author": "AWS",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/aws/amazon-ecr-login-for-github-actions/issues"
+  },
+  "homepage": "https://github.com/aws/amazon-ecr-login-for-github-actions#readme",
+  "dependencies": {
+    "@actions/core": "^1.2.0",
+    "@actions/exec": "^1.0.1",
+    "aws-sdk": "^2.560.0"
+  },
+  "devDependencies": {
+    "@zeit/ncc": "^0.20.5",
+    "eslint": "^6.6.0",
+    "jest": "^24.9.0"
+  }
+}

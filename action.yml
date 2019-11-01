@@ -1,0 +1,12 @@
+name: 'Amazon ECR "Login" Action for GitHub Actions'
+description: 'Logs in the local Docker client to one or more ECR registries'
+inputs:
+  registry-ids:
+    description: 'A comma-delimited list of AWS account IDs that are associated with the ECR registries. If you do not specify a registry, the default ECR registry is assumed.'
+    required: false
+outputs:
+  registry:
+    description: 'The URI of the default ECR registry i.e. aws_account_id.dkr.ecr.region.amazonaws.com, if none were provided as inputs'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
