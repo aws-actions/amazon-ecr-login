@@ -7,7 +7,7 @@ Logs in the local Docker client to one or more Amazon ECR registries.
 ```yaml
     - name: Login to Amazon ECR
       id: login-ecr
-      uses: aws/amazon-ecr-login-for-github-actions@release
+      uses: aws/amazon-ecr-login-for-github-actions
 
     - name: Build, tag, and push image to Amazon ECR
       env:
