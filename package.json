@@ -4,9 +4,9 @@
   "description": "Logs in the local Docker client to the AWS account's ECR registry",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint index.js",
+    "lint": "eslint **.js",
     "package": "ncc build index.js -o dist",
-    "test": "eslint index.js && jest --coverage"
+    "test": "eslint **.js && jest --coverage"
   },
   "repository": {
     "type": "git",

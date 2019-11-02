@@ -19,7 +19,7 @@ describe('Login to ECR', () => {
     beforeEach(() => {
         jest.clearAllMocks();
 
-        mockEcrGetAuthToken.mockImplementation((params) => {
+        mockEcrGetAuthToken.mockImplementation(() => {
             return {
                 promise() {
                     return Promise.resolve({
@@ -49,7 +49,7 @@ describe('Login to ECR', () => {
 
     test('gets auth token from ECR and logins the Docker client for each provided registry', async () => {
         core.getInput = jest.fn().mockReturnValueOnce('123456789012,111111111111');
-        mockEcrGetAuthToken.mockImplementation((params) => {
+        mockEcrGetAuthToken.mockImplementation(() => {
             return {
                 promise() {
                     return Promise.resolve({
