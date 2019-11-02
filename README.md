@@ -21,7 +21,7 @@ Logs in the local Docker client to one or more Amazon ECR registries.
 
 ## Credentials and Region
 
-This action relies on the [default behavior of the AWS SDK for Javascript](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-credentials-node.html) to determine AWS credentials and region.  Use the `aws/configure-aws-credentials-for-github-actions` action to configure the GitHub Actions environment with environment variables containing AWS credentials and your desired region.
+This action relies on the [default behavior of the AWS SDK for Javascript](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-credentials-node.html) to determine AWS credentials and region.  Use [the `aws/configure-aws-credentials-for-github-actions` action](https://github.com/aws/configure-aws-credentials-for-github-actions) to configure the GitHub Actions environment with environment variables containing AWS credentials and your desired region.
 
 We recommend following [Amazon IAM best practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html) for the AWS credentials used in GitHub Actions workflows, including:
 * Do not store credentials in your repository's code.  You may use [GitHub Actions secrets](https://help.github.com/en/github/automating-your-workflow-with-github-actions/virtual-environments-for-github-actions#creating-and-using-secrets-encrypted-variables) to store credentials and redact credentials from GitHub Actions workflow logs.
