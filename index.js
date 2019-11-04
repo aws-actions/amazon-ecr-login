@@ -7,7 +7,9 @@ async function run() {
     const registries = core.getInput('registries', { required: false });
 
     // Get the ECR authorization token
-    const ecr = new aws.ECR();
+    const ecr = new aws.ECR({
+      customUserAgent: 'amazon-ecr-login-for-github-actions'
+    });
     const authTokenRequest = {};
     if (registries) {
       authTokenRequest.registryIds = registries.split(',')
