@@ -1,5 +1,5 @@
 {
-  "name": "amazon-ecr-login-for-github-actions",
+  "name": "aws-actions-amazon-ecr-login",
   "version": "0.0.0",
   "description": "Logs in the local Docker client to the AWS account's ECR registry",
   "main": "index.js",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aws/amazon-ecr-login-for-github-actions.git"
+    "url": "git+https://github.com/aws-actions/amazon-ecr-login.git"
   },
   "keywords": [
     "AWS",
@@ -21,13 +21,13 @@
   "author": "AWS",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/aws/amazon-ecr-login-for-github-actions/issues"
+    "url": "https://github.com/aws-actions/amazon-ecr-login/issues"
   },
-  "homepage": "https://github.com/aws/amazon-ecr-login-for-github-actions#readme",
+  "homepage": "https://github.com/aws-actions/amazon-ecr-login#readme",
   "dependencies": {
     "@actions/core": "^1.2.0",
     "@actions/exec": "^1.0.1",
-    "aws-sdk": "^2.562.0"
+    "aws-sdk": "^2.567.0"
   },
   "devDependencies": {
     "@zeit/ncc": "^0.20.5",
