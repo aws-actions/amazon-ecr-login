@@ -8,6 +8,9 @@ Logs in the local Docker client to one or more Amazon ECR registries.
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
+      with:
+        # optionally pass registries you want to login to
+        registries: my-ecr-registry-1,my-ecr-registry-2
 
     - name: Build, tag, and push image to Amazon ECR
       env:
