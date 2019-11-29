@@ -17,11 +17,13 @@ Logs in the local Docker client to one or more Amazon ECR registries.
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        
+
     - name: Logout of Amazon ECR
       if: always()
       run: docker logout ${{ steps.login-ecr.outputs.registry }}
 ```
+
+See [action.yml](action.yml) for the full documentation for this action's inputs and outputs.
 
 ## Credentials and Region
 
