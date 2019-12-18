@@ -77,7 +77,7 @@ The following minimum permissions are required for pulling an image from an ECR 
 }
 ```
 
-The following minimum permissions are required for pushing an image to an ECR repository:
+The following minimum permissions are required for pushing and pulling images in an ECR repository:
 
 ```
 {
@@ -87,6 +87,9 @@ The following minimum permissions are required for pushing an image to an ECR re
          "Sid":"AllowPush",
          "Effect":"Allow",
          "Action":[
+            "ecr:GetDownloadUrlForLayer",
+            "ecr:BatchGetImage",
+            "ecr:BatchCheckLayerAvailability",
             "ecr:PutImage",
             "ecr:InitiateLayerUpload",
             "ecr:UploadLayerPart",
