@@ -16,7 +16,7 @@ jobs:
 
     - name: Print current build ID
       run: |
-        echo Integration test run: githubactionsamazonecrlogin-Wwf7ijrjMZH6:b08a6335-c925-4c11-8a03-bdd7f28e119c
+        echo Integration test run: githubactionsamazonecrlogin-Wwf7ijrjMZH6:5b2d5ed7-8cc6-475f-83e4-89eef16c1e8a
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
@@ -27,7 +27,7 @@ jobs:
 
     - name: Login to Amazon ECR
       id: login-ecr
-      uses: aws-actions/amazon-ecr-login@029a6c68bad073a1fa4b149285ae76e51e5ad46f
+      uses: aws-actions/amazon-ecr-login@6adba700642e5979b6b98bb823e84a03c91279d0
 
     - name: Tag and push an image to Amazon ECR
       env:
