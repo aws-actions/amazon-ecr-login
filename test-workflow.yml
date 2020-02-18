@@ -19,6 +19,7 @@ jobs:
         echo Integration test run: BUILD_ID
 
     - name: Configure AWS credentials
+      id: configure-aws-credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -38,6 +39,11 @@ jobs:
         docker pull amazonlinux
         docker tag amazonlinux $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+    - name: Login to Amazon ECR using explicit registry ID
+      uses: aws-actions/amazon-ecr-login@v1
+      with:
+        registries: ${{ steps.configure-aws-credentials.outputs.aws-account-id }}
 
     - name: Logout of Amazon ECR
       if: always()
