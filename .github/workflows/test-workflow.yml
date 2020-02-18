@@ -16,9 +16,10 @@ jobs:
 
     - name: Print current build ID
       run: |
-        echo Integration test run: githubactionsamazonecrlogin-Wwf7ijrjMZH6:5b2d5ed7-8cc6-475f-83e4-89eef16c1e8a
+        echo Integration test run: githubactionsamazonecrlogin-Wwf7ijrjMZH6:472d287e-5ae2-4679-9c52-f4e981b7029d
 
     - name: Configure AWS credentials
+      id: configure-aws-credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -38,6 +39,11 @@ jobs:
         docker pull amazonlinux
         docker tag amazonlinux $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+    - name: Login to Amazon ECR using explicit registry ID
+      uses: aws-actions/amazon-ecr-login@6adba700642e5979b6b98bb823e84a03c91279d0
+      with:
+        registries: ${{ steps.configure-aws-credentials.outputs.aws-account-id }}
 
     - name: Logout of Amazon ECR
       if: always()
