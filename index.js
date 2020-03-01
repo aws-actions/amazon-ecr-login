@@ -12,7 +12,12 @@ async function run() {
     });
     const authTokenRequest = {};
     if (registries) {
-      authTokenRequest.registryIds = registries.split(',')
+      const registryIds = registries.split(',');
+      core.debug(`Requesting auth token for ${registryIds.length} registries:`);
+      for (const id of registryIds) {
+        core.debug(`  '${id}'`);
+      }
+      authTokenRequest.registryIds = registryIds;
     }
     const authTokenResponse = await ecr.getAuthorizationToken(authTokenRequest).promise();
     if (!Array.isArray(authTokenResponse.authorizationData) || !authTokenResponse.authorizationData.length) {
