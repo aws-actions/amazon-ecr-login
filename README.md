@@ -40,7 +40,7 @@ We recommend following [Amazon IAM best practices](https://docs.aws.amazon.com/I
 
 This action requires the following minimum set of permissions:
 
-```
+```json
 {
    "Version":"2012-10-17",
    "Statement":[
@@ -59,7 +59,7 @@ This action requires the following minimum set of permissions:
 Docker commands in your GitHub Actions workflow, like `docker pull` and `docker push`, may require additional permissions attached to the credentials used by this action.
 The following minimum permissions are required for pulling an image from an ECR repository:
 
-```
+```json
 {
    "Version":"2012-10-17",
    "Statement":[
@@ -79,7 +79,7 @@ The following minimum permissions are required for pulling an image from an ECR 
 
 The following minimum permissions are required for pushing and pulling images in an ECR repository:
 
-```
+```json
 {
    "Version":"2012-10-17",
    "Statement":[
