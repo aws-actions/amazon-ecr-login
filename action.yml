@@ -9,7 +9,7 @@ inputs:
     required: false
 outputs:
   registry:
-    description: 'The URI of the default ECR registry i.e. aws_account_id.dkr.ecr.region.amazonaws.com, if none were provided as inputs'
+    description: 'The URI of the ECR registry i.e. aws_account_id.dkr.ecr.region.amazonaws.com. If multiple registries are provided as inputs, this output will not be set.'
 runs:
   using: 'node12'
   main: 'dist/index.js'

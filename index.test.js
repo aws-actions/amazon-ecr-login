@@ -85,6 +85,37 @@ describe('Login to ECR', () => {
             expect.anything());
     });
 
+    test('outputs the registry ID if a single registry is provided in the input', async () => {
+        core.getInput = jest.fn().mockReturnValueOnce('111111111111');
+        mockEcrGetAuthToken.mockImplementation(() => {
+            return {
+                promise() {
+                    return Promise.resolve({
+                        authorizationData: [
+                            {
+                                authorizationToken: Buffer.from('foo:bar').toString('base64'),
+                                proxyEndpoint: 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'
+                            }
+                       ]
+                    });
+                }
+            };
+        });
+
+        await run();
+
+        expect(mockEcrGetAuthToken).toHaveBeenCalledWith({
+            registryIds: ['111111111111']
+        });
+        expect(core.setOutput).toHaveBeenCalledTimes(1);
+        expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', '111111111111.dkr.ecr.aws-region-1.amazonaws.com');
+        expect(exec.exec).toHaveBeenCalledTimes(1);
+        expect(exec.exec).toHaveBeenNthCalledWith(1,
+            'docker login',
+            ['-u', 'foo', '-p', 'bar', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
+            expect.anything());
+    });
+
     test('error is caught by core.setFailed for failed docker login', async () => {
         exec.exec.mockReturnValue(1);
 
