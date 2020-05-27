@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/aws-actions/amazon-ecr-login/compare/v1.0.7...v1.1.0) (2020-05-27)
+
+
+### Features
+
+* output registry URI if single registry ID is provided as input ([#50](https://github.com/aws-actions/amazon-ecr-login/issues/50)) ([cfd96f4](https://github.com/aws-actions/amazon-ecr-login/commit/cfd96f4b0041e43b7473d8e0850bf7fb4471a507))
+
 ### [1.0.7](https://github.com/aws-actions/amazon-ecr-login/compare/v1.0.6...v1.0.7) (2020-05-18)
 
 ### [1.0.6](https://github.com/aws-actions/amazon-ecr-login/compare/v1.0.5...v1.0.6) (2020-05-08)
