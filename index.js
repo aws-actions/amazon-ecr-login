@@ -29,8 +29,8 @@ async function run() {
       const creds = authToken.split(':', 2);
       const proxyEndpoint = authData.proxyEndpoint;
 
-      if (!registries) {
-        // output the default registry if none were provided
+      if (authTokenResponse.authorizationData.length == 1) {
+        // output the registry URI if this action is doing a single registry login
         const registryId = proxyEndpoint.replace(/^https?:\/\//,'');
         core.setOutput('registry', registryId);
       }
