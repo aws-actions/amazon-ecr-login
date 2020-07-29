@@ -44,7 +44,3 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
       with:
         registries: ${{ steps.configure-aws-credentials.outputs.aws-account-id }}
-
-    - name: Logout of Amazon ECR
-      if: always()
-      run: docker logout ${{ steps.login-ecr.outputs.registry }}
