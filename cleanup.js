@@ -11,6 +11,7 @@ async function cleanup() {
     const registriesState = core.getState('registries');
     if (registriesState) {
       const registries = registriesState.split(',');
+      const failedLogouts = [];
 
       for (const registry of registries) {
         core.debug(`Logging out registry ${registry}`);
@@ -33,8 +34,13 @@ async function cleanup() {
 
         if (exitCode != 0) {
           core.debug(doLogoutStdout);
-          throw new Error('Could not logout: ' + doLogoutStderr);
+          core.error(`Could not logout registry ${registry}: ${doLogoutStderr}`);
+          failedLogouts.push(registry);
         }
+      }
+
+      if (failedLogouts.length) {
+        throw new Error(`Failed to logout: ${failedLogouts.join(',')}`);
       }
     }
   }
