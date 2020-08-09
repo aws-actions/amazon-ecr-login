@@ -1,4 +1,4 @@
-const run = require('.');
+const run = require('./index.js');
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 
@@ -45,6 +45,8 @@ describe('Login to ECR', () => {
             'docker login',
             ['-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
             expect.anything());
+        expect(core.saveState).toHaveBeenCalledTimes(1);
+        expect(core.saveState).toHaveBeenCalledWith('registries', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
     });
 
     test('gets auth token from ECR and logins the Docker client for each provided registry', async () => {
@@ -83,6 +85,8 @@ describe('Login to ECR', () => {
             'docker login',
             ['-u', 'foo', '-p', 'bar', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
             expect.anything());
+        expect(core.saveState).toHaveBeenCalledTimes(1);
+        expect(core.saveState).toHaveBeenCalledWith('registries', '123456789012.dkr.ecr.aws-region-1.amazonaws.com,111111111111.dkr.ecr.aws-region-1.amazonaws.com');
     });
 
     test('outputs the registry ID if a single registry is provided in the input', async () => {
@@ -114,6 +118,8 @@ describe('Login to ECR', () => {
             'docker login',
             ['-u', 'foo', '-p', 'bar', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
             expect.anything());
+        expect(core.saveState).toHaveBeenCalledTimes(1);
+        expect(core.saveState).toHaveBeenCalledWith('registries', '111111111111.dkr.ecr.aws-region-1.amazonaws.com');
     });
 
     test('error is caught by core.setFailed for failed docker login', async () => {
@@ -122,6 +128,52 @@ describe('Login to ECR', () => {
         await run();
 
         expect(core.setFailed).toBeCalled();
+        expect(core.setOutput).toHaveBeenCalledWith('registry', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
+        expect(core.saveState).toHaveBeenCalledTimes(0);
+    });
+
+    test('logged-in registries are saved as state even if the action fails', async () => {
+        exec.exec.mockReturnValue(1).mockReturnValueOnce(0);
+
+        core.getInput = jest.fn().mockReturnValueOnce('123456789012,111111111111');
+        mockEcrGetAuthToken.mockImplementation(() => {
+            return {
+                promise() {
+                    return Promise.resolve({
+                        authorizationData: [
+                            {
+                                authorizationToken: Buffer.from('hello:world').toString('base64'),
+                                proxyEndpoint: 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'
+                            },
+                            {
+                                authorizationToken: Buffer.from('foo:bar').toString('base64'),
+                                proxyEndpoint: 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'
+                            }
+                       ]
+                    });
+                }
+            };
+        });
+
+        await run();
+
+        expect(mockEcrGetAuthToken).toHaveBeenCalledWith({
+            registryIds: ['123456789012','111111111111']
+        });
+        expect(core.setOutput).toHaveBeenCalledTimes(0);
+        expect(exec.exec).toHaveBeenCalledTimes(2);
+        expect(exec.exec).toHaveBeenNthCalledWith(1,
+            'docker login',
+            ['-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
+            expect.anything());
+        expect(exec.exec).toHaveBeenNthCalledWith(2,
+            'docker login',
+            ['-u', 'foo', '-p', 'bar', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
+            expect.anything());
+
+        expect(core.setFailed).toBeCalled();
+        expect(core.saveState).toHaveBeenCalledTimes(1);
+        expect(core.saveState).toHaveBeenCalledWith('registries', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
     });
 
     test('error is caught by core.setFailed for ECR call', async () => {
@@ -132,5 +184,7 @@ describe('Login to ECR', () => {
         await run();
 
         expect(core.setFailed).toBeCalled();
+        expect(core.setOutput).toHaveBeenCalledTimes(0);
+        expect(core.saveState).toHaveBeenCalledTimes(0);
     });
 });

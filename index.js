@@ -3,6 +3,8 @@ const exec = require('@actions/exec');
 const aws = require('aws-sdk');
 
 async function run() {
+  const registryUriState = [];
+
   try {
     const registries = core.getInput('registries', { required: false });
 
@@ -28,11 +30,11 @@ async function run() {
       const authToken = Buffer.from(authData.authorizationToken, 'base64').toString('utf-8');
       const creds = authToken.split(':', 2);
       const proxyEndpoint = authData.proxyEndpoint;
+      const registryUri = proxyEndpoint.replace(/^https?:\/\//,'');
 
       if (authTokenResponse.authorizationData.length == 1) {
         // output the registry URI if this action is doing a single registry login
-        const registryId = proxyEndpoint.replace(/^https?:\/\//,'');
-        core.setOutput('registry', registryId);
+        core.setOutput('registry', registryUri);
       }
 
       // Execute the docker login command
@@ -55,10 +57,17 @@ async function run() {
         core.debug(doLoginStdout);
         throw new Error('Could not login: ' + doLoginStderr);
       }
+
+      registryUriState.push(registryUri);
     }
   }
   catch (error) {
     core.setFailed(error.message);
+  }
+
+  // Pass the logged-in registry URIs to the post action for logout
+  if (registryUriState.length) {
+    core.saveState('registries', registryUriState.join());
   }
 }
 
