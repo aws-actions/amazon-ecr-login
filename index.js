@@ -4,6 +4,7 @@ const aws = require('aws-sdk');
 
 async function run() {
   const registryUriState = [];
+  const skipLogout = core.getInput('skip-logout', { required: false });
 
   try {
     const registries = core.getInput('registries', { required: false });
@@ -66,8 +67,12 @@ async function run() {
   }
 
   // Pass the logged-in registry URIs to the post action for logout
-  if (registryUriState.length) {
+  if (registryUriState.length && !skipLogout) {
     core.saveState('registries', registryUriState.join());
+  } else {
+    if (skipLogout) {
+      core.debug(`'skip-logout' is TRUE. Will skip logout of ${registryUriState.length} registries.`);
+    }
   }
 }
 

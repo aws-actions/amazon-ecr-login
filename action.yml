@@ -7,6 +7,9 @@ inputs:
   registries:
     description: 'A comma-delimited list of AWS account IDs that are associated with the ECR registries. If you do not specify a registry, the default ECR registry is assumed.'
     required: false
+  skip-logout:
+    description: 'Whether to skip explicit logout of the registries during post-job cleanup. Exists for backward compatibility on self-hosted runners. Not recommended.'
+    required: false
 outputs:
   registry:
     description: 'The URI of the ECR registry i.e. aws_account_id.dkr.ecr.region.amazonaws.com. If multiple registries are provided as inputs, this output will not be set.'
