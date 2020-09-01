@@ -25,13 +25,13 @@
   },
   "homepage": "https://github.com/aws-actions/amazon-ecr-login#readme",
   "dependencies": {
-    "@actions/core": "^1.2.4",
+    "@actions/core": "^1.2.5",
     "@actions/exec": "^1.0.4",
     "aws-sdk": "^2.743.0"
   },
   "devDependencies": {
     "@zeit/ncc": "^0.22.3",
-    "eslint": "^7.7.0",
+    "eslint": "^7.8.0",
     "jest": "^26.4.2"
   }
 }
