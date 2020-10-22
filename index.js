@@ -67,12 +67,11 @@ async function run() {
   }
 
   // Pass the logged-in registry URIs to the post action for logout
-  if (registryUriState.length && !skipLogout) {
-    core.saveState('registries', registryUriState.join());
-  } else {
-    if (skipLogout) {
-      core.debug(`'skip-logout' is TRUE. Will skip logout of ${registryUriState.length} registries.`);
+  if (registryUriState.length) {
+    if (!skipLogout) {
+        core.saveState('registries', registryUriState.join());
     }
+    core.debug(`'skip-logout' is $skipLogout for ${registryUriState.length} registries.`);
   }
 }
 
