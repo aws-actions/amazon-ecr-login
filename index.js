@@ -71,7 +71,7 @@ async function run() {
     if (!skipLogout) {
         core.saveState('registries', registryUriState.join());
     }
-    core.debug(`'skip-logout' is $skipLogout for ${registryUriState.length} registries.`);
+    core.debug(`'skip-logout' is ${skipLogout} for ${registryUriState.length} registries.`);
   }
 }
 
