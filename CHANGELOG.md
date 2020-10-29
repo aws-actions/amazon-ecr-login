@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/aws-actions/amazon-ecr-login/compare/v1.2.2...v1.3.0) (2020-10-29)
+
+
+### Features
+
+* optional skipping of docker registries logout in post step ([#78](https://github.com/aws-actions/amazon-ecr-login/issues/78)) ([dd3fdee](https://github.com/aws-actions/amazon-ecr-login/commit/dd3fdeeb95577a637ece5e647581680afda16e6f))
+
 ### [1.2.2](https://github.com/aws-actions/amazon-ecr-login/compare/v1.2.1...v1.2.2) (2020-10-05)
 
 ### [1.2.1](https://github.com/aws-actions/amazon-ecr-login/compare/v1.2.0...v1.2.1) (2020-08-25)
