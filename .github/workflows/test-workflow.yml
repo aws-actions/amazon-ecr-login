@@ -16,7 +16,7 @@ jobs:
 
     - name: Print current build ID
       run: |
-        echo Integration test run: githubactionsamazonecrlogin-Dz8w8AN8GoSO:988a8961-6fcc-4f7f-b95f-73d77979a6d2
+        echo Integration test run: githubactionsamazonecrlogin-VM0j5Qh3DBOo:53cbc48f-4095-443b-82ae-77e81de9ae3d
 
     - name: Configure AWS credentials
       id: configure-aws-credentials
@@ -28,7 +28,7 @@ jobs:
 
     - name: Login to Amazon ECR
       id: login-ecr
-      uses: aws-actions/amazon-ecr-login@b17077dc4b4ef49cf62a8822362440b026a61935
+      uses: aws-actions/amazon-ecr-login@b397d2e0e440d0c40ebca80263fddf0dd80484b9
 
     - name: Tag and push an image to Amazon ECR
       env:
@@ -41,6 +41,6 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
     - name: Login to Amazon ECR using explicit registry ID
-      uses: aws-actions/amazon-ecr-login@b17077dc4b4ef49cf62a8822362440b026a61935
+      uses: aws-actions/amazon-ecr-login@b397d2e0e440d0c40ebca80263fddf0dd80484b9
       with:
         registries: ${{ steps.configure-aws-credentials.outputs.aws-account-id }}
