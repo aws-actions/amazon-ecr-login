@@ -5,6 +5,17 @@ const exec = require('@actions/exec');
 jest.mock('@actions/core');
 jest.mock('@actions/exec');
 
+function mockGetInput(requestResponse) {
+    return function (name, options) { // eslint-disable-line no-unused-vars
+        return requestResponse[name]
+    }
+}
+
+const DEFAULT_INPUTS = {
+    'registries': undefined,
+    'skip-logout': undefined
+};
+
 const mockEcrGetAuthToken = jest.fn();
 jest.mock('aws-sdk', () => {
     return {
@@ -18,6 +29,10 @@ describe('Login to ECR', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
+
+        core.getInput = jest
+            .fn()
+            .mockImplementation(mockGetInput(DEFAULT_INPUTS));
 
         mockEcrGetAuthToken.mockImplementation(() => {
             return {
@@ -50,7 +65,10 @@ describe('Login to ECR', () => {
     });
 
     test('gets auth token from ECR and logins the Docker client for each provided registry', async () => {
-        core.getInput = jest.fn().mockReturnValueOnce('123456789012,111111111111');
+        const mockInputs = {'registries' : '123456789012,111111111111'};
+        core.getInput = jest
+            .fn()
+            .mockImplementation(mockGetInput(mockInputs));
         mockEcrGetAuthToken.mockImplementation(() => {
             return {
                 promise() {
@@ -90,7 +108,10 @@ describe('Login to ECR', () => {
     });
 
     test('outputs the registry ID if a single registry is provided in the input', async () => {
-        core.getInput = jest.fn().mockReturnValueOnce('111111111111');
+        const mockInputs = {'registries' : '111111111111'};
+        core.getInput = jest
+            .fn()
+            .mockImplementation(mockGetInput(mockInputs));
         mockEcrGetAuthToken.mockImplementation(() => {
             return {
                 promise() {
@@ -135,7 +156,10 @@ describe('Login to ECR', () => {
     test('logged-in registries are saved as state even if the action fails', async () => {
         exec.exec.mockReturnValue(1).mockReturnValueOnce(0);
 
-        core.getInput = jest.fn().mockReturnValueOnce('123456789012,111111111111');
+        const mockInputs = {'registries' : '123456789012,111111111111'};
+        core.getInput = jest
+            .fn()
+            .mockImplementation(mockGetInput(mockInputs));
         mockEcrGetAuthToken.mockImplementation(() => {
             return {
                 promise() {
@@ -185,6 +209,56 @@ describe('Login to ECR', () => {
 
         expect(core.setFailed).toBeCalled();
         expect(core.setOutput).toHaveBeenCalledTimes(0);
+        expect(core.saveState).toHaveBeenCalledTimes(0);
+    });
+
+    test('skips logout when specified and logging into default registry', async () => {
+        const mockInputs = {'skip-logout' : true};
+        core.getInput = jest
+            .fn()
+            .mockImplementation(mockGetInput(mockInputs));
+
+        await run();
+        expect(mockEcrGetAuthToken).toHaveBeenCalled();
+        expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
+        expect(exec.exec).toHaveBeenNthCalledWith(1,
+            'docker login',
+            ['-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
+            expect.anything());
+        expect(core.saveState).toHaveBeenCalledTimes(0);
+    });
+
+    test('skips logout when specified and logging into multiple registries', async () => {
+        const mockInputs = {'registries' : '123456789012,111111111111', 'skip-logout' : true};
+        core.getInput = jest
+            .fn()
+            .mockImplementation(mockGetInput(mockInputs));
+        mockEcrGetAuthToken.mockImplementation(() => {
+            return {
+                promise() {
+                    return Promise.resolve({
+                        authorizationData: [
+                            {
+                                authorizationToken: Buffer.from('hello:world').toString('base64'),
+                                proxyEndpoint: 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'
+                            },
+                            {
+                                authorizationToken: Buffer.from('foo:bar').toString('base64'),
+                                proxyEndpoint: 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'
+                            }
+                       ]
+                    });
+                }
+            };
+        });
+
+        await run();
+
+        expect(mockEcrGetAuthToken).toHaveBeenCalledWith({
+            registryIds: ['123456789012','111111111111']
+        });
+        expect(core.setOutput).toHaveBeenCalledTimes(0);
+        expect(exec.exec).toHaveBeenCalledTimes(2);
         expect(core.saveState).toHaveBeenCalledTimes(0);
     });
 });
