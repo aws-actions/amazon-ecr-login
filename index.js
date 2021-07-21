@@ -58,6 +58,9 @@ async function run() {
         core.debug(doLoginStdout);
         throw new Error('Could not login: ' + doLoginStderr);
       }
+      
+      core.setOutput('docker_username', creds[0]);
+      core.setOutput('docker_password', creds[1]);
 
       registryUriState.push(registryUri);
     }
