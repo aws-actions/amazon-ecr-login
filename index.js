@@ -59,8 +59,8 @@ async function run() {
         throw new Error('Could not login: ' + doLoginStderr);
       }
       
-      core.setOutput('docker_username', creds[0]);
-      core.setOutput('docker_password', creds[1]);
+      core.setSecret('docker_username', creds[0]);
+      core.setSecret('docker_password', creds[1]);
 
       registryUriState.push(registryUri);
     }
