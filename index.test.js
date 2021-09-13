@@ -1,4 +1,4 @@
-const run = require('./index.js');
+const {run, replaceSpecialCharacters} = require('./index.js');
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 
@@ -260,5 +260,10 @@ describe('Login to ECR', () => {
         expect(core.setOutput).toHaveBeenCalledTimes(0);
         expect(exec.exec).toHaveBeenCalledTimes(2);
         expect(core.saveState).toHaveBeenCalledTimes(0);
+    });
+
+    test('replaces special characters', () => {
+        expect(replaceSpecialCharacters('111111111111.dkr.ecr.aws-region-1.amazonaws.com')).toBe('111111111111_dkr_ecr_aws_region_1_amazonaws_com')
+        expect(replaceSpecialCharacters('229236603350.dkr.ecr.us-east-1.amazonaws.com')).toBe('229236603350_dkr_ecr_us_east_1_amazonaws_com')
     });
 });
