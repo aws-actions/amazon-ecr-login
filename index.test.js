@@ -93,7 +93,7 @@ describe('Login to ECR', () => {
         expect(mockEcrGetAuthToken).toHaveBeenCalledWith({
             registryIds: ['123456789012','111111111111']
         });
-        expect(core.setOutput).toHaveBeenCalledTimes(0);
+        expect(core.setOutput).toHaveBeenCalledTimes(4);
         expect(exec.exec).toHaveBeenCalledTimes(2);
         expect(exec.exec).toHaveBeenNthCalledWith(1,
             'docker login',
@@ -132,7 +132,7 @@ describe('Login to ECR', () => {
         expect(mockEcrGetAuthToken).toHaveBeenCalledWith({
             registryIds: ['111111111111']
         });
-        expect(core.setOutput).toHaveBeenCalledTimes(1);
+        expect(core.setOutput).toHaveBeenCalledTimes(3);
         expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', '111111111111.dkr.ecr.aws-region-1.amazonaws.com');
         expect(exec.exec).toHaveBeenCalledTimes(1);
         expect(exec.exec).toHaveBeenNthCalledWith(1,
@@ -184,7 +184,7 @@ describe('Login to ECR', () => {
         expect(mockEcrGetAuthToken).toHaveBeenCalledWith({
             registryIds: ['123456789012','111111111111']
         });
-        expect(core.setOutput).toHaveBeenCalledTimes(0);
+        expect(core.setOutput).toHaveBeenCalledTimes(2);
         expect(exec.exec).toHaveBeenCalledTimes(2);
         expect(exec.exec).toHaveBeenNthCalledWith(1,
             'docker login',
@@ -257,7 +257,7 @@ describe('Login to ECR', () => {
         expect(mockEcrGetAuthToken).toHaveBeenCalledWith({
             registryIds: ['123456789012','111111111111']
         });
-        expect(core.setOutput).toHaveBeenCalledTimes(0);
+        expect(core.setOutput).toHaveBeenCalledTimes(4);
         expect(exec.exec).toHaveBeenCalledTimes(2);
         expect(core.saveState).toHaveBeenCalledTimes(0);
     });
