@@ -60,8 +60,8 @@ We recommend following [Amazon IAM best practices](https://docs.aws.amazon.com/I
 ### Docker credentials
 After the authentication, you can access the docker username and password via Action outputs using the following format:
 - Registry URL: `111111111111.dkr.ecr.aws-region-1.amazonaws.com`
-- Docker username output: `111111111111_dkr_ecr_aws_region_1_amazonaws_com_docker_username`
-- Docker password output: `111111111111_dkr_ecr_aws_region_1_amazonaws_com_docker_password`
+- Docker username output: `docker_username_111111111111_dkr_ecr_aws_region_1_amazonaws_com`
+- Docker password output: `docker_password_111111111111_dkr_ecr_aws_region_1_amazonaws_com`
 
 ## Permissions
 
