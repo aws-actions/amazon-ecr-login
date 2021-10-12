@@ -266,4 +266,35 @@ describe('Login to ECR', () => {
         expect(replaceSpecialCharacters('111111111111.dkr.ecr.aws-region-1.amazonaws.com')).toBe('111111111111_dkr_ecr_aws_region_1_amazonaws_com')
         expect(replaceSpecialCharacters('229236603350.dkr.ecr.us-east-1.amazonaws.com')).toBe('229236603350_dkr_ecr_us_east_1_amazonaws_com')
     });
+
+    test('sets the Actions outputs to the docker credentials', async () => {
+        const mockInputs = {'registries' : '123456789012,111111111111', 'skip-logout' : true};
+        core.getInput = jest
+            .fn()
+            .mockImplementation(mockGetInput(mockInputs));
+        mockEcrGetAuthToken.mockImplementation(() => {
+            return {
+                promise() {
+                    return Promise.resolve({
+                        authorizationData: [
+                            {
+                                authorizationToken: Buffer.from('hello:world').toString('base64'),
+                                proxyEndpoint: 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'
+                            },
+                            {
+                                authorizationToken: Buffer.from('foo:bar').toString('base64'),
+                                proxyEndpoint: 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'
+                            }
+                        ]
+                    });
+                }
+            };
+        });
+
+        await run();
+        expect(core.setOutput).toHaveBeenNthCalledWith(1, 'docker_username_123456789012_dkr_ecr_aws_region_1_amazonaws_com', 'hello');
+        expect(core.setOutput).toHaveBeenNthCalledWith(2, 'docker_password_123456789012_dkr_ecr_aws_region_1_amazonaws_com', 'world');
+        expect(core.setOutput).toHaveBeenNthCalledWith(3, 'docker_username_111111111111_dkr_ecr_aws_region_1_amazonaws_com', 'foo');
+        expect(core.setOutput).toHaveBeenNthCalledWith(4, 'docker_password_111111111111_dkr_ecr_aws_region_1_amazonaws_com', 'bar');
+    });
 });
