@@ -1,4 +1,4 @@
-const run = require('./index.js');
+const {run, replaceSpecialCharacters} = require('./index.js');
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 
@@ -93,7 +93,7 @@ describe('Login to ECR', () => {
         expect(mockEcrGetAuthToken).toHaveBeenCalledWith({
             registryIds: ['123456789012','111111111111']
         });
-        expect(core.setOutput).toHaveBeenCalledTimes(0);
+        expect(core.setOutput).toHaveBeenCalledTimes(4);
         expect(exec.exec).toHaveBeenCalledTimes(2);
         expect(exec.exec).toHaveBeenNthCalledWith(1,
             'docker login',
@@ -132,7 +132,7 @@ describe('Login to ECR', () => {
         expect(mockEcrGetAuthToken).toHaveBeenCalledWith({
             registryIds: ['111111111111']
         });
-        expect(core.setOutput).toHaveBeenCalledTimes(1);
+        expect(core.setOutput).toHaveBeenCalledTimes(3);
         expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', '111111111111.dkr.ecr.aws-region-1.amazonaws.com');
         expect(exec.exec).toHaveBeenCalledTimes(1);
         expect(exec.exec).toHaveBeenNthCalledWith(1,
@@ -184,7 +184,7 @@ describe('Login to ECR', () => {
         expect(mockEcrGetAuthToken).toHaveBeenCalledWith({
             registryIds: ['123456789012','111111111111']
         });
-        expect(core.setOutput).toHaveBeenCalledTimes(0);
+        expect(core.setOutput).toHaveBeenCalledTimes(2);
         expect(exec.exec).toHaveBeenCalledTimes(2);
         expect(exec.exec).toHaveBeenNthCalledWith(1,
             'docker login',
@@ -257,8 +257,44 @@ describe('Login to ECR', () => {
         expect(mockEcrGetAuthToken).toHaveBeenCalledWith({
             registryIds: ['123456789012','111111111111']
         });
-        expect(core.setOutput).toHaveBeenCalledTimes(0);
+        expect(core.setOutput).toHaveBeenCalledTimes(4);
         expect(exec.exec).toHaveBeenCalledTimes(2);
         expect(core.saveState).toHaveBeenCalledTimes(0);
+    });
+
+    test('replaces special characters', () => {
+        expect(replaceSpecialCharacters('111111111111.dkr.ecr.aws-region-1.amazonaws.com')).toBe('111111111111_dkr_ecr_aws_region_1_amazonaws_com')
+        expect(replaceSpecialCharacters('229236603350.dkr.ecr.us-east-1.amazonaws.com')).toBe('229236603350_dkr_ecr_us_east_1_amazonaws_com')
+    });
+
+    test('sets the Actions outputs to the docker credentials', async () => {
+        const mockInputs = {'registries' : '123456789012,111111111111', 'skip-logout' : true};
+        core.getInput = jest
+            .fn()
+            .mockImplementation(mockGetInput(mockInputs));
+        mockEcrGetAuthToken.mockImplementation(() => {
+            return {
+                promise() {
+                    return Promise.resolve({
+                        authorizationData: [
+                            {
+                                authorizationToken: Buffer.from('hello:world').toString('base64'),
+                                proxyEndpoint: 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'
+                            },
+                            {
+                                authorizationToken: Buffer.from('foo:bar').toString('base64'),
+                                proxyEndpoint: 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'
+                            }
+                        ]
+                    });
+                }
+            };
+        });
+
+        await run();
+        expect(core.setOutput).toHaveBeenNthCalledWith(1, 'docker_username_123456789012_dkr_ecr_aws_region_1_amazonaws_com', 'hello');
+        expect(core.setOutput).toHaveBeenNthCalledWith(2, 'docker_password_123456789012_dkr_ecr_aws_region_1_amazonaws_com', 'world');
+        expect(core.setOutput).toHaveBeenNthCalledWith(3, 'docker_username_111111111111_dkr_ecr_aws_region_1_amazonaws_com', 'foo');
+        expect(core.setOutput).toHaveBeenNthCalledWith(4, 'docker_password_111111111111_dkr_ecr_aws_region_1_amazonaws_com', 'bar');
     });
 });

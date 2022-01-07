@@ -2,6 +2,10 @@ const core = require('@actions/core');
 const exec = require('@actions/exec');
 const aws = require('aws-sdk');
 
+function replaceSpecialCharacters(registryUri) {
+  return registryUri.replace(/[^a-zA-Z0-9_]+/g, '_')
+}
+
 async function run() {
   const registryUriState = [];
   const skipLogout = core.getInput('skip-logout', { required: false });
@@ -59,6 +63,10 @@ async function run() {
         throw new Error('Could not login: ' + doLoginStderr);
       }
 
+      const secretSuffix = replaceSpecialCharacters(registryUri)
+      core.setOutput(`docker_username_${secretSuffix}`, creds[0]);
+      core.setOutput(`docker_password_${secretSuffix}`, creds[1]);
+
       registryUriState.push(registryUri);
     }
   }
@@ -75,7 +83,10 @@ async function run() {
   }
 }
 
-module.exports = run;
+module.exports = {
+  run,
+  replaceSpecialCharacters
+};
 
 /* istanbul ignore next */
 if (require.main === module) {

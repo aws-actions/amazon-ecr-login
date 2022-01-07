@@ -57,6 +57,12 @@ We recommend following [Amazon IAM best practices](https://docs.aws.amazon.com/I
 * [Rotate the credentials](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#rotate-credentials) used in GitHub Actions workflows regularly.
 * [Monitor the activity](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#keep-a-log) of the credentials used in GitHub Actions workflows.
 
+### Docker credentials
+After the authentication, you can access the docker username and password via Action outputs using the following format:
+- Registry URL: `111111111111.dkr.ecr.aws-region-1.amazonaws.com`
+- Docker username output: `docker_username_111111111111_dkr_ecr_aws_region_1_amazonaws_com`
+- Docker password output: `docker_password_111111111111_dkr_ecr_aws_region_1_amazonaws_com`
+
 ## Permissions
 
 This action requires the following minimum set of permissions:
