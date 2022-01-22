@@ -57,8 +57,8 @@ describe('Login to ECR', () => {
         expect(mockEcrGetAuthToken).toHaveBeenCalled();
         expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
         expect(exec.exec).toHaveBeenNthCalledWith(1,
-            'docker login',
-            ['-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
+            'docker',
+            ['login', '-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
             expect.anything());
         expect(core.saveState).toHaveBeenCalledTimes(1);
         expect(core.saveState).toHaveBeenCalledWith('registries', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
@@ -96,12 +96,12 @@ describe('Login to ECR', () => {
         expect(core.setOutput).toHaveBeenCalledTimes(4);
         expect(exec.exec).toHaveBeenCalledTimes(2);
         expect(exec.exec).toHaveBeenNthCalledWith(1,
-            'docker login',
-            ['-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
+            'docker',
+            ['login', '-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
             expect.anything());
         expect(exec.exec).toHaveBeenNthCalledWith(2,
-            'docker login',
-            ['-u', 'foo', '-p', 'bar', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
+            'docker',
+            ['login', '-u', 'foo', '-p', 'bar', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
             expect.anything());
         expect(core.saveState).toHaveBeenCalledTimes(1);
         expect(core.saveState).toHaveBeenCalledWith('registries', '123456789012.dkr.ecr.aws-region-1.amazonaws.com,111111111111.dkr.ecr.aws-region-1.amazonaws.com');
@@ -136,8 +136,8 @@ describe('Login to ECR', () => {
         expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', '111111111111.dkr.ecr.aws-region-1.amazonaws.com');
         expect(exec.exec).toHaveBeenCalledTimes(1);
         expect(exec.exec).toHaveBeenNthCalledWith(1,
-            'docker login',
-            ['-u', 'foo', '-p', 'bar', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
+            'docker',
+            ['login', '-u', 'foo', '-p', 'bar', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
             expect.anything());
         expect(core.saveState).toHaveBeenCalledTimes(1);
         expect(core.saveState).toHaveBeenCalledWith('registries', '111111111111.dkr.ecr.aws-region-1.amazonaws.com');
@@ -187,12 +187,12 @@ describe('Login to ECR', () => {
         expect(core.setOutput).toHaveBeenCalledTimes(2);
         expect(exec.exec).toHaveBeenCalledTimes(2);
         expect(exec.exec).toHaveBeenNthCalledWith(1,
-            'docker login',
-            ['-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
+            'docker',
+            ['login', '-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
             expect.anything());
         expect(exec.exec).toHaveBeenNthCalledWith(2,
-            'docker login',
-            ['-u', 'foo', '-p', 'bar', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
+            'docker',
+            ['login', '-u', 'foo', '-p', 'bar', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
             expect.anything());
 
         expect(core.setFailed).toBeCalled();
@@ -222,8 +222,8 @@ describe('Login to ECR', () => {
         expect(mockEcrGetAuthToken).toHaveBeenCalled();
         expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
         expect(exec.exec).toHaveBeenNthCalledWith(1,
-            'docker login',
-            ['-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
+            'docker',
+            ['login', '-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
             expect.anything());
         expect(core.saveState).toHaveBeenCalledTimes(0);
     });
