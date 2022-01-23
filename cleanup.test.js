@@ -55,7 +55,22 @@ describe('Logout from ECR', () => {
     test('continues to attempt logouts after a failed logout', async () => {
         core.getState.mockReturnValue(
             '123456789012.dkr.ecr.aws-region-1.amazonaws.com,111111111111.dkr.ecr.aws-region-1.amazonaws.com,222222222222.dkr.ecr.aws-region-1.amazonaws.com');
-        exec.exec.mockReturnValueOnce(1).mockReturnValueOnce(1).mockReturnValueOnce(0);
+        exec.exec
+            .mockImplementationOnce((commandLine, args, options) => {
+                options.listeners.stdout("stdout of ");
+                options.listeners.stdout("registry 1");
+                options.listeners.stderr("stderr of ");
+                options.listeners.stderr("registry 1");
+                return(1);
+            })
+            .mockImplementationOnce((commandLine, args, options) => {
+                options.listeners.stdout("stdout of ");
+                options.listeners.stdout("registry 2");
+                options.listeners.stderr("stderr of ");
+                options.listeners.stderr("registry 2");
+                return(1);
+            })
+            .mockReturnValueOnce(0);
 
         await cleanup();
 
@@ -76,8 +91,8 @@ describe('Logout from ECR', () => {
             expect.anything());
 
         expect(core.error).toHaveBeenCalledTimes(2);
-        expect(core.error).toHaveBeenNthCalledWith(1, 'Could not logout registry 123456789012.dkr.ecr.aws-region-1.amazonaws.com: ');
-        expect(core.error).toHaveBeenNthCalledWith(2, 'Could not logout registry 111111111111.dkr.ecr.aws-region-1.amazonaws.com: ');
+        expect(core.error).toHaveBeenNthCalledWith(1, 'Could not logout registry 123456789012.dkr.ecr.aws-region-1.amazonaws.com: stderr of registry 1');
+        expect(core.error).toHaveBeenNthCalledWith(2, 'Could not logout registry 111111111111.dkr.ecr.aws-region-1.amazonaws.com: stderr of registry 2');
 
         expect(core.setFailed).toHaveBeenCalledTimes(1);
         expect(core.setFailed).toHaveBeenCalledWith('Failed to logout: 123456789012.dkr.ecr.aws-region-1.amazonaws.com,111111111111.dkr.ecr.aws-region-1.amazonaws.com');

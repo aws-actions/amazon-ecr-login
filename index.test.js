@@ -107,6 +107,62 @@ describe('Login to ECR', () => {
         expect(core.saveState).toHaveBeenCalledWith('registries', '123456789012.dkr.ecr.aws-region-1.amazonaws.com,111111111111.dkr.ecr.aws-region-1.amazonaws.com');
     });
 
+    test(`throws error when getAuthorizationToken does return an empty authorization data`, async () => {
+        mockEcrGetAuthToken.mockImplementation(() => {
+            return {
+                promise() {
+                    return Promise.resolve({authorizationData: []});
+                }
+            };
+        });
+
+        await run();
+        expect(mockEcrGetAuthToken).toHaveBeenCalled();
+        expect(core.setOutput).toHaveBeenCalledTimes(0);
+        expect(exec.exec).toHaveBeenCalledTimes(0);
+        expect(core.saveState).toHaveBeenCalledTimes(0);
+        expect(core.setFailed).toHaveBeenCalledTimes(1);
+        expect(core.setFailed).toHaveBeenCalledWith('Could not retrieve an authorization token from Amazon ECR');
+    });
+
+    test(`throws error when getAuthorizationToken does not contain authorization data`, async () => {
+        mockEcrGetAuthToken.mockImplementation(() => {
+            return {
+                promise() {
+                    return Promise.resolve({foo: "bar"});
+                }
+            };
+        });
+
+        await run();
+        expect(mockEcrGetAuthToken).toHaveBeenCalled();
+        expect(core.setOutput).toHaveBeenCalledTimes(0);
+        expect(exec.exec).toHaveBeenCalledTimes(0);
+        expect(core.saveState).toHaveBeenCalledTimes(0);
+        expect(core.setFailed).toHaveBeenCalledTimes(1);
+        expect(core.setFailed).toHaveBeenCalledWith('Could not retrieve an authorization token from Amazon ECR');
+    });
+
+    test(`throws error when getAuthorizationToken does not return data`, async () => {
+        mockEcrGetAuthToken.mockImplementation(() => {
+            return {
+                promise() {
+                    // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/ECR.html#getAuthorizationToken-property
+                    // data (Object) — the de-serialized data returned from the request. Set to null if a request error occurs.
+                    return Promise.resolve(null);
+                }
+            };
+        });
+
+        await run();
+        expect(mockEcrGetAuthToken).toHaveBeenCalled();
+        expect(core.setOutput).toHaveBeenCalledTimes(0);
+        expect(exec.exec).toHaveBeenCalledTimes(0);
+        expect(core.saveState).toHaveBeenCalledTimes(0);
+        expect(core.setFailed).toHaveBeenCalledTimes(1);
+        expect(core.setFailed).toHaveBeenCalledWith('Could not retrieve an authorization token from Amazon ECR');
+    });
+
     test('outputs the registry ID if a single registry is provided in the input', async () => {
         const mockInputs = {'registries' : '111111111111'};
         core.getInput = jest
@@ -154,7 +210,16 @@ describe('Login to ECR', () => {
     });
 
     test('logged-in registries are saved as state even if the action fails', async () => {
-        exec.exec.mockReturnValue(1).mockReturnValueOnce(0);
+        exec.exec
+            .mockImplementation((commandLine, args, options) => {
+                options.listeners.stdout("Hello");
+                options.listeners.stdout(" World");
+                options.listeners.stdout(" on stdout\n");
+                options.listeners.stderr("Some fancy error");
+                options.listeners.stderr(" from docker login stderr");
+                return(1);
+            })
+            .mockReturnValueOnce(0);
 
         const mockInputs = {'registries' : '123456789012,111111111111'};
         core.getInput = jest
@@ -196,6 +261,7 @@ describe('Login to ECR', () => {
             expect.anything());
 
         expect(core.setFailed).toBeCalled();
+        expect(core.setFailed).toHaveBeenCalledWith("Could not login: Some fancy error from docker login stderr");
         expect(core.saveState).toHaveBeenCalledTimes(1);
         expect(core.saveState).toHaveBeenCalledWith('registries', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
     });

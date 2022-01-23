@@ -27,7 +27,7 @@ async function run() {
       authTokenRequest.registryIds = registryIds;
     }
     const authTokenResponse = await ecr.getAuthorizationToken(authTokenRequest).promise();
-    if (!Array.isArray(authTokenResponse.authorizationData) || !authTokenResponse.authorizationData.length) {
+    if (!authTokenResponse || !Array.isArray(authTokenResponse.authorizationData) || !authTokenResponse.authorizationData.length) {
       throw new Error('Could not retrieve an authorization token from Amazon ECR');
     }
 
