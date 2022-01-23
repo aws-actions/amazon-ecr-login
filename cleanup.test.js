@@ -22,12 +22,12 @@ describe('Logout from ECR', () => {
 
         expect(exec.exec).toHaveBeenCalledTimes(2);
         expect(exec.exec).toHaveBeenNthCalledWith(1,
-            'docker logout',
-            ['123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
+            'docker',
+            ['logout', '123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
             expect.anything());
         expect(exec.exec).toHaveBeenNthCalledWith(2,
-            'docker logout',
-            ['111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
+            'docker',
+            ['logout', '111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
             expect.anything());
 
         expect(core.setFailed).toHaveBeenCalledTimes(0);
@@ -63,16 +63,16 @@ describe('Logout from ECR', () => {
 
         expect(exec.exec).toHaveBeenCalledTimes(3);
         expect(exec.exec).toHaveBeenNthCalledWith(1,
-            'docker logout',
-            ['123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
+            'docker',
+            ['logout', '123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
             expect.anything());
         expect(exec.exec).toHaveBeenNthCalledWith(2,
-            'docker logout',
-            ['111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
+            'docker',
+            ['logout', '111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
             expect.anything());
         expect(exec.exec).toHaveBeenNthCalledWith(3,
-            'docker logout',
-            ['222222222222.dkr.ecr.aws-region-1.amazonaws.com'],
+            'docker',
+            ['logout', '222222222222.dkr.ecr.aws-region-1.amazonaws.com'],
             expect.anything());
 
         expect(core.error).toHaveBeenCalledTimes(2);
