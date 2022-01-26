@@ -33,6 +33,40 @@ Logs in the local Docker client to one or more Amazon ECR registries.
 
 See [action.yml](action.yml) for the full documentation for this action's inputs and outputs.
 
+This action can also be used to acquire (temporary) credentials to ECR to have a _private_ image run as a service:
+
+```yaml
+jobs:
+  login-to-aws-ecr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: $AWS_REGION
+  
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@master # not yet contained in latest release
+    outputs:
+      ecr-credentials: ${{ steps.ecr-login.outputs.docker_password_<your account id>_dkr_ecr_<your region>_amazonaws_com }} # see 'Docker credentials' below
+  
+  run-with-internal-service:
+    name: Run something with an internal image as service
+    needs: login-to-aws-ecr
+    runs-on: ubuntu-latest
+    services:
+      internal-service:
+        image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        credentials:
+          username: AWS
+          password: ${{ needs.login-to-aws-ecr.outputs.ecr-credentials }}
+        ports:
+          - '80:80'
+```
+
 ## Credentials and Region
 
 This action relies on the [default behavior of the AWS SDK for Javascript](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-credentials-node.html) to determine AWS credentials and region.  Use [the `aws-actions/configure-aws-credentials` action](https://github.com/aws-actions/configure-aws-credentials) to configure the GitHub Actions environment with environment variables containing AWS credentials and your desired region.
