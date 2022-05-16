@@ -3,7 +3,7 @@ pull_request_rules:
     conditions:
       - base~=master|integ-tests
       - "#approved-reviews-by>=1"
-      - approved-reviews-by=@aws-actions/aws-ecs-devx
+      - approved-reviews-by=@aws-actions/aws-ecr
       - -approved-reviews-by~=author
       - status-success=Run Unit Tests
       - status-success=Semantic Pull Request
@@ -15,8 +15,6 @@ pull_request_rules:
     actions:
       merge:
         method: squash
-        strict: smart
-        strict_method: merge
 
   - name: Automatically approve and merge Dependabot PRs
     conditions:
@@ -33,5 +31,3 @@ pull_request_rules:
         type: APPROVE
       merge:
         method: squash
-        strict: smart+fasttrack
-        strict_method: merge
