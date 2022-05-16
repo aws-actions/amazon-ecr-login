@@ -26,7 +26,7 @@
   "homepage": "https://github.com/aws-actions/amazon-ecr-login#readme",
   "dependencies": {
     "@actions/core": "^1.8.2",
-    "@actions/exec": "^1.1.0",
+    "@actions/exec": "^1.1.1",
     "aws-sdk": "^2.1135.0"
   },
   "devDependencies": {
