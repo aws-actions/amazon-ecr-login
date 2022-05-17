@@ -1423,19 +1423,21 @@ const exec = __webpack_require__(986);
  */
 
 async function cleanup() {
- try {
+  try {
     const registriesState = core.getState('registries');
+
     if (registriesState) {
       const registries = registriesState.split(',');
       const failedLogouts = [];
 
+      // Logout of each registry
       for (const registry of registries) {
-        core.debug(`Logging out registry ${registry}`);
+        core.debug(`Logging out of registry ${registry}`);
 
         // Execute the docker logout command
         let doLogoutStdout = '';
         let doLogoutStderr = '';
-        const exitCode = await exec.exec('docker', ["logout", registry], {
+        const exitCode = await exec.exec('docker', ['logout', registry], {
           silent: true,
           ignoreReturnCode: true,
           listeners: {
@@ -1447,8 +1449,7 @@ async function cleanup() {
             }
           }
         });
-
-        if (exitCode != 0) {
+        if (exitCode !== 0) {
           core.debug(doLogoutStdout);
           core.error(`Could not logout registry ${registry}: ${doLogoutStderr}`);
           failedLogouts.push(registry);

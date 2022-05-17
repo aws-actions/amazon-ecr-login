@@ -3,17 +3,18 @@ const exec = require('@actions/exec');
 const aws = require('aws-sdk');
 
 function replaceSpecialCharacters(registryUri) {
-  return registryUri.replace(/[^a-zA-Z0-9_]+/g, '_')
+  return registryUri.replace(/[^a-zA-Z0-9_]+/g, '_');
 }
 
 async function run() {
+  // Get inputs
+  const skipLogout = core.getInput('skip-logout', { required: false }) === 'true';
+  const registries = core.getInput('registries', { required: false });
+
   const registryUriState = [];
-  const skipLogout = core.getInput('skip-logout', { required: false });
 
   try {
-    const registries = core.getInput('registries', { required: false });
-
-    // Get the ECR authorization token
+    // Get the ECR authorization token(s)
     const ecr = new aws.ECR({
       customUserAgent: 'amazon-ecr-login-for-github-actions'
     });
@@ -31,14 +32,17 @@ async function run() {
       throw new Error('Could not retrieve an authorization token from Amazon ECR');
     }
 
+    // Login to each registry
     for (const authData of authTokenResponse.authorizationData) {
       const authToken = Buffer.from(authData.authorizationToken, 'base64').toString('utf-8');
       const creds = authToken.split(':', 2);
       const proxyEndpoint = authData.proxyEndpoint;
       const registryUri = proxyEndpoint.replace(/^https?:\/\//,'');
 
-      if (authTokenResponse.authorizationData.length == 1) {
-        // output the registry URI if this action is doing a single registry login
+      core.debug(`Logging in to registry ${registryUri}`);
+
+      // output the registry URI if this action is doing a single registry login
+      if (authTokenResponse.authorizationData.length === 1) {
         core.setOutput('registry', registryUri);
       }
 
@@ -57,15 +61,14 @@ async function run() {
           }
         }
       });
-
-      if (exitCode != 0) {
+      if (exitCode !== 0) {
         core.debug(doLoginStdout);
-        throw new Error('Could not login: ' + doLoginStderr);
+        throw new Error(`Could not login to ${proxyEndpoint}: ${doLoginStderr}`);
       }
 
+      // Output docker username and password
       const secretSuffix = replaceSpecialCharacters(registryUri)
-      core.setSecret(creds[0])
-      core.setSecret(creds[1])
+      core.setSecret(creds[1]);
       core.setOutput(`docker_username_${secretSuffix}`, creds[0]);
       core.setOutput(`docker_password_${secretSuffix}`, creds[1]);
 
@@ -79,7 +82,7 @@ async function run() {
   // Pass the logged-in registry URIs to the post action for logout
   if (registryUriState.length) {
     if (!skipLogout) {
-        core.saveState('registries', registryUriState.join());
+      core.saveState('registries', registryUriState.join());
     }
     core.debug(`'skip-logout' is ${skipLogout} for ${registryUriState.length} registries.`);
   }
@@ -92,5 +95,5 @@ module.exports = {
 
 /* istanbul ignore next */
 if (require.main === module) {
-    run();
+  run();
 }
