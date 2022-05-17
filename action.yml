@@ -10,6 +10,7 @@ inputs:
   skip-logout:
     description: 'Whether to skip explicit logout of the registries during post-job cleanup. Exists for backward compatibility on self-hosted runners. Not recommended.'
     required: false
+    default: 'false'
 outputs:
   registry:
     description: 'The URI of the ECR registry i.e. aws_account_id.dkr.ecr.region.amazonaws.com. If multiple registries are provided as inputs, this output will not be set.'

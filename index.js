@@ -3,16 +3,16 @@ const exec = require('@actions/exec');
 const aws = require('aws-sdk');
 
 function replaceSpecialCharacters(registryUri) {
-  return registryUri.replace(/[^a-zA-Z0-9_]+/g, '_')
+  return registryUri.replace(/[^a-zA-Z0-9_]+/g, '_');
 }
 
 async function run() {
+  const skipLogout = core.getInput('skip-logout', { required: false }) === 'true';
+  const registries = core.getInput('registries', { required: false });
+
   const registryUriState = [];
-  const skipLogout = core.getInput('skip-logout', { required: false });
 
   try {
-    const registries = core.getInput('registries', { required: false });
-
     // Get the ECR authorization token
     const ecr = new aws.ECR({
       customUserAgent: 'amazon-ecr-login-for-github-actions'
@@ -37,7 +37,9 @@ async function run() {
       const proxyEndpoint = authData.proxyEndpoint;
       const registryUri = proxyEndpoint.replace(/^https?:\/\//,'');
 
-      if (authTokenResponse.authorizationData.length == 1) {
+      core.debug(`Logging in registry ${registryUri}`);
+
+      if (authTokenResponse.authorizationData.length === 1) {
         // output the registry URI if this action is doing a single registry login
         core.setOutput('registry', registryUri);
       }
@@ -58,12 +60,13 @@ async function run() {
         }
       });
 
-      if (exitCode != 0) {
+      if (exitCode !== 0) {
         core.debug(doLoginStdout);
         throw new Error('Could not login: ' + doLoginStderr);
       }
 
       const secretSuffix = replaceSpecialCharacters(registryUri)
+      core.setSecret(creds[1]);
       core.setOutput(`docker_username_${secretSuffix}`, creds[0]);
       core.setOutput(`docker_password_${secretSuffix}`, creds[1]);
 
@@ -77,7 +80,7 @@ async function run() {
   // Pass the logged-in registry URIs to the post action for logout
   if (registryUriState.length) {
     if (!skipLogout) {
-        core.saveState('registries', registryUriState.join());
+      core.saveState('registries', registryUriState.join());
     }
     core.debug(`'skip-logout' is ${skipLogout} for ${registryUriState.length} registries.`);
   }

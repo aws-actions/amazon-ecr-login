@@ -7,8 +7,9 @@ const exec = require('@actions/exec');
  */
 
 async function cleanup() {
- try {
+  try {
     const registriesState = core.getState('registries');
+
     if (registriesState) {
       const registries = registriesState.split(',');
       const failedLogouts = [];
@@ -32,7 +33,7 @@ async function cleanup() {
           }
         });
 
-        if (exitCode != 0) {
+        if (exitCode !== 0) {
           core.debug(doLogoutStdout);
           core.error(`Could not logout registry ${registry}: ${doLogoutStderr}`);
           failedLogouts.push(registry);
