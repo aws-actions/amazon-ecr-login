@@ -12,11 +12,11 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Print current build ID
       run: |
-        echo Integration test run: githubactionsamazonecrlogin-VM0j5Qh3DBOo:7015cc29-ded8-43d8-abc0-952cbb4ca9f8
+        echo Integration test run: githubactionsamazonecrlogin-VM0j5Qh3DBOo:c77808af-e288-4fb2-81df-a48074d48c65
 
     - name: Configure AWS credentials
       id: configure-aws-credentials
