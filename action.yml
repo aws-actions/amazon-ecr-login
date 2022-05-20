@@ -1,5 +1,5 @@
 name: 'Amazon ECR "Login" Action for GitHub Actions'
-description: 'Logs in the local Docker client to one or more ECR registries'
+description: 'Logs in the local Docker/Helm client to one or more ECR registries'
 branding:
   icon: 'cloud'
   color: 'orange'
@@ -11,6 +11,10 @@ inputs:
     description: 'Whether to skip explicit logout of the registries during post-job cleanup. Exists for backward compatibility on self-hosted runners. Not recommended.'
     required: false
     default: 'false'
+  client:
+    description: 'What registry client to use to login [docker, helm].'
+    required: false
+    default: 'docker'
 outputs:
   registry:
     description: 'The URI of the ECR registry i.e. aws_account_id.dkr.ecr.region.amazonaws.com. If multiple registries are provided as inputs, this output will not be set.'

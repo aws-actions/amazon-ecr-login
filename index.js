@@ -8,12 +8,18 @@ function replaceSpecialCharacters(registryUri) {
 
 async function run() {
   // Get inputs
-  const skipLogout = core.getInput('skip-logout', { required: false }) === 'true';
+  const skipLogout = core.getInput('skip-logout', { required: false }).toLowerCase() === 'true';
   const registries = core.getInput('registries', { required: false });
+  const client = core.getInput('client', { required: false }).toLowerCase() || 'docker';
 
   const registryUriState = [];
 
   try {
+    if (client !== 'docker' && client !== 'helm') {
+      throw new Error(`Invalid input for 'client', possible options are [docker, helm]`);
+    }
+    core.saveState('client', client);
+
     // Get the ECR authorization token(s)
     const ecr = new aws.ECR({
       customUserAgent: 'amazon-ecr-login-for-github-actions'
@@ -39,17 +45,21 @@ async function run() {
       const proxyEndpoint = authData.proxyEndpoint;
       const registryUri = proxyEndpoint.replace(/^https?:\/\//,'');
 
-      core.debug(`Logging in to registry ${registryUri}`);
+      core.info(`Logging into registry ${registryUri} with ${client}`);
 
       // output the registry URI if this action is doing a single registry login
       if (authTokenResponse.authorizationData.length === 1) {
         core.setOutput('registry', registryUri);
       }
 
-      // Execute the docker login command
+      // Execute the docker/helm login command
+      const args = ['login', '-u', creds[0], '-p', creds[1], proxyEndpoint];
+      if (client === 'helm') {
+        args.unshift('registry')
+      }
       let doLoginStdout = '';
       let doLoginStderr = '';
-      const exitCode = await exec.exec('docker', ['login', '-u', creds[0], '-p', creds[1], proxyEndpoint], {
+      const exitCode = await exec.exec(client, args, {
         silent: true,
         ignoreReturnCode: true,
         listeners: {
@@ -63,14 +73,14 @@ async function run() {
       });
       if (exitCode !== 0) {
         core.debug(doLoginStdout);
-        throw new Error(`Could not login to ${proxyEndpoint}: ${doLoginStderr}`);
+        throw new Error(`Could not log into registry ${registryUri}: ${doLoginStderr}`);
       }
 
-      // Output docker username and password
-      const secretSuffix = replaceSpecialCharacters(registryUri)
+      // Output docker/helm username and password
+      const secretSuffix = replaceSpecialCharacters(registryUri);
       core.setSecret(creds[1]);
-      core.setOutput(`docker_username_${secretSuffix}`, creds[0]);
-      core.setOutput(`docker_password_${secretSuffix}`, creds[1]);
+      core.setOutput(`${client}_username_${secretSuffix}`, creds[0]);
+      core.setOutput(`${client}_password_${secretSuffix}`, creds[1]);
 
       registryUriState.push(registryUri);
     }

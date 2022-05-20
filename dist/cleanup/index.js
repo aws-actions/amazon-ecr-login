@@ -1418,12 +1418,12 @@ const core = __webpack_require__(470);
 const exec = __webpack_require__(986);
 
 /**
- * When the GitHub Actions job is done, remove saved ECR credentials from the
- * local Docker engine in the job's environment.
+ * When the GitHub Actions job is done, logout of ECR.
  */
 
 async function cleanup() {
   try {
+    const client = core.getState('client');
     const registriesState = core.getState('registries');
 
     if (registriesState) {
@@ -1432,12 +1432,16 @@ async function cleanup() {
 
       // Logout of each registry
       for (const registry of registries) {
-        core.debug(`Logging out of registry ${registry}`);
+        core.info(`Logging out of registry ${registry}`);
 
-        // Execute the docker logout command
+        // Execute the docker/helm logout command
+        const args = ['logout', registry];
+        if (client === 'helm') {
+          args.unshift('registry')
+        }
         let doLogoutStdout = '';
         let doLogoutStderr = '';
-        const exitCode = await exec.exec('docker', ['logout', registry], {
+        const exitCode = await exec.exec(client, args, {
           silent: true,
           ignoreReturnCode: true,
           listeners: {
@@ -1451,7 +1455,7 @@ async function cleanup() {
         });
         if (exitCode !== 0) {
           core.debug(doLogoutStdout);
-          core.error(`Could not logout registry ${registry}: ${doLogoutStderr}`);
+          core.error(`Could not log out of registry ${registry}: ${doLogoutStderr}`);
           failedLogouts.push(registry);
         }
       }

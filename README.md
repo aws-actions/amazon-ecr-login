@@ -1,12 +1,12 @@
 ## Amazon ECR "Login" Action for GitHub Actions
 
-Logs in the local Docker client to one or more Amazon ECR registries.
+Logs in the local Docker/Helm client to one or more Amazon ECR registries.
 
 **Table of Contents**
 
 <!-- toc -->
 
-- [Usage](#usage)
+- [Example of Usage](#example-of-usage)
 - [Credentials and Region](#credentials-and-region)
 - [Permissions](#permissions)
 - [License Summary](#license-summary)
@@ -14,7 +14,7 @@ Logs in the local Docker client to one or more Amazon ECR registries.
 
 <!-- tocstop -->
 
-## Usage
+## Example of Usage
 
 ```yaml
     - name: Login to Amazon ECR
@@ -43,7 +43,7 @@ This action relies on the [default behavior of the AWS SDK for Javascript](https
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-2
+        aws-region: us-east-1
 
     - name: Login to Amazon ECR
       id: login-ecr
@@ -57,11 +57,17 @@ We recommend following [Amazon IAM best practices](https://docs.aws.amazon.com/I
 * [Rotate the credentials](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#rotate-credentials) used in GitHub Actions workflows regularly.
 * [Monitor the activity](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#keep-a-log) of the credentials used in GitHub Actions workflows.
 
-### Docker credentials
-After the authentication, you can access the docker username and password via Action outputs using the following format:
+### Credentials
+After the authentication, you can access the docker/helm username and password via Action outputs using the following format:
 - Registry URL: `111111111111.dkr.ecr.aws-region-1.amazonaws.com`
+
+If using docker:
 - Docker username output: `docker_username_111111111111_dkr_ecr_aws_region_1_amazonaws_com`
 - Docker password output: `docker_password_111111111111_dkr_ecr_aws_region_1_amazonaws_com`
+
+If using helm:
+- Helm username output: `helm_username_111111111111_dkr_ecr_aws_region_1_amazonaws_com`
+- Helm password output: `helm_password_111111111111_dkr_ecr_aws_region_1_amazonaws_com`
 
 ## Permissions
 
