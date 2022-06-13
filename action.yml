@@ -1,19 +1,33 @@
 name: 'Amazon ECR "Login" Action for GitHub Actions'
-description: 'Logs in the local Docker client to one or more ECR registries'
+description: 'Logs in the local Docker client to one or more Amazon ECR Private registries or an Amazon ECR Public registry'
 branding:
   icon: 'cloud'
   color: 'orange'
 inputs:
   registries:
-    description: 'A comma-delimited list of AWS account IDs that are associated with the ECR registries. If you do not specify a registry, the default ECR registry is assumed.'
+    description: >-
+      A comma-delimited list of AWS account IDs that are associated with the ECR Private registries.
+      If you do not specify a registry, the default ECR Private registry is assumed.
+      If 'public' is given as input to 'registry-type', this input is ignored.
     required: false
   skip-logout:
-    description: 'Whether to skip explicit logout of the registries during post-job cleanup. Exists for backward compatibility on self-hosted runners. Not recommended.'
+    description: >-
+      Whether to skip explicit logout of the registries during post-job cleanup.
+      Exists for backward compatibility on self-hosted runners.
+      Not recommended.
     required: false
     default: 'false'
+  registry-type:
+    description: >-
+      Which ECR registry type to log into.
+      Options: 'private', 'public'
+    required: false
+    default: 'private'
 outputs:
   registry:
-    description: 'The URI of the ECR registry i.e. aws_account_id.dkr.ecr.region.amazonaws.com. If multiple registries are provided as inputs, this output will not be set.'
+    description: >-
+      The URI of the ECR Private or ECR Public registry.
+      If logging into multiple registries on ECR Private, this output will not be set.
 runs:
   using: 'node12'
   main: 'dist/index.js'
