@@ -27,7 +27,7 @@
   "dependencies": {
     "@actions/core": "^1.8.2",
     "@actions/exec": "^1.1.1",
-    "aws-sdk": "^2.1138.0"
+    "aws-sdk": "^2.1159.0"
   },
   "devDependencies": {
     "@zeit/ncc": "^0.22.3",
