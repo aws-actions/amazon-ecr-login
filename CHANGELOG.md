@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/aws-actions/amazon-ecr-login/compare/v1.4.0...v1.5.0) (2022-06-27)
+
+
+### Features
+
+* added ECR Public Registry support ([b4f084e](https://github.com/aws-actions/amazon-ecr-login/commit/b4f084e928b56f43c9afa5773b761bbfcd7e83e2))
+
 ## [1.4.0](https://github.com/aws-actions/amazon-ecr-login/compare/v1.3.3...v1.4.0) (2022-05-20)
 
 
