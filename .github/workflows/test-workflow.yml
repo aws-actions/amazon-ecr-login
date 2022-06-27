@@ -16,10 +16,10 @@ jobs:
 
     - name: Print current build ID
       run: |
-        echo Integration test run: githubactionsamazonecrlogin-VM0j5Qh3DBOo:84bb11ee-d49f-4d7e-b27f-3fadeb66c65a
+        echo Integration test run: githubactionsamazonecrlogin-VM0j5Qh3DBOo:fef666c9-d070-4dfb-a193-2c93f9852b7f
 
     - name: Configure AWS credentials
-      id: configure-aws-credentials
+      id: configure-aws-credentials-pdx
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -28,9 +28,9 @@ jobs:
 
     - name: Login to Amazon ECR
       id: login-ecr
-      uses: aws-actions/amazon-ecr-login@4716dfbdb38e7777febdb7c5460ae165b5946183
+      uses: aws-actions/amazon-ecr-login@23e37542085ebb68bd09ca726388db6e27f2940b
 
-    - name: Tag and push an image to Amazon ECR
+    - name: Tag and push a docker image to Amazon ECR
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: github-actions-amazon-ecr-login-integ-tests
@@ -41,6 +41,32 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
     - name: Login to Amazon ECR using explicit registry ID
-      uses: aws-actions/amazon-ecr-login@4716dfbdb38e7777febdb7c5460ae165b5946183
+      uses: aws-actions/amazon-ecr-login@23e37542085ebb68bd09ca726388db6e27f2940b
       with:
         registries: ${{ steps.configure-aws-credentials.outputs.aws-account-id }}
+
+    - name: Configure AWS credentials
+      id: configure-aws-credentials-iad
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Login to Amazon ECR Public
+      id: login-ecr-public
+      uses: aws-actions/amazon-ecr-login@23e37542085ebb68bd09ca726388db6e27f2940b
+      with:
+        registry-type: public
+
+    - name: Tag and push a docker image to Amazon ECR Public
+      env:
+        ECR_PUBLIC_REGISTRY_ALIAS: github-actions-amazon-ecr-login-integ-tests
+        ECR_PUBLIC_REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
+        ECR_PUBLIC_REPOSITORY: github-actions-amazon-ecr-login-integ-tests
+        IMAGE_TAG: latest
+      run: |
+        docker pull amazonlinux
+        docker tag amazonlinux $ECR_PUBLIC_REGISTRY/$ECR_PUBLIC_REGISTRY_ALIAS/$ECR_PUBLIC_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_PUBLIC_REGISTRY/$ECR_PUBLIC_REGISTRY_ALIAS/$ECR_PUBLIC_REPOSITORY:$IMAGE_TAG
+        
