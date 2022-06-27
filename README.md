@@ -14,7 +14,7 @@ Logs in the local Docker client to one or more Amazon ECR Private registries or 
 
 <!-- tocstop -->
 
-## Example of Usage
+## Examples of Usage
 
 Logging in to Amazon ECR Private, then building and pushing a Docker image:
 ```yaml
@@ -101,7 +101,7 @@ This action relies on the [default behavior of the AWS SDK for Javascript](https
         role-to-assume: arn:aws:iam::123456789012:role/my-github-actions-role
         aws-region: us-east-1
 
-    - name: Login to Amazon ECR
+    - name: Login to Amazon ECR Private
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 ```
@@ -112,9 +112,11 @@ We recommend following [Amazon IAM best practices](https://docs.aws.amazon.com/I
 * [Monitor the activity](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#keep-a-log) of the IAM role used in GitHub Actions workflows.
 
 ### Docker Credentials
-After the authentication, you can access the docker username and password via Action outputs using the following format:
+The registry URIs for ECR Private and ECR Public are as follows:
 - Registry URI for ECR Private: `123456789012.dkr.ecr.aws-region-1.amazonaws.com`
 - Registry URI for ECR Public: `public.ecr.aws`
+
+After logging in, you can access the docker username and password via action outputs using the following format:
 
 If using ECR Private:
 - Docker username output: `docker_username_123456789012_dkr_ecr_aws_region_1_amazonaws_com`
@@ -210,7 +212,8 @@ This action requires the following minimum set of permissions to login to ECR Pu
       "Sid": "GetAuthorizationToken",
       "Effect": "Allow",
       "Action": [
-        "ecr-public:GetAuthorizationToken"
+        "ecr-public:GetAuthorizationToken",
+        "sts:GetServiceBearerToken"
       ],
       "Resource": "*"
     }
