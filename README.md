@@ -9,6 +9,7 @@ Logs in the local Docker client to one or more Amazon ECR Private registries or 
 - [Example of Usage](#example-of-usage)
 - [Credentials and Region](#credentials-and-region)
 - [Permissions](#permissions)
+- [Troubleshooting](#troubleshooting)
 - [License Summary](#license-summary)
 - [Security Disclosures](#security-disclosures)
 
@@ -16,7 +17,7 @@ Logs in the local Docker client to one or more Amazon ECR Private registries or 
 
 ## Examples of Usage
 
-Logging in to Amazon ECR Private, then building and pushing a Docker image:
+Login to Amazon ECR Private, then build and push a Docker image:
 ```yaml
     - name: Login to Amazon ECR
       id: login-ecr
@@ -32,13 +33,13 @@ Logging in to Amazon ECR Private, then building and pushing a Docker image:
         docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 ```
 
-Logging in to Amazon ECR Public, then building and pushing a Docker image:
+Login to Amazon ECR Public, then build and push a Docker image:
 ```yaml
     - name: Login to Amazon ECR Public
       id: login-ecr-public
       uses: aws-actions/amazon-ecr-login@v1
       with:
-        registry-type: 'public'
+        registry-type: public
 
     - name: Build, tag, and push docker image to Amazon ECR Public
       env:
@@ -51,7 +52,7 @@ Logging in to Amazon ECR Public, then building and pushing a Docker image:
         docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
 ```
 
-Logging in to Amazon ECR Private, then packaging and pushing a Helm chart:
+Login to Amazon ECR Private, then package and push a Helm chart:
 ```yaml
     - name: Login to Amazon ECR
       id: login-ecr
@@ -66,13 +67,13 @@ Logging in to Amazon ECR Private, then packaging and pushing a Helm chart:
         helm push $REPOSITORY-0.1.0.tgz oci://$REGISTRY
 ```
 
-Logging in to Amazon ECR Public, then packaging and pushing a Helm chart:
+Login to Amazon ECR Public, then package and push a Helm chart:
 ```yaml
     - name: Login to Amazon ECR Public
       id: login-ecr-public
       uses: aws-actions/amazon-ecr-login@v1
       with:
-        registry-type: 'public'
+        registry-type: public
 
     - name: Package and push helm chart to Amazon ECR Public
       env:
@@ -244,6 +245,27 @@ The following minimum permissions are required for pushing an image to an ECR Pu
   ]
 }
 ```
+
+## Troubleshooting
+
+### Configure credentials
+
+`Inaccessible host: 'api.ecr-public.aws-region-1.amazonaws.com' at port 'undefined'. This service may not be available in the 'aws-region-1' region.`
+
+- The `AWS_DEFAULT_REGION` environment variable is configured as a region where ECR Public isn't available.
+- ECR Public can only be logged into from the `us-east-1` region. In the `aws-actions/configure-aws-credentials` action, the `aws-region` input must be `us-east-1`.
+
+`GetAuthorizationToken command is only supported in us-east-1.`
+
+- The `AWS_DEFAULT_REGION` environment variable is configured as `us-west-2`.
+- ECR Public can only be logged into from the `us-east-1` region. In the `aws-actions/configure-aws-credentials` action, the `aws-region` input must be `us-east-1`.
+
+### Inputs
+
+`Invalid parameter at 'registryIds' failed to satisfy constraint: 'Member must satisfy constraint: [Member must satisfy regular expression pattern: [0-9]{12}]'`
+
+- One of the registries you provided in the `registries` input isn't a sequence of 12 digits
+- For users providing only a single registry ID in the `registries` input, if the ID begins with a 0, make sure to enclose it in quotes. GitHub Actions will read an input as a number if all of the characters in the input are digits. So if your registry ID begins with a 0, the 0 will be truncated. See issue [#225](https://github.com/aws-actions/amazon-ecr-login/issues/225).
 
 ## License Summary
 

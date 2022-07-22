@@ -15,14 +15,15 @@ inputs:
       Whether to skip explicit logout of the registries during post-job cleanup.
       Exists for backward compatibility on self-hosted runners.
       Not recommended.
+      Options: ['true', 'false']
     required: false
     default: 'false'
   registry-type:
     description: >-
       Which ECR registry type to log into.
-      Options: 'private', 'public'
+      Options: [private, public]
     required: false
-    default: 'private'
+    default: private
 outputs:
   registry:
     description: >-
