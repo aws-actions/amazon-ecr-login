@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.5.1](https://github.com/aws-actions/amazon-ecr-login/compare/v1.5.0...v1.5.1) (2022-08-04)
+
+
+### Bug Fixes
+
+* reverted change that masked Docker credentials ([7d073b6](https://github.com/aws-actions/amazon-ecr-login/commit/7d073b66cc2799eb766b698980d716db7e62a8b7))
+
 ## [1.5.0](https://github.com/aws-actions/amazon-ecr-login/compare/v1.4.0...v1.5.0) (2022-06-27)
 
 
