@@ -133,7 +133,6 @@ async function run() {
 
       // Output docker username and password
       const secretSuffix = replaceSpecialCharacters(registryUri);
-      core.setSecret(creds[1]);
       core.setOutput(`${OUTPUTS.dockerUsername}_${secretSuffix}`, creds[0]);
       core.setOutput(`${OUTPUTS.dockerPassword}_${secretSuffix}`, creds[1]);
 
