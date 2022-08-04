@@ -3,7 +3,7 @@ on:
     branches:
       - main
 
-name: Package
+name: Package and Release
 
 jobs:
   check:
@@ -25,3 +25,9 @@ jobs:
         git add dist/
         git commit -m "chore: Update dist" || echo "No changes to commit"
         git push origin HEAD:main
+    - name: Release
+      uses: google-github-actions/release-please-action@v3
+      with:
+        release-type: node
+        package-name: aws-actions-amazon-ecr-login
+
