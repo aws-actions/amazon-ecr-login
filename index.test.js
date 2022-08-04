@@ -71,7 +71,6 @@ describe('Login to ECR', () => {
       expect.anything());
     expect(core.saveState).toHaveBeenNthCalledWith(1, 'registries', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
     expect(exec.exec).toHaveBeenCalledTimes(1);
-    expect(core.setSecret).toHaveBeenCalledTimes(1);
     expect(core.setOutput).toHaveBeenCalledTimes(3);
     expect(core.saveState).toHaveBeenCalledTimes(1);
   });
@@ -117,7 +116,6 @@ describe('Login to ECR', () => {
       expect.anything());
     expect(core.saveState).toHaveBeenNthCalledWith(1, 'registries', '123456789012.dkr.ecr.aws-region-1.amazonaws.com,111111111111.dkr.ecr.aws-region-1.amazonaws.com');
     expect(exec.exec).toHaveBeenCalledTimes(2);
-    expect(core.setSecret).toHaveBeenCalledTimes(2);
     expect(core.setOutput).toHaveBeenCalledTimes(4);
     expect(core.saveState).toHaveBeenCalledTimes(1);
   });
@@ -157,7 +155,6 @@ describe('Login to ECR', () => {
       expect.anything());
     expect(core.saveState).toHaveBeenCalledWith('registries', '111111111111.dkr.ecr.aws-region-1.amazonaws.com');
     expect(exec.exec).toHaveBeenCalledTimes(1);
-    expect(core.setSecret).toHaveBeenCalledTimes(1);
     expect(core.setOutput).toHaveBeenCalledTimes(3);
     expect(core.saveState).toHaveBeenCalledTimes(1);
   });
@@ -387,10 +384,7 @@ describe('Login to ECR', () => {
 
     await run();
 
-    expect(core.setSecret).toHaveBeenCalledTimes(2);
     expect(core.setOutput).toHaveBeenCalledTimes(4);
-    expect(core.setSecret).toHaveBeenNthCalledWith(1, 'world');
-    expect(core.setSecret).toHaveBeenNthCalledWith(2, 'bar');
     expect(core.setOutput).toHaveBeenNthCalledWith(1, 'docker_username_123456789012_dkr_ecr_aws_region_1_amazonaws_com', 'hello');
     expect(core.setOutput).toHaveBeenNthCalledWith(2, 'docker_password_123456789012_dkr_ecr_aws_region_1_amazonaws_com', 'world');
     expect(core.setOutput).toHaveBeenNthCalledWith(3, 'docker_username_111111111111_dkr_ecr_aws_region_1_amazonaws_com', 'foo');
@@ -430,7 +424,6 @@ describe('Login to ECR Public', () => {
       expect.anything());
     expect(core.saveState).toHaveBeenNthCalledWith(1, 'registries', 'public.ecr.aws');
     expect(exec.exec).toHaveBeenCalledTimes(1);
-    expect(core.setSecret).toHaveBeenCalledTimes(1);
     expect(core.setOutput).toHaveBeenCalledTimes(3);
     expect(core.saveState).toHaveBeenCalledTimes(1);
   });
@@ -461,7 +454,6 @@ describe('Login to ECR Public', () => {
       expect.anything());
     expect(core.saveState).toHaveBeenCalledWith('registries', 'public.ecr.aws');
     expect(exec.exec).toHaveBeenCalledTimes(1);
-    expect(core.setSecret).toHaveBeenCalledTimes(1);
     expect(core.setOutput).toHaveBeenCalledTimes(3);
     expect(core.saveState).toHaveBeenCalledTimes(1);
   });
@@ -544,9 +536,7 @@ describe('Login to ECR Public', () => {
   test('sets the Actions outputs to the docker credentials', async () => {
     await run();
 
-    expect(core.setSecret).toHaveBeenCalledTimes(1);
     expect(core.setOutput).toHaveBeenCalledTimes(3);
-    expect(core.setSecret).toHaveBeenNthCalledWith(1, 'world');
     expect(core.setOutput).toHaveBeenNthCalledWith(2, 'docker_username_public_ecr_aws', 'hello');
     expect(core.setOutput).toHaveBeenNthCalledWith(3, 'docker_password_public_ecr_aws', 'world');
   });
