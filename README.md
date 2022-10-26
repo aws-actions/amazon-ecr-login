@@ -17,75 +17,128 @@ Logs in the local Docker client to one or more Amazon ECR Private registries or 
 
 ## Examples of Usage
 
+### Building and pushing an image
+
+Before each of the following examples, make sure to include the following:
+```yaml
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1 # More information on this action can be found below in the 'AWS Credentials' section
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/my-github-actions-role
+          aws-region: aws-region-1
+```
+
 Login to Amazon ECR Private, then build and push a Docker image:
 ```yaml
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build, tag, and push docker image to Amazon ECR
-      env:
-        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        REPOSITORY: my-ecr-repo
-        IMAGE_TAG: ${{ github.sha }}
-      run: |
-        docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
-        docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+      - name: Build, tag, and push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: my-ecr-repo
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 ```
 
 Login to Amazon ECR Public, then build and push a Docker image:
 ```yaml
-    - name: Login to Amazon ECR Public
-      id: login-ecr-public
-      uses: aws-actions/amazon-ecr-login@v1
-      with:
-        registry-type: public
+      - name: Login to Amazon ECR Public
+        id: login-ecr-public
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
 
-    - name: Build, tag, and push docker image to Amazon ECR Public
-      env:
-        REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
-        REGISTRY_ALIAS: my-ecr-public-registry-alias
-        REPOSITORY: my-ecr-public-repo
-        IMAGE_TAG: ${{ github.sha }}
-      run: |
-        docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
-        docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
+      - name: Build, tag, and push docker image to Amazon ECR Public
+        env:
+          REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
+          REGISTRY_ALIAS: my-ecr-public-registry-alias
+          REPOSITORY: my-ecr-public-repo
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
 ```
 
 Login to Amazon ECR Private, then package and push a Helm chart:
 ```yaml
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Package and push helm chart to Amazon ECR
-      env:
-        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        REPOSITORY: my-ecr-repo
-      run: |
-        helm package $REPOSITORY
-        helm push $REPOSITORY-0.1.0.tgz oci://$REGISTRY
+      - name: Package and push helm chart to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: my-ecr-repo
+        run: |
+          helm package $REPOSITORY
+          helm push $REPOSITORY-0.1.0.tgz oci://$REGISTRY
 ```
 
 Login to Amazon ECR Public, then package and push a Helm chart:
 ```yaml
-    - name: Login to Amazon ECR Public
-      id: login-ecr-public
-      uses: aws-actions/amazon-ecr-login@v1
-      with:
-        registry-type: public
+      - name: Login to Amazon ECR Public
+        id: login-ecr-public
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
 
-    - name: Package and push helm chart to Amazon ECR Public
-      env:
-        REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
-        REGISTRY_ALIAS: my-ecr-public-registry-alias
-        REPOSITORY: my-ecr-public-repo
-      run: |
-        helm package $REPOSITORY
-        helm push $REPOSITORY-0.1.0.tgz oci://$REGISTRY/$REGISTRY_ALIAS
+      - name: Package and push helm chart to Amazon ECR Public
+        env:
+          REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
+          REGISTRY_ALIAS: my-ecr-public-registry-alias
+          REPOSITORY: my-ecr-public-repo
+        run: |
+          helm package $REPOSITORY
+          helm push $REPOSITORY-0.1.0.tgz oci://$REGISTRY/$REGISTRY_ALIAS
 ```
 
-Helm uses the same credential store as Docker. So Helm can authenticate with the same credentials that you use for Docker.
+(Helm uses the same credential store as Docker, so Helm can authenticate with the same credentials that you use for Docker)
+
+### Using an image as a service
+
+Login to Amazon ECR Private, then use the outputted Docker credentials to run your private image as a service in another job
+```yaml
+jobs:
+  login-to-amazon-ecr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/my-github-actions-role
+          aws-region: us-east-1
+          mask-aws-account-id: 'false'
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+    outputs:
+      registry: ${{ steps.login-ecr.outputs.registry }}
+      docker_username: ${{ steps.login-ecr.outputs.docker_username_123456789012_dkr_ecr_us_east_1_amazonaws_com }} # More information on these outputs can be found below in the 'Docker Credentials' section
+      docker_password: ${{ steps.login-ecr.outputs.docker_password_123456789012_dkr_ecr_us_east_1_amazonaws_com }}
+  
+  run-with-internal-service:
+    name: Run something with an internal image as a service
+    needs: login-to-amazon-ecr
+    runs-on: ubuntu-latest
+    services:
+      internal-service:
+        image: ${{ needs.login-to-amazon-ecr.outputs.registry }}/my-ecr-repo:latest
+        credentials:
+          username: ${{ needs.login-to-amazon-ecr.outputs.docker_username }}
+          password: ${{ needs.login-to-amazon-ecr.outputs.docker_password }}
+        ports:
+          - '80:80'
+    steps:
+      - name: Run steps in container
+        run: echo "run steps in container"
+```
 
 See [action.yml](action.yml) for the full documentation for this action's inputs and outputs.
 
@@ -96,15 +149,15 @@ See [action.yml](action.yml) for the full documentation for this action's inputs
 This action relies on the [default behavior of the AWS SDK for Javascript](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-credentials-node.html) to determine AWS credentials and region.  Use [the `aws-actions/configure-aws-credentials` action](https://github.com/aws-actions/configure-aws-credentials) to configure the GitHub Actions environment with a role using GitHub's OIDC provider and your desired region.
 
 ```yaml
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        role-to-assume: arn:aws:iam::123456789012:role/my-github-actions-role
-        aws-region: us-east-1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/my-github-actions-role
+          aws-region: us-east-1
 
-    - name: Login to Amazon ECR Private
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR Private
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 ```
 
 We recommend following [Amazon IAM best practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html) when using AWS services in GitHub Actions workflows, including:
