@@ -19,7 +19,7 @@ Logs in the local Docker client to one or more Amazon ECR Private registries or 
 
 ### Building and pushing an image
 
-Before each of the following examples, make sure to include the following:
+#### Before each of the following examples, make sure to include the following:
 ```yaml
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -31,7 +31,7 @@ Before each of the following examples, make sure to include the following:
           aws-region: aws-region-1
 ```
 
-Login to Amazon ECR Private, then build and push a Docker image:
+#### Login to Amazon ECR Private, then build and push a Docker image:
 ```yaml
       - name: Login to Amazon ECR
         id: login-ecr
@@ -47,7 +47,7 @@ Login to Amazon ECR Private, then build and push a Docker image:
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 ```
 
-Login to Amazon ECR Public, then build and push a Docker image:
+#### Login to Amazon ECR Public, then build and push a Docker image:
 ```yaml
       - name: Login to Amazon ECR Public
         id: login-ecr-public
@@ -66,7 +66,7 @@ Login to Amazon ECR Public, then build and push a Docker image:
           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$IMAGE_TAG
 ```
 
-Login to Amazon ECR Private, then package and push a Helm chart:
+#### Login to Amazon ECR Private, then package and push a Helm chart:
 ```yaml
       - name: Login to Amazon ECR
         id: login-ecr
@@ -81,7 +81,7 @@ Login to Amazon ECR Private, then package and push a Helm chart:
           helm push $REPOSITORY-0.1.0.tgz oci://$REGISTRY
 ```
 
-Login to Amazon ECR Public, then package and push a Helm chart:
+#### Login to Amazon ECR Public, then package and push a Helm chart:
 ```yaml
       - name: Login to Amazon ECR Public
         id: login-ecr-public
@@ -100,6 +100,28 @@ Login to Amazon ECR Public, then package and push a Helm chart:
 ```
 
 (Helm uses the same credential store as Docker, so Helm can authenticate with the same credentials that you use for Docker)
+
+#### Login to ECR on multiple AWS accounts
+
+```yaml
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/my-github-actions-role
+          aws-region: aws-region-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registries: "123456789012,998877665544"
+```
+
+The repository on account `998877665544` needs to explicitly grant access to role:
+`arn:aws:iam::123456789012:role/my-github-actions-role` in order for cross-account access to work
+
+Please refer to [AWS docs](https://aws.amazon.com/premiumsupport/knowledge-center/secondary-account-access-ecr/)
+for details on how to configure ECR policies
 
 ### Using an image as a service
 
@@ -122,7 +144,7 @@ jobs:
       registry: ${{ steps.login-ecr.outputs.registry }}
       docker_username: ${{ steps.login-ecr.outputs.docker_username_123456789012_dkr_ecr_us_east_1_amazonaws_com }} # More information on these outputs can be found below in the 'Docker Credentials' section
       docker_password: ${{ steps.login-ecr.outputs.docker_password_123456789012_dkr_ecr_us_east_1_amazonaws_com }}
-  
+
   run-with-internal-service:
     name: Run something with an internal image as a service
     needs: login-to-amazon-ecr
