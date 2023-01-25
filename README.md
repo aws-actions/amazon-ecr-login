@@ -6,7 +6,7 @@ Logs in the local Docker client to one or more Amazon ECR Private registries or 
 
 <!-- toc -->
 
-- [Example of Usage](#example-of-usage)
+- [Example of Usage](#examples-of-usage)
 - [Credentials and Region](#credentials-and-region)
 - [Permissions](#permissions)
 - [Troubleshooting](#troubleshooting)
