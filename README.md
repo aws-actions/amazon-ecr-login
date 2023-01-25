@@ -315,7 +315,7 @@ The following minimum permissions are required for pushing an image to an ECR Pu
         "ecr-public:PutImage",
         "ecr-public:UploadLayerPart"
       ],
-      "Resource": "arn:aws:ecr-public:us-east-1:123456789012:repository/my-ecr-public-repo"
+      "Resource": "arn:aws:ecr-public::123456789012:repository/my-ecr-public-repo"
     }
   ]
 }
