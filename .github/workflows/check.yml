@@ -1,5 +1,7 @@
 on:
-  [pull_request]
+  push:
+    branches:
+      - 'main'
 
 name: Check
 
