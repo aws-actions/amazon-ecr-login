@@ -1,6 +1,8 @@
 const {run, replaceSpecialCharacters} = require('./index.js');
 const core = require('@actions/core');
 const exec = require('@actions/exec');
+const aws = require('aws-sdk');
+const proxy = require('https-proxy-agent');
 
 jest.mock('@actions/core');
 jest.mock('@actions/exec');
@@ -32,7 +34,10 @@ jest.mock('aws-sdk', () => {
     })),
     ECRPUBLIC: jest.fn(() => ({
       getAuthorizationToken: mockEcrPublicGetAuthToken
-    }))
+    })),
+    config: {
+      update: jest.fn(),
+    }
   };
 });
 
@@ -539,5 +544,73 @@ describe('Login to ECR Public', () => {
     expect(core.setOutput).toHaveBeenCalledTimes(3);
     expect(core.setOutput).toHaveBeenNthCalledWith(2, 'docker_username_public_ecr_aws', 'hello');
     expect(core.setOutput).toHaveBeenNthCalledWith(3, 'docker_password_public_ecr_aws', 'world');
+  });
+
+  describe('proxy settings', () => {
+    afterEach(() => {
+      process.env = {};
+    });
+
+    test('setting proxy with actions input', async () => {
+      const EXPECTED_PROXY = 'http://test.me'
+      core.getInput = jest
+        .fn()
+        .mockImplementation(
+          mockGetInput({ ...ECR_DEFAULT_INPUTS, 'http-proxy': EXPECTED_PROXY })
+        );
+
+      await run();
+
+      expect(aws.config.update).toHaveBeenCalledTimes(1);
+      expect(aws.config.update).toHaveBeenCalledWith({
+        httpOptions: { agent: proxy(EXPECTED_PROXY) }
+      });
+    });
+    test('setting proxy from environment vars', async () => {
+      const EXPECTED_PROXY = 'http://test.me'
+      process.env.HTTP_PROXY = EXPECTED_PROXY;
+      core.getInput = jest
+        .fn()
+        .mockImplementation(
+          mockGetInput({ ...ECR_DEFAULT_INPUTS })
+        );
+
+      await run();
+
+      expect(aws.config.update).toHaveBeenCalledTimes(1);
+      expect(aws.config.update).toHaveBeenCalledWith({
+        httpOptions: { agent: proxy(EXPECTED_PROXY) }
+      });
+    });
+
+    test('setting proxy - prefer action input', async () => {
+      const EXPECTED_PROXY = 'http://test.me'
+      const FALSE_PROXY = 'http://env.me'
+      process.env.HTTP_PROXY = FALSE_PROXY;
+      core.getInput = jest
+        .fn()
+        .mockImplementation(
+          mockGetInput({ ...ECR_DEFAULT_INPUTS, 'http-proxy': EXPECTED_PROXY })
+        );
+
+      await run();
+
+      expect(aws.config.update).toHaveBeenCalledTimes(1);
+      expect(aws.config.update).toHaveBeenCalledWith({
+        httpOptions: { agent: proxy(EXPECTED_PROXY) }
+      });
+    });
+
+    test('ignoring proxy - without anything set', async () => {
+      core.getInput = jest
+        .fn()
+        .mockImplementation(
+          mockGetInput({ ...ECR_DEFAULT_INPUTS})
+        );
+
+      await run();
+
+      expect(aws.config.update).toHaveBeenCalledTimes(0);
+    });
   });
 });
