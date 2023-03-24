@@ -88,6 +88,26 @@ async function getEcrPublicAuthTokenWrapper(authTokenRequest) {
   };
 }
 
+function configureProxy(proxyServer) {
+  const proxyFromEnv = process.env.HTTP_PROXY || process.env.http_proxy;
+
+  if (proxyFromEnv || proxyServer) {
+    let proxyToSet = null;
+
+    if (proxyServer){
+      console.log(`Setting proxy from actions input: ${proxyServer}`);
+      proxyToSet = proxyServer;
+    } else {
+      console.log(`Setting proxy from environment: ${proxyFromEnv}`);
+      proxyToSet = proxyFromEnv;
+    }
+
+    aws.config.update({
+      httpOptions: { agent: proxy(proxyToSet) }
+    });
+  }
+}
+
 function replaceSpecialCharacters(registryUri) {
   return registryUri.replace(/[^a-zA-Z0-9_]+/g, '_');
 }
@@ -98,6 +118,11 @@ async function run() {
   const registries = core.getInput(INPUTS.registries, { required: false });
   const registryType = core.getInput(INPUTS.registryType, { required: false }).toLowerCase() || REGISTRY_TYPES.private;
   const httpProxy = core.getInput(INPUTS.httpProxy, { required: false });
+
+  const proxyServer = core.getInput('http-proxy', { required: false });
+
+  // Configures proxy
+ // configureProxy(proxyServer);
 
   const registryUriState = [];
 

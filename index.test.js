@@ -619,4 +619,72 @@ describe('Login to ECR Public', () => {
       expect(core.setFailed).toHaveBeenCalled();
     });
   });
+
+  describe('proxy settings', () => {
+    afterEach(() => {
+      process.env = {};
+    });
+
+    test('setting proxy with actions input', async () => {
+      const EXPECTED_PROXY = 'http://test.me'
+      core.getInput = jest
+        .fn()
+        .mockImplementation(
+          mockGetInput({ ...ECR_DEFAULT_INPUTS, 'http-proxy': EXPECTED_PROXY })
+        );
+
+      await run();
+
+      expect(aws.config.update).toHaveBeenCalledTimes(1);
+      expect(aws.config.update).toHaveBeenCalledWith({
+        httpOptions: { agent: proxy(EXPECTED_PROXY) }
+      });
+    });
+    test('setting proxy from environment vars', async () => {
+      const EXPECTED_PROXY = 'http://test.me'
+      process.env.HTTP_PROXY = EXPECTED_PROXY;
+      core.getInput = jest
+        .fn()
+        .mockImplementation(
+          mockGetInput({ ...ECR_DEFAULT_INPUTS })
+        );
+
+      await run();
+
+      expect(aws.config.update).toHaveBeenCalledTimes(1);
+      expect(aws.config.update).toHaveBeenCalledWith({
+        httpOptions: { agent: proxy(EXPECTED_PROXY) }
+      });
+    });
+
+    test('setting proxy - prefer action input', async () => {
+      const EXPECTED_PROXY = 'http://test.me'
+      const FALSE_PROXY = 'http://env.me'
+      process.env.HTTP_PROXY = FALSE_PROXY;
+      core.getInput = jest
+        .fn()
+        .mockImplementation(
+          mockGetInput({ ...ECR_DEFAULT_INPUTS, 'http-proxy': EXPECTED_PROXY })
+        );
+
+      await run();
+
+      expect(aws.config.update).toHaveBeenCalledTimes(1);
+      expect(aws.config.update).toHaveBeenCalledWith({
+        httpOptions: { agent: proxy(EXPECTED_PROXY) }
+      });
+    });
+
+    test('ignoring proxy - without anything set', async () => {
+      core.getInput = jest
+        .fn()
+        .mockImplementation(
+          mockGetInput({ ...ECR_DEFAULT_INPUTS})
+        );
+
+      await run();
+
+      expect(aws.config.update).toHaveBeenCalledTimes(0);
+    });
+  });
 });
