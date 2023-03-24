@@ -321,6 +321,31 @@ The following minimum permissions are required for pushing an image to an ECR Pu
 }
 ```
 
+## Self-Hosted Runners
+
+### Proxy Configuration
+
+If you run in self-hosted environments and in secured environments where you need to use a specific proxy you can set it in the action manually.
+
+Additionally this action will always consider an already configured proxy in the environment.
+
+Manually configured proxy:
+
+```yaml
+uses: aws-actions/amazon-ecr-logins@v1.6.0
+with:
+  http-proxy: "http://companydomain.com:3128"
+````
+
+Proxy configured via an environment variable:
+
+```shell
+# Your environment configuration
+HTTP_PROXY="http://companydomain.com:3128"
+```
+
+The action will read the underlying proxy configuration from the environment and you don't need to configure it in the action.
+
 ## Troubleshooting
 
 ### Configure credentials
