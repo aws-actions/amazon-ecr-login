@@ -7,8 +7,16 @@ Logs in the local Docker client to one or more Amazon ECR Private registries or 
 <!-- toc -->
 
 - [Example of Usage](#examples-of-usage)
-- [Credentials and Region](#credentials-and-region)
+  - [Building and pushing an image](#building-and-pushing-an-image)
+  - [Using an image as a service](#using-an-image-as-a-service)
+- [Credentials](#credentials)
+  - [AWS credentials](#aws-credentials)
+  - [Docker credentials](#docker-credentials)
+- [Self-Hosted Runners](#self-hosted-runners)
+  - [Proxy configuration](#proxy-configuration)
 - [Permissions](#permissions)
+  - [ECR Private](#ecr-private)
+  - [ECR Public](#ecr-public)
 - [Troubleshooting](#troubleshooting)
 - [License Summary](#license-summary)
 - [Security Disclosures](#security-disclosures)
@@ -164,7 +172,7 @@ jobs:
 
 See [action.yml](action.yml) for the full documentation for this action's inputs and outputs.
 
-## Credentials and Region
+## Credentials
 
 ### AWS Credentials
 
@@ -203,6 +211,29 @@ If using ECR Public:
 - Docker password output: `docker_password_public_ecr_aws`
 
 To push Helm charts, you can also login through Docker. By default, Helm can authenticate with the same credentials that you use for Docker.
+
+## Self-Hosted Runners
+
+### Proxy Configuration
+
+If you run in self-hosted environments and/or in secured environments where you need to use a specific proxy, you can set it in the action manually.
+
+Additionally, this action will always consider an already configured proxy in the environment.
+
+Proxy configured via action input:
+```yaml
+uses: aws-actions/amazon-ecr-logins@v1.6.0
+with:
+  http-proxy: "http://companydomain.com:3128"
+````
+
+Proxy configured via an environment variable:
+```shell
+# Your environment configuration
+HTTP_PROXY="http://companydomain.com:3128"
+```
+
+The action will read the underlying proxy configuration from the environment, and you don't need to configure it in the action.
 
 ## Permissions
 
