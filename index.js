@@ -1,6 +1,7 @@
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 const aws = require('aws-sdk');
+const proxy = require('https-proxy-agent');
 
 const ECR_LOGIN_GITHUB_ACTION_USER_AGENT = 'amazon-ecr-login-for-github-actions';
 const ECR_PUBLIC_REGISTRY_URI = 'public.ecr.aws';
@@ -8,7 +9,8 @@ const ECR_PUBLIC_REGISTRY_URI = 'public.ecr.aws';
 const INPUTS = {
   skipLogout: 'skip-logout',
   registries: 'registries',
-  registryType: 'registry-type'
+  registryType: 'registry-type',
+  httpProxy: 'http-proxy'
 };
 
 const OUTPUTS = {
@@ -27,8 +29,24 @@ const REGISTRY_TYPES = {
 };
 
 
-function replaceSpecialCharacters(registryUri) {
-  return registryUri.replace(/[^a-zA-Z0-9_]+/g, '_');
+function configureProxy(httpProxy) {
+  const proxyFromEnv = process.env.HTTP_PROXY || process.env.http_proxy;
+
+  if (httpProxy || proxyFromEnv) {
+    let proxyToSet;
+
+    if (httpProxy){
+      core.info(`Setting proxy from action input: ${httpProxy}`);
+      proxyToSet = httpProxy;
+    } else {
+      core.info(`Setting proxy from environment: ${proxyFromEnv}`);
+      proxyToSet = proxyFromEnv;
+    }
+
+    aws.config.update({
+      httpOptions: { agent: proxy(proxyToSet) }
+    });
+  }
 }
 
 async function getEcrAuthTokenWrapper(authTokenRequest) {
@@ -70,11 +88,16 @@ async function getEcrPublicAuthTokenWrapper(authTokenRequest) {
   };
 }
 
+function replaceSpecialCharacters(registryUri) {
+  return registryUri.replace(/[^a-zA-Z0-9_]+/g, '_');
+}
+
 async function run() {
   // Get inputs
   const skipLogout = core.getInput(INPUTS.skipLogout, { required: false }).toLowerCase() === 'true';
   const registries = core.getInput(INPUTS.registries, { required: false });
   const registryType = core.getInput(INPUTS.registryType, { required: false }).toLowerCase() || REGISTRY_TYPES.private;
+  const httpProxy = core.getInput(INPUTS.httpProxy, { required: false });
 
   const registryUriState = [];
 
@@ -82,6 +105,9 @@ async function run() {
     if (registryType !== REGISTRY_TYPES.private && registryType !== REGISTRY_TYPES.public) {
       throw new Error(`Invalid input for '${INPUTS.registryType}', possible options are [${REGISTRY_TYPES.private}, ${REGISTRY_TYPES.public}]`);
     }
+
+    // Configures proxy
+    configureProxy(httpProxy);
 
     // Get the ECR/ECR Public authorization token(s)
     const authTokenRequest = {};

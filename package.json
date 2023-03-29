@@ -27,7 +27,8 @@
   "dependencies": {
     "@actions/core": "^1.10.0",
     "@actions/exec": "^1.1.1",
-    "aws-sdk": "^2.1345.0"
+    "aws-sdk": "^2.1345.0",
+    "https-proxy-agent": "^5.0.1"
   },
   "devDependencies": {
     "@zeit/ncc": "^0.22.3",

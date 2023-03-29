@@ -24,6 +24,10 @@ inputs:
       Options: [private, public]
     required: false
     default: private
+  http-proxy:
+    description: >-
+      Proxy to use for the AWS SDK agent.
+    required: false
 outputs:
   registry:
     description: >-
