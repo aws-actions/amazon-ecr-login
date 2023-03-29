@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/aws-actions/amazon-ecr-login/compare/v1.5.3...v1.6.0) (2023-03-29)
+
+
+### Features
+
+* add support for HTTP(s) proxy ([454a99d](https://github.com/aws-actions/amazon-ecr-login/commit/454a99d5dec5aa76513a9d0085a51722feed79b8))
+
 ### [1.5.3](https://github.com/aws-actions/amazon-ecr-login/compare/v1.5.2...v1.5.3) (2022-10-29)
 
 ### [1.5.2](https://github.com/aws-actions/amazon-ecr-login/compare/v1.5.1...v1.5.2) (2022-10-18)
