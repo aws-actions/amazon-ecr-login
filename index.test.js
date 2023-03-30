@@ -16,13 +16,15 @@ function mockGetInput(requestResponse) {
 const ECR_DEFAULT_INPUTS = {
   'registries': '',
   'skip-logout': '',
-  'registry-type': ''
+  'registry-type': '',
+  'http-proxy': ''
 };
 
 const ECR_PUBLIC_DEFAULT_INPUTS = {
   'registries': '',
   'skip-logout': '',
-  'registry-type': 'public'
+  'registry-type': 'public',
+  'http-proxy': ''
 };
 
 const mockEcrGetAuthToken = jest.fn();
