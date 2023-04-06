@@ -382,6 +382,7 @@ describe('Login to ECR', () => {
 describe('Login to ECR Public', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    ecrPublicMock.reset();
 
     core.getInput = jest.fn().mockImplementation(mockGetInput(ECR_PUBLIC_DEFAULT_INPUTS));
 
