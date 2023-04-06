@@ -29,8 +29,6 @@ const REGISTRY_TYPES = {
   public: 'public'
 };
 
-let httpOptions;
-
 function configureProxy(httpProxy) {
   const proxyFromEnv = process.env.HTTP_PROXY || process.env.http_proxy;
 
@@ -45,11 +43,13 @@ function configureProxy(httpProxy) {
       proxyToSet = proxyFromEnv;
     }
 
-    httpOptions = { agent: proxy(proxyToSet) };
+    const httpOptions = { agent: proxy(proxyToSet) };
+    return httpOptions;
   }
+  return null;
 }
 
-async function getEcrAuthTokenWrapper(authTokenRequest) {
+async function getEcrAuthTokenWrapper(authTokenRequest, httpOptions) {
   const ecr = new ECRClient({
     customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT
   });
@@ -66,7 +66,7 @@ async function getEcrAuthTokenWrapper(authTokenRequest) {
   return authTokenResponse;
 }
 
-async function getEcrPublicAuthTokenWrapper(authTokenRequest) {
+async function getEcrPublicAuthTokenWrapper(authTokenRequest, httpOptions) {
   const ecrPublic = new ECRPUBLICClient({
     customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT
   });
@@ -109,7 +109,7 @@ async function run() {
     }
 
     // Configures proxy
-    configureProxy(httpProxy);
+    const proxyOptions = configureProxy(httpProxy);
 
     // Get the ECR/ECR Public authorization token(s)
     const authTokenRequest = {};
@@ -122,8 +122,8 @@ async function run() {
       authTokenRequest.registryIds = registryIds;
     }
     const authTokenResponse = registryType === REGISTRY_TYPES.private ?
-      await getEcrAuthTokenWrapper(authTokenRequest) :
-      await getEcrPublicAuthTokenWrapper(authTokenRequest);
+      await getEcrAuthTokenWrapper(authTokenRequest, proxyOptions) :
+      await getEcrPublicAuthTokenWrapper(authTokenRequest, proxyOptions);
 
     // Login to each registry
     for (const authData of authTokenResponse.authorizationData) {
@@ -181,6 +181,7 @@ async function run() {
 }
 
 module.exports = {
+  configureProxy,
   run,
   replaceSpecialCharacters
 };
