@@ -222,7 +222,7 @@ Additionally, this action will always consider an already configured proxy in th
 
 Proxy configured via action input:
 ```yaml
-uses: aws-actions/amazon-ecr-logins@v1.6.0
+uses: aws-actions/amazon-ecr-login@v1.6.0
 with:
   http-proxy: "http://companydomain.com:3128"
 ````
