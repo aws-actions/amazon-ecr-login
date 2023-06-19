@@ -1,8 +1,9 @@
-const {run, replaceSpecialCharacters} = require('./index.js');
+const { run, replaceSpecialCharacters, configureProxy } = require('./index.js');
 const core = require('@actions/core');
 const exec = require('@actions/exec');
-const aws = require('aws-sdk');
-const proxy = require('https-proxy-agent');
+const { mockClient } = require('aws-sdk-client-mock');
+const { ECRClient, GetAuthorizationTokenCommand } = require('@aws-sdk/client-ecr');
+const { ECRPUBLICClient, GetAuthorizationTokenCommand: GetAuthorizationTokenCommandPublic } = require('@aws-sdk/client-ecr-public');
 
 jest.mock('@actions/core');
 jest.mock('@actions/exec');
@@ -27,21 +28,23 @@ const ECR_PUBLIC_DEFAULT_INPUTS = {
   'http-proxy': ''
 };
 
-const mockEcrGetAuthToken = jest.fn();
-const mockEcrPublicGetAuthToken = jest.fn();
-jest.mock('aws-sdk', () => {
-  return {
-    ECR: jest.fn(() => ({
-      getAuthorizationToken: mockEcrGetAuthToken
-    })),
-    ECRPUBLIC: jest.fn(() => ({
-      getAuthorizationToken: mockEcrPublicGetAuthToken
-    })),
-    config: {
-      update: jest.fn(),
+const defaultAuthToken = {
+  authorizationData: {
+    authorizationToken: Buffer.from('hello:world').toString('base64')
+  }
+};
+
+const defaultOutputToken = {
+  authorizationData: [
+    {
+      authorizationToken: Buffer.from('hello:world').toString('base64'),
+      proxyEndpoint: 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'
     }
-  };
-});
+  ]
+};
+
+const ecrMock = mockClient(ECRClient);
+const ecrPublicMock = mockClient(ECRPUBLICClient);
 
 describe('Login to ECR', () => {
   beforeEach(() => {
@@ -49,28 +52,17 @@ describe('Login to ECR', () => {
 
     core.getInput = jest.fn().mockImplementation(mockGetInput(ECR_DEFAULT_INPUTS));
 
-    mockEcrGetAuthToken.mockImplementation(() => {
-      return {
-        promise() {
-          return Promise.resolve({
-            authorizationData: [
-              {
-                authorizationToken: Buffer.from('hello:world').toString('base64'),
-                proxyEndpoint: 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'
-              }
-            ]
-          });
-        }
-      };
-    });
+    ecrMock.reset();
 
     exec.exec.mockReturnValue(0);
   });
 
   test('gets auth token from ECR and logins the Docker client for the default registry', async () => {
+    ecrMock.on(GetAuthorizationTokenCommand).resolves(defaultOutputToken);
+
     await run();
 
-    expect(mockEcrGetAuthToken).toHaveBeenCalledWith({});
+    ecrMock.commandCalls(GetAuthorizationTokenCommand, {});
     expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
     expect(exec.exec).toHaveBeenNthCalledWith(1,
       'docker',
@@ -84,35 +76,30 @@ describe('Login to ECR', () => {
 
   test('gets auth token from ECR and logins the Docker client for each provided registry', async () => {
     const mockInputs = {
-      'registries' : '123456789012,111111111111',
+      'registries': '123456789012,111111111111',
       'skip-logout': '',
       'registry-type': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
-    mockEcrGetAuthToken.mockImplementation(() => {
-      return {
-        promise() {
-          return Promise.resolve({
-            authorizationData: [
-              {
-                authorizationToken: Buffer.from('hello:world').toString('base64'),
-                proxyEndpoint: 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'
-              },
-              {
-                authorizationToken: Buffer.from('foo:bar').toString('base64'),
-                proxyEndpoint: 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'
-              }
-            ]
-          });
+    ecrMock.on(GetAuthorizationTokenCommand).resolves({
+      authorizationData: [
+        {
+          authorizationToken: Buffer.from('hello:world').toString('base64'),
+          proxyEndpoint: 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'
+        },
+        {
+          authorizationToken: Buffer.from('foo:bar').toString('base64'),
+          proxyEndpoint: 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'
         }
-      };
+      ]
     });
 
     await run();
 
-    expect(mockEcrGetAuthToken).toHaveBeenCalledWith({
-      registryIds: ['123456789012','111111111111']
+    ecrMock.commandCalls(GetAuthorizationTokenCommand, {
+      registryIds: ['123456789012', '111111111111']
     });
+
     expect(exec.exec).toHaveBeenNthCalledWith(1,
       'docker',
       ['login', '-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
@@ -129,29 +116,23 @@ describe('Login to ECR', () => {
 
   test('outputs the registry ID if a single registry is provided in the input', async () => {
     const mockInputs = {
-      'registries' : '111111111111',
+      'registries': '111111111111',
       'skip-logout': '',
       'registry-type': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
-    mockEcrGetAuthToken.mockImplementation(() => {
-      return {
-        promise() {
-          return Promise.resolve({
-            authorizationData: [
-              {
-                authorizationToken: Buffer.from('foo:bar').toString('base64'),
-                proxyEndpoint: 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'
-              }
-            ]
-          });
+    ecrMock.on(GetAuthorizationTokenCommand).resolves({
+      authorizationData: [
+        {
+          authorizationToken: Buffer.from('foo:bar').toString('base64'),
+          proxyEndpoint: 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'
         }
-      };
+      ]
     });
 
     await run();
 
-    expect(mockEcrGetAuthToken).toHaveBeenCalledWith({
+    ecrMock.commandCalls(GetAuthorizationTokenCommand, {
       registryIds: ['111111111111']
     });
     expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', '111111111111.dkr.ecr.aws-region-1.amazonaws.com');
@@ -167,6 +148,7 @@ describe('Login to ECR', () => {
   });
 
   test('error is caught by core.setFailed for failed docker login', async () => {
+    ecrMock.on(GetAuthorizationTokenCommand).resolves(defaultOutputToken);
     exec.exec.mockReturnValue(1);
 
     await run();
@@ -178,41 +160,35 @@ describe('Login to ECR', () => {
 
   test('logged-in registries are saved as state even if the action fails', async () => {
     const mockInputs = {
-      'registries' : '123456789012,111111111111',
+      'registries': '123456789012,111111111111',
       'skip-logout': '',
       'registry-type': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
-    mockEcrGetAuthToken.mockImplementation(() => {
-      return {
-        promise() {
-          return Promise.resolve({
-            authorizationData: [
-              {
-                authorizationToken: Buffer.from('hello:world').toString('base64'),
-                proxyEndpoint: 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'
-              },
-              {
-                authorizationToken: Buffer.from('foo:bar').toString('base64'),
-                proxyEndpoint: 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'
-              }
-            ]
-          });
+    ecrMock.on(GetAuthorizationTokenCommand).resolves({
+      authorizationData: [
+        {
+          authorizationToken: Buffer.from('hello:world').toString('base64'),
+          proxyEndpoint: 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'
+        },
+        {
+          authorizationToken: Buffer.from('foo:bar').toString('base64'),
+          proxyEndpoint: 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'
         }
-      };
+      ]
     });
     exec.exec.mockImplementation((commandLine, args, options) => {
       options.listeners.stdout('Hello World ');
       options.listeners.stdout('on stdout\n');
       options.listeners.stderr('Some fancy error ');
       options.listeners.stderr('from docker login stderr');
-      return(1);
+      return (1);
     }).mockReturnValueOnce(0);
 
     await run();
 
-    expect(mockEcrGetAuthToken).toHaveBeenCalledWith({
-      registryIds: ['123456789012','111111111111']
+    ecrMock.commandCalls(GetAuthorizationTokenCommand, {
+      registryIds: ['123456789012', '111111111111']
     });
     expect(exec.exec).toHaveBeenNthCalledWith(1,
       'docker',
@@ -230,19 +206,13 @@ describe('Login to ECR', () => {
   });
 
   test(`throws error when getAuthorizationToken does return an empty authorization data`, async () => {
-    mockEcrGetAuthToken.mockImplementation(() => {
-      return {
-        promise() {
-          return Promise.resolve({
-            authorizationData: []
-          });
-        }
-      };
+    ecrMock.on(GetAuthorizationTokenCommand).resolves({
+      authorizationData: []
     });
 
     await run();
 
-    expect(mockEcrGetAuthToken).toHaveBeenCalledWith({});
+    ecrMock.commandCalls(GetAuthorizationTokenCommand, {});
     expect(core.setFailed).toHaveBeenCalledWith('Amazon ECR authorization token does not contain any authorization data');
     expect(exec.exec).toHaveBeenCalledTimes(0);
     expect(core.setOutput).toHaveBeenCalledTimes(0);
@@ -251,19 +221,13 @@ describe('Login to ECR', () => {
   });
 
   test(`throws error when getAuthorizationToken does not contain authorization data`, async () => {
-    mockEcrGetAuthToken.mockImplementation(() => {
-      return {
-        promise() {
-          return Promise.resolve({
-            foo: 'bar'
-          });
-        }
-      };
+    ecrMock.on(GetAuthorizationTokenCommand).resolves({
+      foo: 'bar'
     });
 
     await run();
 
-    expect(mockEcrGetAuthToken).toHaveBeenCalledWith({});
+    ecrMock.commandCalls(GetAuthorizationTokenCommand, {});
     expect(core.setFailed).toHaveBeenCalledWith('Amazon ECR authorization token is invalid');
     expect(exec.exec).toHaveBeenCalledTimes(0);
     expect(core.setOutput).toHaveBeenCalledTimes(0);
@@ -272,19 +236,11 @@ describe('Login to ECR', () => {
   });
 
   test(`throws error when getAuthorizationToken does not return data`, async () => {
-    mockEcrGetAuthToken.mockImplementation(() => {
-      return {
-        promise() {
-          // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/ECR.html#getAuthorizationToken-property
-          // data (Object) — the de-serialized data returned from the request. Set to null if a request error occurs.
-          return Promise.resolve(null);
-        }
-      };
-    });
+    ecrMock.on(GetAuthorizationTokenCommand).resolves(null);
 
     await run();
 
-    expect(mockEcrGetAuthToken).toHaveBeenCalledWith({});
+    ecrMock.commandCalls(GetAuthorizationTokenCommand, {});
     expect(core.setFailed).toHaveBeenCalledWith('Amazon ECR authorization token returned no data');
     expect(exec.exec).toHaveBeenCalledTimes(0);
     expect(core.setOutput).toHaveBeenCalledTimes(0);
@@ -293,9 +249,7 @@ describe('Login to ECR', () => {
   });
 
   test('error is caught by core.setFailed for ECR call', async () => {
-    mockEcrGetAuthToken.mockImplementation(() => {
-      throw new Error();
-    });
+    ecrMock.on(GetAuthorizationTokenCommand).rejects();
 
     await run();
 
@@ -305,8 +259,9 @@ describe('Login to ECR', () => {
   });
 
   test('skips logout when specified and logging into default registry', async () => {
+    ecrMock.on(GetAuthorizationTokenCommand).resolves(defaultOutputToken);
     const mockInputs = {
-      'registries' : '',
+      'registries': '',
       'skip-logout': 'true',
       'registry-type': ''
     };
@@ -314,7 +269,7 @@ describe('Login to ECR', () => {
 
     await run();
 
-    expect(mockEcrGetAuthToken).toHaveBeenCalledWith({});
+    ecrMock.commandCalls(GetAuthorizationTokenCommand, {});
     expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
     expect(exec.exec).toHaveBeenNthCalledWith(1,
       'docker',
@@ -325,34 +280,28 @@ describe('Login to ECR', () => {
 
   test('skips logout when specified and logging into multiple registries', async () => {
     const mockInputs = {
-      'registries' : '123456789012,111111111111',
+      'registries': '123456789012,111111111111',
       'skip-logout': 'true',
       'registry-type': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
-    mockEcrGetAuthToken.mockImplementation(() => {
-      return {
-        promise() {
-          return Promise.resolve({
-            authorizationData: [
-              {
-                authorizationToken: Buffer.from('hello:world').toString('base64'),
-                proxyEndpoint: 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'
-              },
-              {
-                authorizationToken: Buffer.from('foo:bar').toString('base64'),
-                proxyEndpoint: 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'
-              }
-            ]
-          });
+    ecrMock.on(GetAuthorizationTokenCommand).resolves({
+      authorizationData: [
+        {
+          authorizationToken: Buffer.from('hello:world').toString('base64'),
+          proxyEndpoint: 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'
+        },
+        {
+          authorizationToken: Buffer.from('foo:bar').toString('base64'),
+          proxyEndpoint: 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'
         }
-      };
+      ]
     });
 
     await run();
 
-    expect(mockEcrGetAuthToken).toHaveBeenCalledWith({
-      registryIds: ['123456789012','111111111111']
+    ecrMock.commandCalls(GetAuthorizationTokenCommand, {
+      registryIds: ['123456789012', '111111111111']
     });
     expect(exec.exec).toHaveBeenCalledTimes(2);
     expect(core.saveState).toHaveBeenCalledTimes(0);
@@ -365,28 +314,22 @@ describe('Login to ECR', () => {
 
   test('sets the Actions outputs to the docker credentials', async () => {
     const mockInputs = {
-      'registries' : '123456789012,111111111111',
+      'registries': '123456789012,111111111111',
       'skip-logout': 'true',
       'registry-type': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
-    mockEcrGetAuthToken.mockImplementation(() => {
-      return {
-        promise() {
-          return Promise.resolve({
-            authorizationData: [
-              {
-                authorizationToken: Buffer.from('hello:world').toString('base64'),
-                proxyEndpoint: 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'
-              },
-              {
-                authorizationToken: Buffer.from('foo:bar').toString('base64'),
-                proxyEndpoint: 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'
-              }
-            ]
-          });
+    ecrMock.on(GetAuthorizationTokenCommand).resolves({
+      authorizationData: [
+        {
+          authorizationToken: Buffer.from('hello:world').toString('base64'),
+          proxyEndpoint: 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'
+        },
+        {
+          authorizationToken: Buffer.from('foo:bar').toString('base64'),
+          proxyEndpoint: 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'
         }
-      };
+      ]
     });
 
     await run();
@@ -404,65 +347,34 @@ describe('Login to ECR', () => {
     });
 
     test('setting proxy with actions input', async () => {
-      const EXPECTED_PROXY = 'http://test.me'
-      core.getInput = jest
-        .fn()
-        .mockImplementation(
-          mockGetInput({ ...ECR_DEFAULT_INPUTS, 'http-proxy': EXPECTED_PROXY })
-        );
-
-      await run();
-
-      expect(aws.config.update).toHaveBeenCalledTimes(1);
-      expect(aws.config.update).toHaveBeenCalledWith({
-        httpOptions: { agent: proxy(EXPECTED_PROXY) }
-      });
+      const EXPECTED_PROXY = 'http://test.me/';
+      const option = configureProxy(EXPECTED_PROXY);
+      expect(option).not.toBeNull();
+      expect(option.agent.defaultPort).toBe(80);
+      expect(option.agent.proxy.href).toBe(EXPECTED_PROXY);
     });
     test('setting proxy from environment vars', async () => {
-      const EXPECTED_PROXY = 'http://test.me'
+      const EXPECTED_PROXY = 'http://test.me/'
       process.env.HTTP_PROXY = EXPECTED_PROXY;
-      core.getInput = jest
-        .fn()
-        .mockImplementation(
-          mockGetInput({ ...ECR_DEFAULT_INPUTS })
-        );
-
-      await run();
-
-      expect(aws.config.update).toHaveBeenCalledTimes(1);
-      expect(aws.config.update).toHaveBeenCalledWith({
-        httpOptions: { agent: proxy(EXPECTED_PROXY) }
-      });
+      const option = configureProxy();
+      expect(option).not.toBeNull();
+      expect(option.agent.defaultPort).toBe(80);
+      expect(option.agent.proxy.href).toBe(EXPECTED_PROXY);
     });
 
     test('setting proxy - prefer action input', async () => {
-      const EXPECTED_PROXY = 'http://test.me'
+      const EXPECTED_PROXY = 'http://test.me/'
       const FALSE_PROXY = 'http://env.me'
       process.env.HTTP_PROXY = FALSE_PROXY;
-      core.getInput = jest
-        .fn()
-        .mockImplementation(
-          mockGetInput({ ...ECR_DEFAULT_INPUTS, 'http-proxy': EXPECTED_PROXY })
-        );
-
-      await run();
-
-      expect(aws.config.update).toHaveBeenCalledTimes(1);
-      expect(aws.config.update).toHaveBeenCalledWith({
-        httpOptions: { agent: proxy(EXPECTED_PROXY) }
-      });
+      const option = configureProxy(EXPECTED_PROXY);
+      expect(option).not.toBeNull();
+      expect(option.agent.defaultPort).toBe(80);
+      expect(option.agent.proxy.href).toBe(EXPECTED_PROXY);
     });
 
     test('ignoring proxy - without anything set', async () => {
-      core.getInput = jest
-        .fn()
-        .mockImplementation(
-          mockGetInput({ ...ECR_DEFAULT_INPUTS})
-        );
-
-      await run();
-
-      expect(aws.config.update).toHaveBeenCalledTimes(0);
+        const option = configureProxy();
+        expect(option).toBeNull();
     });
   });
 });
@@ -470,20 +382,9 @@ describe('Login to ECR', () => {
 describe('Login to ECR Public', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    ecrPublicMock.reset();
 
     core.getInput = jest.fn().mockImplementation(mockGetInput(ECR_PUBLIC_DEFAULT_INPUTS));
-
-    mockEcrPublicGetAuthToken.mockImplementation(() => {
-      return {
-        promise() {
-          return Promise.resolve({
-            authorizationData: {
-              authorizationToken: Buffer.from('hello:world').toString('base64')
-            }
-          });
-        }
-      };
-    });
 
     exec.exec.mockReturnValue(0);
   });
@@ -491,11 +392,12 @@ describe('Login to ECR Public', () => {
   describe('inputs and outputs', () => {
     test('error is caught by core.setFailed for invalid registry-type input', async () => {
       const mockInputs = {
-        'registries' : '',
+        'registries': '',
         'skip-logout': '',
         'registry-type': 'invalid'
       };
       core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
+      ecrPublicMock.on(GetAuthorizationTokenCommandPublic).resolves(defaultAuthToken);
 
       await run();
 
@@ -504,9 +406,10 @@ describe('Login to ECR Public', () => {
     });
 
     test('outputs the registry URI', async () => {
+      ecrPublicMock.on(GetAuthorizationTokenCommandPublic).resolves(defaultAuthToken);
       await run();
 
-      expect(mockEcrPublicGetAuthToken).toHaveBeenCalledWith({})
+      ecrPublicMock.commandCalls(GetAuthorizationTokenCommandPublic, {});
       expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', 'public.ecr.aws');
       expect(exec.exec).toHaveBeenCalledTimes(1);
       expect(exec.exec).toHaveBeenNthCalledWith(1,
@@ -520,6 +423,7 @@ describe('Login to ECR Public', () => {
     });
 
     test('sets the Actions outputs to the docker credentials', async () => {
+      ecrPublicMock.on(GetAuthorizationTokenCommandPublic).resolves(defaultAuthToken);
       await run();
 
       expect(core.setOutput).toHaveBeenCalledTimes(3);
@@ -530,9 +434,10 @@ describe('Login to ECR Public', () => {
 
   describe('getAuthorizationToken', () => {
     test('gets auth token from ECR Public and logins the Docker client for the default registry', async () => {
+      ecrPublicMock.on(GetAuthorizationTokenCommandPublic).resolves(defaultAuthToken);
       await run();
 
-      expect(mockEcrPublicGetAuthToken).toHaveBeenCalledWith({});
+      ecrPublicMock.commandCalls(GetAuthorizationTokenCommandPublic, {});
       expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', 'public.ecr.aws');
       expect(exec.exec).toHaveBeenNthCalledWith(1,
         'docker',
@@ -545,19 +450,13 @@ describe('Login to ECR Public', () => {
     });
 
     test(`throws error when getAuthorizationToken does return an empty authorization data`, async () => {
-      mockEcrPublicGetAuthToken.mockImplementation(() => {
-        return {
-          promise() {
-            return Promise.resolve({
-              authorizationData: {}
-            });
-          }
-        };
+      ecrPublicMock.on(GetAuthorizationTokenCommandPublic).resolves({
+        authorizationData: {}
       });
 
       await run();
 
-      expect(mockEcrPublicGetAuthToken).toHaveBeenCalledWith({});
+      ecrPublicMock.commandCalls(GetAuthorizationTokenCommandPublic, {});
       expect(core.setFailed).toHaveBeenCalledWith('Amazon ECR Public authorization token does not contain any authorization data');
       expect(exec.exec).toHaveBeenCalledTimes(0);
       expect(core.setOutput).toHaveBeenCalledTimes(0);
@@ -566,19 +465,13 @@ describe('Login to ECR Public', () => {
     });
 
     test(`throws error when getAuthorizationToken does not contain authorization data`, async () => {
-      mockEcrPublicGetAuthToken.mockImplementation(() => {
-        return {
-          promise() {
-            return Promise.resolve({
-              hello: 'world'
-            });
-          }
-        };
+      ecrPublicMock.on(GetAuthorizationTokenCommandPublic).resolves({
+        hello: 'world'
       });
 
       await run();
 
-      expect(mockEcrPublicGetAuthToken).toHaveBeenCalledWith({});
+      ecrPublicMock.commandCalls(GetAuthorizationTokenCommandPublic, {});
       expect(core.setFailed).toHaveBeenCalledWith('Amazon ECR Public authorization token is invalid');
       expect(exec.exec).toHaveBeenCalledTimes(0);
       expect(core.setOutput).toHaveBeenCalledTimes(0);
@@ -587,19 +480,11 @@ describe('Login to ECR Public', () => {
     });
 
     test(`throws error when getAuthorizationToken does not return data`, async () => {
-      mockEcrPublicGetAuthToken.mockImplementation(() => {
-        return {
-          promise() {
-            // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/ECR.html#getAuthorizationToken-property
-            // data (Object) — the de-serialized data returned from the request. Set to null if a request error occurs.
-            return Promise.resolve(null);
-          }
-        };
-      });
+      ecrPublicMock.on(GetAuthorizationTokenCommandPublic).resolves(null);
 
       await run();
 
-      expect(mockEcrPublicGetAuthToken).toHaveBeenCalledWith({});
+      ecrPublicMock.commandCalls(GetAuthorizationTokenCommandPublic, {});
       expect(core.setFailed).toHaveBeenCalledWith('Amazon ECR Public authorization token returned no data');
       expect(exec.exec).toHaveBeenCalledTimes(0);
       expect(core.setOutput).toHaveBeenCalledTimes(0);
@@ -608,9 +493,8 @@ describe('Login to ECR Public', () => {
     });
 
     test('error is caught by core.setFailed for ECR call', async () => {
-      mockEcrPublicGetAuthToken.mockImplementation(() => {
-        throw new Error();
-      });
+      ecrPublicMock.on(GetAuthorizationTokenCommandPublic).rejects();
+
 
       await run();
 
