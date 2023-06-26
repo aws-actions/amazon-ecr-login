@@ -1,6 +1,7 @@
 const core = require('@actions/core');
 const exec = require('@actions/exec');
-const proxy = require('https-proxy-agent');
+const { HttpsProxyAgent } = require('https-proxy-agent');
+const { NodeHttpHandler } = require('@aws-sdk/node-http-handler');
 const { ECRClient, GetAuthorizationTokenCommand } = require("@aws-sdk/client-ecr");
 const { ECRPUBLICClient, GetAuthorizationTokenCommand: GetAuthorizationTokenCommandPublic } = require("@aws-sdk/client-ecr-public");
 
@@ -43,18 +44,21 @@ function configureProxy(httpProxy) {
       proxyToSet = proxyFromEnv;
     }
 
-    const httpOptions = { agent: proxy(proxyToSet) };
-    return httpOptions;
+    return new HttpsProxyAgent(proxyToSet);
   }
   return null;
 }
 
-async function getEcrAuthTokenWrapper(authTokenRequest, httpOptions) {
-  const ecr = new ECRClient({
-    customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT
+async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
+  const ecrClient = new ECRClient({
+    customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
+    requestHandler: new NodeHttpHandler({
+      httpAgent: httpsProxyAgent,
+      httpsAgent: httpsProxyAgent
+    }),
   });
   const command = new GetAuthorizationTokenCommand(authTokenRequest);
-  const authTokenResponse = await ecr.send(command, httpOptions);
+  const authTokenResponse = await ecrClient.send(command);
   if (!authTokenResponse) {
     throw new Error('Amazon ECR authorization token returned no data');
   } else if (!authTokenResponse.authorizationData || !Array.isArray(authTokenResponse.authorizationData)) {
@@ -66,12 +70,16 @@ async function getEcrAuthTokenWrapper(authTokenRequest, httpOptions) {
   return authTokenResponse;
 }
 
-async function getEcrPublicAuthTokenWrapper(authTokenRequest, httpOptions) {
-  const ecrPublic = new ECRPUBLICClient({
-    customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT
+async function getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
+  const ecrPublicClient = new ECRPUBLICClient({
+    customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
+    requestHandler: new NodeHttpHandler({
+      httpAgent: httpsProxyAgent,
+      httpsAgent: httpsProxyAgent
+    }),
   });
   const command = new GetAuthorizationTokenCommandPublic(authTokenRequest);
-  const authTokenResponse = await ecrPublic.send(command, httpOptions);
+  const authTokenResponse = await ecrPublicClient.send(command);
   if (!authTokenResponse) {
     throw new Error('Amazon ECR Public authorization token returned no data');
   } else if (!authTokenResponse.authorizationData) {
@@ -109,7 +117,7 @@ async function run() {
     }
 
     // Configures proxy
-    const proxyOptions = configureProxy(httpProxy);
+    const httpsProxyAgent = configureProxy(httpProxy);
 
     // Get the ECR/ECR Public authorization token(s)
     const authTokenRequest = {};
@@ -122,8 +130,8 @@ async function run() {
       authTokenRequest.registryIds = registryIds;
     }
     const authTokenResponse = registryType === REGISTRY_TYPES.private ?
-      await getEcrAuthTokenWrapper(authTokenRequest, proxyOptions) :
-      await getEcrPublicAuthTokenWrapper(authTokenRequest, proxyOptions);
+      await getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) :
+      await getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent);
 
     // Login to each registry
     for (const authData of authTokenResponse.authorizationData) {
