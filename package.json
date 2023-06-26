@@ -29,7 +29,8 @@
     "@actions/exec": "^1.1.1",
     "@aws-sdk/client-ecr": "^3.354.0",
     "@aws-sdk/client-ecr-public": "^3.354.0",
-    "https-proxy-agent": "^5.0.1"
+    "@aws-sdk/node-http-handler": "^3.350.0",
+    "https-proxy-agent": "^7.0.0"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.36.1",

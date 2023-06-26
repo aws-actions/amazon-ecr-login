@@ -348,28 +348,28 @@ describe('Login to ECR', () => {
 
     test('setting proxy with actions input', async () => {
       const EXPECTED_PROXY = 'http://test.me/';
-      const option = configureProxy(EXPECTED_PROXY);
-      expect(option).not.toBeNull();
-      expect(option.agent.defaultPort).toBe(80);
-      expect(option.agent.proxy.href).toBe(EXPECTED_PROXY);
+      const httpsProxyAgent = configureProxy(EXPECTED_PROXY);
+      expect(httpsProxyAgent).not.toBeNull();
+      expect(httpsProxyAgent.defaultPort).toBe(80);
+      expect(httpsProxyAgent.proxy.href).toBe(EXPECTED_PROXY);
     });
     test('setting proxy from environment vars', async () => {
       const EXPECTED_PROXY = 'http://test.me/'
       process.env.HTTP_PROXY = EXPECTED_PROXY;
-      const option = configureProxy();
-      expect(option).not.toBeNull();
-      expect(option.agent.defaultPort).toBe(80);
-      expect(option.agent.proxy.href).toBe(EXPECTED_PROXY);
+      const httpsProxyAgent = configureProxy();
+      expect(httpsProxyAgent).not.toBeNull();
+      expect(httpsProxyAgent.defaultPort).toBe(80);
+      expect(httpsProxyAgent.proxy.href).toBe(EXPECTED_PROXY);
     });
 
     test('setting proxy - prefer action input', async () => {
       const EXPECTED_PROXY = 'http://test.me/'
-      const FALSE_PROXY = 'http://env.me'
+      const FALSE_PROXY = 'http://env.me/'
       process.env.HTTP_PROXY = FALSE_PROXY;
-      const option = configureProxy(EXPECTED_PROXY);
-      expect(option).not.toBeNull();
-      expect(option.agent.defaultPort).toBe(80);
-      expect(option.agent.proxy.href).toBe(EXPECTED_PROXY);
+      const httpsProxyAgent = configureProxy(EXPECTED_PROXY);
+      expect(httpsProxyAgent).not.toBeNull();
+      expect(httpsProxyAgent.defaultPort).toBe(80);
+      expect(httpsProxyAgent.proxy.href).toBe(EXPECTED_PROXY);
     });
 
     test('ignoring proxy - without anything set', async () => {

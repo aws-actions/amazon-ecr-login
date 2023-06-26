@@ -6,7 +6,8 @@
 
 const core = __nccwpck_require__(42186);
 const exec = __nccwpck_require__(71514);
-const proxy = __nccwpck_require__(77219);
+const { HttpsProxyAgent } = __nccwpck_require__(77219);
+const { NodeHttpHandler } = __nccwpck_require__(68805);
 const { ECRClient, GetAuthorizationTokenCommand } = __nccwpck_require__(8923);
 const { ECRPUBLICClient, GetAuthorizationTokenCommand: GetAuthorizationTokenCommandPublic } = __nccwpck_require__(42308);
 
@@ -49,18 +50,21 @@ function configureProxy(httpProxy) {
       proxyToSet = proxyFromEnv;
     }
 
-    const httpOptions = { agent: proxy(proxyToSet) };
-    return httpOptions;
+    return new HttpsProxyAgent(proxyToSet);
   }
   return null;
 }
 
-async function getEcrAuthTokenWrapper(authTokenRequest, httpOptions) {
-  const ecr = new ECRClient({
-    customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT
+async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
+  const ecrClient = new ECRClient({
+    customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
+    requestHandler: new NodeHttpHandler({
+      httpAgent: httpsProxyAgent,
+      httpsAgent: httpsProxyAgent
+    }),
   });
   const command = new GetAuthorizationTokenCommand(authTokenRequest);
-  const authTokenResponse = await ecr.send(command, httpOptions);
+  const authTokenResponse = await ecrClient.send(command);
   if (!authTokenResponse) {
     throw new Error('Amazon ECR authorization token returned no data');
   } else if (!authTokenResponse.authorizationData || !Array.isArray(authTokenResponse.authorizationData)) {
@@ -72,12 +76,16 @@ async function getEcrAuthTokenWrapper(authTokenRequest, httpOptions) {
   return authTokenResponse;
 }
 
-async function getEcrPublicAuthTokenWrapper(authTokenRequest, httpOptions) {
-  const ecrPublic = new ECRPUBLICClient({
-    customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT
+async function getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
+  const ecrPublicClient = new ECRPUBLICClient({
+    customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
+    requestHandler: new NodeHttpHandler({
+      httpAgent: httpsProxyAgent,
+      httpsAgent: httpsProxyAgent
+    }),
   });
   const command = new GetAuthorizationTokenCommandPublic(authTokenRequest);
-  const authTokenResponse = await ecrPublic.send(command, httpOptions);
+  const authTokenResponse = await ecrPublicClient.send(command);
   if (!authTokenResponse) {
     throw new Error('Amazon ECR Public authorization token returned no data');
   } else if (!authTokenResponse.authorizationData) {
@@ -115,7 +123,7 @@ async function run() {
     }
 
     // Configures proxy
-    const proxyOptions = configureProxy(httpProxy);
+    const httpsProxyAgent = configureProxy(httpProxy);
 
     // Get the ECR/ECR Public authorization token(s)
     const authTokenRequest = {};
@@ -128,8 +136,8 @@ async function run() {
       authTokenRequest.registryIds = registryIds;
     }
     const authTokenResponse = registryType === REGISTRY_TYPES.private ?
-      await getEcrAuthTokenWrapper(authTokenRequest, proxyOptions) :
-      await getEcrPublicAuthTokenWrapper(authTokenRequest, proxyOptions);
+      await getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) :
+      await getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent);
 
     // Login to each registry
     for (const authData of authTokenResponse.authorizationData) {
@@ -7365,13 +7373,7 @@ const deserializeMetadata = (output) => ({
     extendedRequestId: output.headers["x-amz-id-2"],
     cfId: output.headers["x-amz-cf-id"],
 });
-const collectBody = (streamBody = new Uint8Array(), context) => {
-    if (streamBody instanceof Uint8Array) {
-        return Promise.resolve(streamBody);
-    }
-    return context.streamCollector(streamBody) || Promise.resolve(new Uint8Array());
-};
-const collectBodyString = (streamBody, context) => collectBody(streamBody, context).then((body) => context.utf8Encoder(body));
+const collectBodyString = (streamBody, context) => (0, smithy_client_1.collectBody)(streamBody, context).then((body) => context.utf8Encoder(body));
 const throwDefaultError = (0, smithy_client_1.withBaseException)(ECRPUBLICServiceException_1.ECRPUBLICServiceException);
 const buildHttpRpcRequest = async (context, headers, path, resolvedHostname, body) => {
     const { hostname, protocol = "https", port, path: basePath } = await context.endpoint();
@@ -13498,13 +13500,7 @@ const deserializeMetadata = (output) => ({
     extendedRequestId: output.headers["x-amz-id-2"],
     cfId: output.headers["x-amz-cf-id"],
 });
-const collectBody = (streamBody = new Uint8Array(), context) => {
-    if (streamBody instanceof Uint8Array) {
-        return Promise.resolve(streamBody);
-    }
-    return context.streamCollector(streamBody) || Promise.resolve(new Uint8Array());
-};
-const collectBodyString = (streamBody, context) => collectBody(streamBody, context).then((body) => context.utf8Encoder(body));
+const collectBodyString = (streamBody, context) => (0, smithy_client_1.collectBody)(streamBody, context).then((body) => context.utf8Encoder(body));
 const throwDefaultError = (0, smithy_client_1.withBaseException)(ECRServiceException_1.ECRServiceException);
 const buildHttpRpcRequest = async (context, headers, path, resolvedHostname, body) => {
     const { hostname, protocol = "https", port, path: basePath } = await context.endpoint();
@@ -14749,13 +14745,7 @@ const deserializeMetadata = (output) => ({
     extendedRequestId: output.headers["x-amz-id-2"],
     cfId: output.headers["x-amz-cf-id"],
 });
-const collectBody = (streamBody = new Uint8Array(), context) => {
-    if (streamBody instanceof Uint8Array) {
-        return Promise.resolve(streamBody);
-    }
-    return context.streamCollector(streamBody) || Promise.resolve(new Uint8Array());
-};
-const collectBodyString = (streamBody, context) => collectBody(streamBody, context).then((body) => context.utf8Encoder(body));
+const collectBodyString = (streamBody, context) => (0, smithy_client_1.collectBody)(streamBody, context).then((body) => context.utf8Encoder(body));
 const isSerializableHeaderValue = (value) => value !== undefined &&
     value !== null &&
     value !== "" &&
@@ -15732,7 +15722,7 @@ const de_LogoutCommand = async (output, context) => {
     const contents = (0, smithy_client_1.map)({
         $metadata: deserializeMetadata(output),
     });
-    await collectBody(output.body, context);
+    await (0, smithy_client_1.collectBody)(output.body, context);
     return contents;
 };
 exports.de_LogoutCommand = de_LogoutCommand;
@@ -15820,13 +15810,7 @@ const deserializeMetadata = (output) => ({
     extendedRequestId: output.headers["x-amz-id-2"],
     cfId: output.headers["x-amz-cf-id"],
 });
-const collectBody = (streamBody = new Uint8Array(), context) => {
-    if (streamBody instanceof Uint8Array) {
-        return Promise.resolve(streamBody);
-    }
-    return context.streamCollector(streamBody) || Promise.resolve(new Uint8Array());
-};
-const collectBodyString = (streamBody, context) => collectBody(streamBody, context).then((body) => context.utf8Encoder(body));
+const collectBodyString = (streamBody, context) => (0, smithy_client_1.collectBody)(streamBody, context).then((body) => context.utf8Encoder(body));
 const isSerializableHeaderValue = (value) => value !== undefined &&
     value !== null &&
     value !== "" &&
@@ -17832,13 +17816,7 @@ const deserializeMetadata = (output) => ({
     extendedRequestId: output.headers["x-amz-id-2"],
     cfId: output.headers["x-amz-cf-id"],
 });
-const collectBody = (streamBody = new Uint8Array(), context) => {
-    if (streamBody instanceof Uint8Array) {
-        return Promise.resolve(streamBody);
-    }
-    return context.streamCollector(streamBody) || Promise.resolve(new Uint8Array());
-};
-const collectBodyString = (streamBody, context) => collectBody(streamBody, context).then((body) => context.utf8Encoder(body));
+const collectBodyString = (streamBody, context) => (0, smithy_client_1.collectBody)(streamBody, context).then((body) => context.utf8Encoder(body));
 const throwDefaultError = (0, smithy_client_1.withBaseException)(STSServiceException_1.STSServiceException);
 const buildHttpRpcRequest = async (context, headers, path, resolvedHostname, body) => {
     const { hostname, protocol = "https", port, path: basePath } = await context.endpoint();
@@ -22179,7 +22157,7 @@ class NodeHttpHandler {
                     keepAliveMsecs: httpAgent.keepAliveMsecs,
                 });
             }
-            writeRequestBodyPromise = (0, write_request_body_1.writeRequestBody)(req, request, this.config.requestTimeout);
+            writeRequestBodyPromise = (0, write_request_body_1.writeRequestBody)(req, request, this.config.requestTimeout).catch(_reject);
         });
     }
 }
@@ -24177,6 +24155,29 @@ exports.Client = Client;
 
 /***/ }),
 
+/***/ 95933:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.collectBody = void 0;
+const util_stream_1 = __nccwpck_require__(77728);
+const collectBody = async (streamBody = new Uint8Array(), context) => {
+    if (streamBody instanceof Uint8Array) {
+        return util_stream_1.Uint8ArrayBlobAdapter.mutate(streamBody);
+    }
+    if (!streamBody) {
+        return util_stream_1.Uint8ArrayBlobAdapter.mutate(new Uint8Array());
+    }
+    const fromContext = context.streamCollector(streamBody);
+    return util_stream_1.Uint8ArrayBlobAdapter.mutate(await fromContext);
+};
+exports.collectBody = collectBody;
+
+
+/***/ }),
+
 /***/ 4014:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -24635,6 +24636,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const tslib_1 = __nccwpck_require__(4351);
 tslib_1.__exportStar(__nccwpck_require__(78571), exports);
 tslib_1.__exportStar(__nccwpck_require__(36034), exports);
+tslib_1.__exportStar(__nccwpck_require__(95933), exports);
 tslib_1.__exportStar(__nccwpck_require__(4014), exports);
 tslib_1.__exportStar(__nccwpck_require__(78392), exports);
 tslib_1.__exportStar(__nccwpck_require__(65516), exports);
@@ -25478,6 +25480,16 @@ var HttpAuthLocation;
 
 /***/ }),
 
+/***/ 14994:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+
+
+/***/ }),
+
 /***/ 65861:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -25709,6 +25721,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const tslib_1 = __nccwpck_require__(4351);
 tslib_1.__exportStar(__nccwpck_require__(52562), exports);
 tslib_1.__exportStar(__nccwpck_require__(26913), exports);
+tslib_1.__exportStar(__nccwpck_require__(14994), exports);
 tslib_1.__exportStar(__nccwpck_require__(65861), exports);
 tslib_1.__exportStar(__nccwpck_require__(76527), exports);
 tslib_1.__exportStar(__nccwpck_require__(48470), exports);
@@ -27685,6 +27698,174 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 /***/ }),
 
+/***/ 30402:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Uint8ArrayBlobAdapter = void 0;
+const transforms_1 = __nccwpck_require__(20285);
+class Uint8ArrayBlobAdapter extends Uint8Array {
+    static fromString(source, encoding = "utf-8") {
+        switch (typeof source) {
+            case "string":
+                return (0, transforms_1.transformFromString)(source, encoding);
+            default:
+                throw new Error(`Unsupported conversion from ${typeof source} to Uint8ArrayBlobAdapter.`);
+        }
+    }
+    static mutate(source) {
+        Object.setPrototypeOf(source, Uint8ArrayBlobAdapter.prototype);
+        return source;
+    }
+    transformToString(encoding = "utf-8") {
+        return (0, transforms_1.transformToString)(this, encoding);
+    }
+}
+exports.Uint8ArrayBlobAdapter = Uint8ArrayBlobAdapter;
+
+
+/***/ }),
+
+/***/ 20285:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.transformFromString = exports.transformToString = void 0;
+const util_base64_1 = __nccwpck_require__(97727);
+const util_utf8_1 = __nccwpck_require__(2855);
+const Uint8ArrayBlobAdapter_1 = __nccwpck_require__(30402);
+function transformToString(payload, encoding = "utf-8") {
+    if (encoding === "base64") {
+        return (0, util_base64_1.toBase64)(payload);
+    }
+    return (0, util_utf8_1.toUtf8)(payload);
+}
+exports.transformToString = transformToString;
+function transformFromString(str, encoding) {
+    if (encoding === "base64") {
+        return Uint8ArrayBlobAdapter_1.Uint8ArrayBlobAdapter.mutate((0, util_base64_1.fromBase64)(str));
+    }
+    return Uint8ArrayBlobAdapter_1.Uint8ArrayBlobAdapter.mutate((0, util_utf8_1.fromUtf8)(str));
+}
+exports.transformFromString = transformFromString;
+
+
+/***/ }),
+
+/***/ 56374:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getAwsChunkedEncodingStream = void 0;
+const stream_1 = __nccwpck_require__(12781);
+const getAwsChunkedEncodingStream = (readableStream, options) => {
+    const { base64Encoder, bodyLengthChecker, checksumAlgorithmFn, checksumLocationName, streamHasher } = options;
+    const checksumRequired = base64Encoder !== undefined &&
+        checksumAlgorithmFn !== undefined &&
+        checksumLocationName !== undefined &&
+        streamHasher !== undefined;
+    const digest = checksumRequired ? streamHasher(checksumAlgorithmFn, readableStream) : undefined;
+    const awsChunkedEncodingStream = new stream_1.Readable({ read: () => { } });
+    readableStream.on("data", (data) => {
+        const length = bodyLengthChecker(data) || 0;
+        awsChunkedEncodingStream.push(`${length.toString(16)}\r\n`);
+        awsChunkedEncodingStream.push(data);
+        awsChunkedEncodingStream.push("\r\n");
+    });
+    readableStream.on("end", async () => {
+        awsChunkedEncodingStream.push(`0\r\n`);
+        if (checksumRequired) {
+            const checksum = base64Encoder(await digest);
+            awsChunkedEncodingStream.push(`${checksumLocationName}:${checksum}\r\n`);
+            awsChunkedEncodingStream.push(`\r\n`);
+        }
+        awsChunkedEncodingStream.push(null);
+    });
+    return awsChunkedEncodingStream;
+};
+exports.getAwsChunkedEncodingStream = getAwsChunkedEncodingStream;
+
+
+/***/ }),
+
+/***/ 77728:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const tslib_1 = __nccwpck_require__(4351);
+tslib_1.__exportStar(__nccwpck_require__(30402), exports);
+tslib_1.__exportStar(__nccwpck_require__(56374), exports);
+tslib_1.__exportStar(__nccwpck_require__(48545), exports);
+
+
+/***/ }),
+
+/***/ 48545:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.sdkStreamMixin = void 0;
+const node_http_handler_1 = __nccwpck_require__(68805);
+const util_buffer_from_1 = __nccwpck_require__(36010);
+const stream_1 = __nccwpck_require__(12781);
+const util_1 = __nccwpck_require__(73837);
+const ERR_MSG_STREAM_HAS_BEEN_TRANSFORMED = "The stream has already been transformed.";
+const sdkStreamMixin = (stream) => {
+    var _a, _b;
+    if (!(stream instanceof stream_1.Readable)) {
+        const name = ((_b = (_a = stream === null || stream === void 0 ? void 0 : stream.__proto__) === null || _a === void 0 ? void 0 : _a.constructor) === null || _b === void 0 ? void 0 : _b.name) || stream;
+        throw new Error(`Unexpected stream implementation, expect Stream.Readable instance, got ${name}`);
+    }
+    let transformed = false;
+    const transformToByteArray = async () => {
+        if (transformed) {
+            throw new Error(ERR_MSG_STREAM_HAS_BEEN_TRANSFORMED);
+        }
+        transformed = true;
+        return await (0, node_http_handler_1.streamCollector)(stream);
+    };
+    return Object.assign(stream, {
+        transformToByteArray,
+        transformToString: async (encoding) => {
+            const buf = await transformToByteArray();
+            if (encoding === undefined || Buffer.isEncoding(encoding)) {
+                return (0, util_buffer_from_1.fromArrayBuffer)(buf.buffer, buf.byteOffset, buf.byteLength).toString(encoding);
+            }
+            else {
+                const decoder = new util_1.TextDecoder(encoding);
+                return decoder.decode(buf);
+            }
+        },
+        transformToWebStream: () => {
+            if (transformed) {
+                throw new Error(ERR_MSG_STREAM_HAS_BEEN_TRANSFORMED);
+            }
+            if (stream.readableFlowing !== null) {
+                throw new Error("The stream has been consumed by other callbacks.");
+            }
+            if (typeof stream_1.Readable.toWeb !== "function") {
+                throw new Error("Readable.toWeb() is not supported. Please make sure you are using Node.js >= 17.0.0, or polyfill is available.");
+            }
+            transformed = true;
+            return stream_1.Readable.toWeb(stream);
+        },
+    });
+};
+exports.sdkStreamMixin = sdkStreamMixin;
+
+
+/***/ }),
+
 /***/ 15774:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -28362,238 +28543,195 @@ var FieldPosition;
 
 /***/ }),
 
-/***/ 49690:
-/***/ (function(module, __unused_webpack_exports, __nccwpck_require__) {
+/***/ 8348:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-const events_1 = __nccwpck_require__(82361);
-const debug_1 = __importDefault(__nccwpck_require__(38237));
-const promisify_1 = __importDefault(__nccwpck_require__(66570));
-const debug = debug_1.default('agent-base');
-function isAgent(v) {
-    return Boolean(v) && typeof v.addRequest === 'function';
-}
-function isSecureEndpoint() {
-    const { stack } = new Error();
-    if (typeof stack !== 'string')
-        return false;
-    return stack.split('\n').some(l => l.indexOf('(https.js:') !== -1 || l.indexOf('node:https:') !== -1);
-}
-function createAgent(callback, opts) {
-    return new createAgent.Agent(callback, opts);
-}
-(function (createAgent) {
-    /**
-     * Base `http.Agent` implementation.
-     * No pooling/keep-alive is implemented by default.
-     *
-     * @param {Function} callback
-     * @api public
-     */
-    class Agent extends events_1.EventEmitter {
-        constructor(callback, _opts) {
-            super();
-            let opts = _opts;
-            if (typeof callback === 'function') {
-                this.callback = callback;
-            }
-            else if (callback) {
-                opts = callback;
-            }
-            // Timeout for the socket to be returned from the callback
-            this.timeout = null;
-            if (opts && typeof opts.timeout === 'number') {
-                this.timeout = opts.timeout;
-            }
-            // These aren't actually used by `agent-base`, but are required
-            // for the TypeScript definition files in `@types/node` :/
-            this.maxFreeSockets = 1;
-            this.maxSockets = 1;
-            this.maxTotalSockets = Infinity;
-            this.sockets = {};
-            this.freeSockets = {};
-            this.requests = {};
-            this.options = {};
-        }
-        get defaultPort() {
-            if (typeof this.explicitDefaultPort === 'number') {
-                return this.explicitDefaultPort;
-            }
-            return isSecureEndpoint() ? 443 : 80;
-        }
-        set defaultPort(v) {
-            this.explicitDefaultPort = v;
-        }
-        get protocol() {
-            if (typeof this.explicitProtocol === 'string') {
-                return this.explicitProtocol;
-            }
-            return isSecureEndpoint() ? 'https:' : 'http:';
-        }
-        set protocol(v) {
-            this.explicitProtocol = v;
-        }
-        callback(req, opts, fn) {
-            throw new Error('"agent-base" has no default implementation, you must subclass and override `callback()`');
-        }
-        /**
-         * Called by node-core's "_http_client.js" module when creating
-         * a new HTTP request with this Agent instance.
-         *
-         * @api public
-         */
-        addRequest(req, _opts) {
-            const opts = Object.assign({}, _opts);
-            if (typeof opts.secureEndpoint !== 'boolean') {
-                opts.secureEndpoint = isSecureEndpoint();
-            }
-            if (opts.host == null) {
-                opts.host = 'localhost';
-            }
-            if (opts.port == null) {
-                opts.port = opts.secureEndpoint ? 443 : 80;
-            }
-            if (opts.protocol == null) {
-                opts.protocol = opts.secureEndpoint ? 'https:' : 'http:';
-            }
-            if (opts.host && opts.path) {
-                // If both a `host` and `path` are specified then it's most
-                // likely the result of a `url.parse()` call... we need to
-                // remove the `path` portion so that `net.connect()` doesn't
-                // attempt to open that as a unix socket file.
-                delete opts.path;
-            }
-            delete opts.agent;
-            delete opts.hostname;
-            delete opts._defaultAgent;
-            delete opts.defaultPort;
-            delete opts.createConnection;
-            // Hint to use "Connection: close"
-            // XXX: non-documented `http` module API :(
-            req._last = true;
-            req.shouldKeepAlive = false;
-            let timedOut = false;
-            let timeoutId = null;
-            const timeoutMs = opts.timeout || this.timeout;
-            const onerror = (err) => {
-                if (req._hadError)
-                    return;
-                req.emit('error', err);
-                // For Safety. Some additional errors might fire later on
-                // and we need to make sure we don't double-fire the error event.
-                req._hadError = true;
-            };
-            const ontimeout = () => {
-                timeoutId = null;
-                timedOut = true;
-                const err = new Error(`A "socket" was not created for HTTP request before ${timeoutMs}ms`);
-                err.code = 'ETIMEOUT';
-                onerror(err);
-            };
-            const callbackError = (err) => {
-                if (timedOut)
-                    return;
-                if (timeoutId !== null) {
-                    clearTimeout(timeoutId);
-                    timeoutId = null;
-                }
-                onerror(err);
-            };
-            const onsocket = (socket) => {
-                if (timedOut)
-                    return;
-                if (timeoutId != null) {
-                    clearTimeout(timeoutId);
-                    timeoutId = null;
-                }
-                if (isAgent(socket)) {
-                    // `socket` is actually an `http.Agent` instance, so
-                    // relinquish responsibility for this `req` to the Agent
-                    // from here on
-                    debug('Callback returned another Agent instance %o', socket.constructor.name);
-                    socket.addRequest(req, opts);
-                    return;
-                }
-                if (socket) {
-                    socket.once('free', () => {
-                        this.freeSocket(socket, opts);
-                    });
-                    req.onSocket(socket);
-                    return;
-                }
-                const err = new Error(`no Duplex stream was returned to agent-base for \`${req.method} ${req.path}\``);
-                onerror(err);
-            };
-            if (typeof this.callback !== 'function') {
-                onerror(new Error('`callback` is not defined'));
-                return;
-            }
-            if (!this.promisifiedCallback) {
-                if (this.callback.length >= 3) {
-                    debug('Converting legacy callback function to promise');
-                    this.promisifiedCallback = promisify_1.default(this.callback);
-                }
-                else {
-                    this.promisifiedCallback = this.callback;
-                }
-            }
-            if (typeof timeoutMs === 'number' && timeoutMs > 0) {
-                timeoutId = setTimeout(ontimeout, timeoutMs);
-            }
-            if ('port' in opts && typeof opts.port !== 'number') {
-                opts.port = Number(opts.port);
-            }
-            try {
-                debug('Resolving socket for %o request: %o', opts.protocol, `${req.method} ${req.path}`);
-                Promise.resolve(this.promisifiedCallback(req, opts)).then(onsocket, callbackError);
-            }
-            catch (err) {
-                Promise.reject(err).catch(callbackError);
-            }
-        }
-        freeSocket(socket, opts) {
-            debug('Freeing socket %o %o', socket.constructor.name, opts);
-            socket.destroy();
-        }
-        destroy() {
-            debug('Destroying agent %o', this.constructor.name);
-        }
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
     }
-    createAgent.Agent = Agent;
-    // So that `instanceof` works correctly
-    createAgent.prototype = createAgent.Agent.prototype;
-})(createAgent || (createAgent = {}));
-module.exports = createAgent;
-//# sourceMappingURL=index.js.map
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.req = exports.json = exports.toBuffer = void 0;
+const http = __importStar(__nccwpck_require__(13685));
+const https = __importStar(__nccwpck_require__(95687));
+async function toBuffer(stream) {
+    let length = 0;
+    const chunks = [];
+    for await (const chunk of stream) {
+        length += chunk.length;
+        chunks.push(chunk);
+    }
+    return Buffer.concat(chunks, length);
+}
+exports.toBuffer = toBuffer;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function json(stream) {
+    const buf = await toBuffer(stream);
+    const str = buf.toString('utf8');
+    try {
+        return JSON.parse(str);
+    }
+    catch (_err) {
+        const err = _err;
+        err.message += ` (input: ${str})`;
+        throw err;
+    }
+}
+exports.json = json;
+function req(url, opts = {}) {
+    const href = typeof url === 'string' ? url : url.href;
+    const req = (href.startsWith('https:') ? https : http).request(url, opts);
+    const promise = new Promise((resolve, reject) => {
+        req
+            .once('response', resolve)
+            .once('error', reject)
+            .end();
+    });
+    req.then = promise.then.bind(promise);
+    return req;
+}
+exports.req = req;
+//# sourceMappingURL=helpers.js.map
 
 /***/ }),
 
-/***/ 66570:
-/***/ ((__unused_webpack_module, exports) => {
+/***/ 70694:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-function promisify(fn) {
-    return function (req, opts) {
-        return new Promise((resolve, reject) => {
-            fn.call(this, req, opts, (err, rtn) => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    resolve(rtn);
-                }
-            });
-        });
-    };
+exports.Agent = void 0;
+const http = __importStar(__nccwpck_require__(13685));
+__exportStar(__nccwpck_require__(8348), exports);
+const INTERNAL = Symbol('AgentBaseInternalState');
+class Agent extends http.Agent {
+    constructor(opts) {
+        super(opts);
+        this[INTERNAL] = {};
+    }
+    /**
+     * Determine whether this is an `http` or `https` request.
+     */
+    isSecureEndpoint(options) {
+        if (options) {
+            // First check the `secureEndpoint` property explicitly, since this
+            // means that a parent `Agent` is "passing through" to this instance.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (typeof options.secureEndpoint === 'boolean') {
+                return options.secureEndpoint;
+            }
+            // If no explicit `secure` endpoint, check if `protocol` property is
+            // set. This will usually be the case since using a full string URL
+            // or `URL` instance should be the most common usage.
+            if (typeof options.protocol === 'string') {
+                return options.protocol === 'https:';
+            }
+        }
+        // Finally, if no `protocol` property was set, then fall back to
+        // checking the stack trace of the current call stack, and try to
+        // detect the "https" module.
+        const { stack } = new Error();
+        if (typeof stack !== 'string')
+            return false;
+        return stack
+            .split('\n')
+            .some((l) => l.indexOf('(https.js:') !== -1 ||
+            l.indexOf('node:https:') !== -1);
+    }
+    createSocket(req, options, cb) {
+        const connectOpts = {
+            ...options,
+            secureEndpoint: this.isSecureEndpoint(options),
+        };
+        Promise.resolve()
+            .then(() => this.connect(req, connectOpts))
+            .then((socket) => {
+            if (socket instanceof http.Agent) {
+                // @ts-expect-error `addRequest()` isn't defined in `@types/node`
+                return socket.addRequest(req, connectOpts);
+            }
+            this[INTERNAL].currentSocket = socket;
+            // @ts-expect-error `createSocket()` isn't defined in `@types/node`
+            super.createSocket(req, options, cb);
+        }, cb);
+    }
+    createConnection() {
+        const socket = this[INTERNAL].currentSocket;
+        this[INTERNAL].currentSocket = undefined;
+        if (!socket) {
+            throw new Error('No socket was returned in the `connect()` function');
+        }
+        return socket;
+    }
+    get defaultPort() {
+        return (this[INTERNAL].defaultPort ??
+            (this.protocol === 'https:' ? 443 : 80));
+    }
+    set defaultPort(v) {
+        if (this[INTERNAL]) {
+            this[INTERNAL].defaultPort = v;
+        }
+    }
+    get protocol() {
+        return (this[INTERNAL].protocol ??
+            (this.isSecureEndpoint() ? 'https:' : 'http:'));
+    }
+    set protocol(v) {
+        if (this[INTERNAL]) {
+            this[INTERNAL].protocol = v;
+        }
+    }
 }
-exports["default"] = promisify;
-//# sourceMappingURL=promisify.js.map
+exports.Agent = Agent;
+//# sourceMappingURL=index.js.map
 
 /***/ }),
 
@@ -30376,7 +30514,9 @@ module.exports = toXml;
 /***/ }),
 
 /***/ 6072:
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const util = __nccwpck_require__(38280);
 
 //TODO: handle comments
 function readDocType(xmlData, i){
@@ -30520,19 +30660,15 @@ function isNotation(xmlData, i){
     return false
 }
 
-//an entity name should not contains special characters that may be used in regex
-//Eg !?\\\/[]$%{}^&*()<>
-const specialChar = "!?\\\/[]$%{}^&*()<>|+";
-
 function validateEntityName(name){
-    for (let i = 0; i < specialChar.length; i++) {
-        const ch = specialChar[i];
-        if(name.indexOf(ch) !== -1) throw new Error(`Invalid character ${ch} in entity name`);
-    }
-    return name;
+    if (util.isName(name))
+	return name;
+    else
+        throw new Error(`Invalid entity name ${name}`);
 }
 
 module.exports = readDocType;
+
 
 /***/ }),
 
@@ -31419,32 +31555,46 @@ module.exports = (flag, argv = process.argv) => {
 
 /***/ }),
 
-/***/ 15098:
+/***/ 77219:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
 };
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const net_1 = __importDefault(__nccwpck_require__(41808));
-const tls_1 = __importDefault(__nccwpck_require__(24404));
-const url_1 = __importDefault(__nccwpck_require__(57310));
+exports.HttpsProxyAgent = void 0;
+const net = __importStar(__nccwpck_require__(41808));
+const tls = __importStar(__nccwpck_require__(24404));
 const assert_1 = __importDefault(__nccwpck_require__(39491));
 const debug_1 = __importDefault(__nccwpck_require__(38237));
-const agent_base_1 = __nccwpck_require__(49690);
-const parse_proxy_response_1 = __importDefault(__nccwpck_require__(595));
-const debug = debug_1.default('https-proxy-agent:agent');
+const agent_base_1 = __nccwpck_require__(70694);
+const parse_proxy_response_1 = __nccwpck_require__(595);
+const debug = (0, debug_1.default)('https-proxy-agent');
 /**
  * The `HttpsProxyAgent` implements an HTTP Agent subclass that connects to
  * the specified "HTTP(s) proxy server" in order to proxy HTTPS requests.
@@ -31456,138 +31606,117 @@ const debug = debug_1.default('https-proxy-agent:agent');
  *
  * `https:` requests have their socket connection upgraded to TLS once
  * the connection to the proxy server has been established.
- *
- * @api public
  */
 class HttpsProxyAgent extends agent_base_1.Agent {
-    constructor(_opts) {
-        let opts;
-        if (typeof _opts === 'string') {
-            opts = url_1.default.parse(_opts);
-        }
-        else {
-            opts = _opts;
-        }
-        if (!opts) {
-            throw new Error('an HTTP(S) proxy server `host` and `port` must be specified!');
-        }
-        debug('creating new HttpsProxyAgent instance: %o', opts);
+    constructor(proxy, opts) {
         super(opts);
-        const proxy = Object.assign({}, opts);
-        // If `true`, then connect to the proxy server over TLS.
-        // Defaults to `false`.
-        this.secureProxy = opts.secureProxy || isHTTPS(proxy.protocol);
-        // Prefer `hostname` over `host`, and set the `port` if needed.
-        proxy.host = proxy.hostname || proxy.host;
-        if (typeof proxy.port === 'string') {
-            proxy.port = parseInt(proxy.port, 10);
-        }
-        if (!proxy.port && proxy.host) {
-            proxy.port = this.secureProxy ? 443 : 80;
-        }
-        // ALPN is supported by Node.js >= v5.
-        // attempt to negotiate http/1.1 for proxy servers that support http/2
-        if (this.secureProxy && !('ALPNProtocols' in proxy)) {
-            proxy.ALPNProtocols = ['http 1.1'];
-        }
-        if (proxy.host && proxy.path) {
-            // If both a `host` and `path` are specified then it's most likely
-            // the result of a `url.parse()` call... we need to remove the
-            // `path` portion so that `net.connect()` doesn't attempt to open
-            // that as a Unix socket file.
-            delete proxy.path;
-            delete proxy.pathname;
-        }
-        this.proxy = proxy;
+        this.options = { path: undefined };
+        this.proxy = typeof proxy === 'string' ? new URL(proxy) : proxy;
+        this.proxyHeaders = opts?.headers ?? {};
+        debug('Creating new HttpsProxyAgent instance: %o', this.proxy.href);
+        // Trim off the brackets from IPv6 addresses
+        const host = (this.proxy.hostname || this.proxy.host).replace(/^\[|\]$/g, '');
+        const port = this.proxy.port
+            ? parseInt(this.proxy.port, 10)
+            : this.proxy.protocol === 'https:'
+                ? 443
+                : 80;
+        this.connectOpts = {
+            // Attempt to negotiate http/1.1 for proxy servers that support http/2
+            ALPNProtocols: ['http/1.1'],
+            ...(opts ? omit(opts, 'headers') : null),
+            host,
+            port,
+        };
     }
     /**
      * Called when the node-core HTTP client library is creating a
      * new HTTP request.
-     *
-     * @api protected
      */
-    callback(req, opts) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { proxy, secureProxy } = this;
-            // Create a socket connection to the proxy server.
-            let socket;
-            if (secureProxy) {
-                debug('Creating `tls.Socket`: %o', proxy);
-                socket = tls_1.default.connect(proxy);
+    async connect(req, opts) {
+        const { proxy } = this;
+        if (!opts.host) {
+            throw new TypeError('No "host" provided');
+        }
+        // Create a socket connection to the proxy server.
+        let socket;
+        if (proxy.protocol === 'https:') {
+            debug('Creating `tls.Socket`: %o', this.connectOpts);
+            socket = tls.connect(this.connectOpts);
+        }
+        else {
+            debug('Creating `net.Socket`: %o', this.connectOpts);
+            socket = net.connect(this.connectOpts);
+        }
+        const headers = typeof this.proxyHeaders === 'function'
+            ? this.proxyHeaders()
+            : { ...this.proxyHeaders };
+        const host = net.isIPv6(opts.host) ? `[${opts.host}]` : opts.host;
+        let payload = `CONNECT ${host}:${opts.port} HTTP/1.1\r\n`;
+        // Inject the `Proxy-Authorization` header if necessary.
+        if (proxy.username || proxy.password) {
+            const auth = `${decodeURIComponent(proxy.username)}:${decodeURIComponent(proxy.password)}`;
+            headers['Proxy-Authorization'] = `Basic ${Buffer.from(auth).toString('base64')}`;
+        }
+        headers.Host = `${host}:${opts.port}`;
+        if (!headers['Proxy-Connection']) {
+            headers['Proxy-Connection'] = this.keepAlive
+                ? 'Keep-Alive'
+                : 'close';
+        }
+        for (const name of Object.keys(headers)) {
+            payload += `${name}: ${headers[name]}\r\n`;
+        }
+        const proxyResponsePromise = (0, parse_proxy_response_1.parseProxyResponse)(socket);
+        socket.write(`${payload}\r\n`);
+        const { connect, buffered } = await proxyResponsePromise;
+        req.emit('proxyConnect', connect);
+        this.emit('proxyConnect', connect, req);
+        if (connect.statusCode === 200) {
+            req.once('socket', resume);
+            if (opts.secureEndpoint) {
+                // The proxy is connecting to a TLS server, so upgrade
+                // this socket connection to a TLS connection.
+                debug('Upgrading socket connection to TLS');
+                const servername = opts.servername || opts.host;
+                return tls.connect({
+                    ...omit(opts, 'host', 'path', 'port'),
+                    socket,
+                    servername: net.isIP(servername) ? undefined : servername,
+                });
             }
-            else {
-                debug('Creating `net.Socket`: %o', proxy);
-                socket = net_1.default.connect(proxy);
-            }
-            const headers = Object.assign({}, proxy.headers);
-            const hostname = `${opts.host}:${opts.port}`;
-            let payload = `CONNECT ${hostname} HTTP/1.1\r\n`;
-            // Inject the `Proxy-Authorization` header if necessary.
-            if (proxy.auth) {
-                headers['Proxy-Authorization'] = `Basic ${Buffer.from(proxy.auth).toString('base64')}`;
-            }
-            // The `Host` header should only include the port
-            // number when it is not the default port.
-            let { host, port, secureEndpoint } = opts;
-            if (!isDefaultPort(port, secureEndpoint)) {
-                host += `:${port}`;
-            }
-            headers.Host = host;
-            headers.Connection = 'close';
-            for (const name of Object.keys(headers)) {
-                payload += `${name}: ${headers[name]}\r\n`;
-            }
-            const proxyResponsePromise = parse_proxy_response_1.default(socket);
-            socket.write(`${payload}\r\n`);
-            const { statusCode, buffered } = yield proxyResponsePromise;
-            if (statusCode === 200) {
-                req.once('socket', resume);
-                if (opts.secureEndpoint) {
-                    // The proxy is connecting to a TLS server, so upgrade
-                    // this socket connection to a TLS connection.
-                    debug('Upgrading socket connection to TLS');
-                    const servername = opts.servername || opts.host;
-                    return tls_1.default.connect(Object.assign(Object.assign({}, omit(opts, 'host', 'hostname', 'path', 'port')), { socket,
-                        servername }));
-                }
-                return socket;
-            }
-            // Some other status code that's not 200... need to re-play the HTTP
-            // header "data" events onto the socket once the HTTP machinery is
-            // attached so that the node core `http` can parse and handle the
-            // error status code.
-            // Close the original socket, and a new "fake" socket is returned
-            // instead, so that the proxy doesn't get the HTTP request
-            // written to it (which may contain `Authorization` headers or other
-            // sensitive data).
-            //
-            // See: https://hackerone.com/reports/541502
-            socket.destroy();
-            const fakeSocket = new net_1.default.Socket({ writable: false });
-            fakeSocket.readable = true;
-            // Need to wait for the "socket" event to re-play the "data" events.
-            req.once('socket', (s) => {
-                debug('replaying proxy buffer for failed request');
-                assert_1.default(s.listenerCount('data') > 0);
-                // Replay the "buffered" Buffer onto the fake `socket`, since at
-                // this point the HTTP module machinery has been hooked up for
-                // the user.
-                s.push(buffered);
-                s.push(null);
-            });
-            return fakeSocket;
+            return socket;
+        }
+        // Some other status code that's not 200... need to re-play the HTTP
+        // header "data" events onto the socket once the HTTP machinery is
+        // attached so that the node core `http` can parse and handle the
+        // error status code.
+        // Close the original socket, and a new "fake" socket is returned
+        // instead, so that the proxy doesn't get the HTTP request
+        // written to it (which may contain `Authorization` headers or other
+        // sensitive data).
+        //
+        // See: https://hackerone.com/reports/541502
+        socket.destroy();
+        const fakeSocket = new net.Socket({ writable: false });
+        fakeSocket.readable = true;
+        // Need to wait for the "socket" event to re-play the "data" events.
+        req.once('socket', (s) => {
+            debug('Replaying proxy buffer for failed request');
+            (0, assert_1.default)(s.listenerCount('data') > 0);
+            // Replay the "buffered" Buffer onto the fake `socket`, since at
+            // this point the HTTP module machinery has been hooked up for
+            // the user.
+            s.push(buffered);
+            s.push(null);
         });
+        return fakeSocket;
     }
 }
-exports["default"] = HttpsProxyAgent;
+HttpsProxyAgent.protocols = ['http', 'https'];
+exports.HttpsProxyAgent = HttpsProxyAgent;
 function resume(socket) {
     socket.resume();
-}
-function isDefaultPort(port, secure) {
-    return Boolean((!secure && port === 80) || (secure && port === 443));
-}
-function isHTTPS(protocol) {
-    return typeof protocol === 'string' ? /^https:?$/i.test(protocol) : false;
 }
 function omit(obj, ...keys) {
     const ret = {};
@@ -31599,27 +31728,6 @@ function omit(obj, ...keys) {
     }
     return ret;
 }
-//# sourceMappingURL=agent.js.map
-
-/***/ }),
-
-/***/ 77219:
-/***/ (function(module, __unused_webpack_exports, __nccwpck_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-const agent_1 = __importDefault(__nccwpck_require__(15098));
-function createHttpsProxyAgent(opts) {
-    return new agent_1.default(opts);
-}
-(function (createHttpsProxyAgent) {
-    createHttpsProxyAgent.HttpsProxyAgent = agent_1.default;
-    createHttpsProxyAgent.prototype = agent_1.default.prototype;
-})(createHttpsProxyAgent || (createHttpsProxyAgent = {}));
-module.exports = createHttpsProxyAgent;
 //# sourceMappingURL=index.js.map
 
 /***/ }),
@@ -31633,8 +31741,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.parseProxyResponse = void 0;
 const debug_1 = __importDefault(__nccwpck_require__(38237));
-const debug = debug_1.default('https-proxy-agent:parse-proxy-response');
+const debug = (0, debug_1.default)('https-proxy-agent:parse-proxy-response');
 function parseProxyResponse(socket) {
     return new Promise((resolve, reject) => {
         // we need to buffer any HTTP traffic that happens with the proxy before we get
@@ -31653,14 +31762,12 @@ function parseProxyResponse(socket) {
         function cleanup() {
             socket.removeListener('end', onend);
             socket.removeListener('error', onerror);
-            socket.removeListener('close', onclose);
             socket.removeListener('readable', read);
         }
-        function onclose(err) {
-            debug('onclose had error %o', err);
-        }
         function onend() {
+            cleanup();
             debug('onend');
+            reject(new Error('Proxy connection ended before receiving CONNECT response'));
         }
         function onerror(err) {
             cleanup();
@@ -31678,21 +31785,54 @@ function parseProxyResponse(socket) {
                 read();
                 return;
             }
-            const firstLine = buffered.toString('ascii', 0, buffered.indexOf('\r\n'));
-            const statusCode = +firstLine.split(' ')[1];
-            debug('got proxy server response: %o', firstLine);
+            const headerParts = buffered.toString('ascii').split('\r\n');
+            const firstLine = headerParts.shift();
+            if (!firstLine) {
+                socket.destroy();
+                return reject(new Error('No header received from proxy CONNECT response'));
+            }
+            const firstLineParts = firstLine.split(' ');
+            const statusCode = +firstLineParts[1];
+            const statusText = firstLineParts.slice(2).join(' ');
+            const headers = {};
+            for (const header of headerParts) {
+                if (!header)
+                    continue;
+                const firstColon = header.indexOf(':');
+                if (firstColon === -1) {
+                    socket.destroy();
+                    return reject(new Error(`Invalid header from proxy CONNECT response: "${header}"`));
+                }
+                const key = header.slice(0, firstColon).toLowerCase();
+                const value = header.slice(firstColon + 1).trimStart();
+                const current = headers[key];
+                if (typeof current === 'string') {
+                    headers[key] = [current, value];
+                }
+                else if (Array.isArray(current)) {
+                    current.push(value);
+                }
+                else {
+                    headers[key] = value;
+                }
+            }
+            debug('got proxy server response: %o %o', firstLine, headers);
+            cleanup();
             resolve({
-                statusCode,
-                buffered
+                connect: {
+                    statusCode,
+                    statusText,
+                    headers,
+                },
+                buffered,
             });
         }
         socket.on('error', onerror);
-        socket.on('close', onclose);
         socket.on('end', onend);
         read();
     });
 }
-exports["default"] = parseProxyResponse;
+exports.parseProxyResponse = parseProxyResponse;
 //# sourceMappingURL=parse-proxy-response.js.map
 
 /***/ }),
@@ -33615,7 +33755,7 @@ module.exports = require("util");
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"@aws-sdk/client-ecr-public","description":"AWS SDK for JavaScript Ecr Public Client for Node.js, Browser and React Native","version":"3.354.0","scripts":{"build":"concurrently \'yarn:build:cjs\' \'yarn:build:es\' \'yarn:build:types\'","build:cjs":"tsc -p tsconfig.cjs.json","build:docs":"typedoc","build:es":"tsc -p tsconfig.es.json","build:include:deps":"lerna run --scope $npm_package_name --include-dependencies build","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"rimraf ./dist-* && rimraf *.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo ecr-public"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"3.0.0","@aws-crypto/sha256-js":"3.0.0","@aws-sdk/client-sts":"3.354.0","@aws-sdk/config-resolver":"3.354.0","@aws-sdk/credential-provider-node":"3.354.0","@aws-sdk/fetch-http-handler":"3.353.0","@aws-sdk/hash-node":"3.347.0","@aws-sdk/invalid-dependency":"3.347.0","@aws-sdk/middleware-content-length":"3.347.0","@aws-sdk/middleware-endpoint":"3.347.0","@aws-sdk/middleware-host-header":"3.347.0","@aws-sdk/middleware-logger":"3.347.0","@aws-sdk/middleware-recursion-detection":"3.347.0","@aws-sdk/middleware-retry":"3.354.0","@aws-sdk/middleware-serde":"3.347.0","@aws-sdk/middleware-signing":"3.354.0","@aws-sdk/middleware-stack":"3.347.0","@aws-sdk/middleware-user-agent":"3.352.0","@aws-sdk/node-config-provider":"3.354.0","@aws-sdk/node-http-handler":"3.350.0","@aws-sdk/smithy-client":"3.347.0","@aws-sdk/types":"3.347.0","@aws-sdk/url-parser":"3.347.0","@aws-sdk/util-base64":"3.310.0","@aws-sdk/util-body-length-browser":"3.310.0","@aws-sdk/util-body-length-node":"3.310.0","@aws-sdk/util-defaults-mode-browser":"3.353.0","@aws-sdk/util-defaults-mode-node":"3.354.0","@aws-sdk/util-endpoints":"3.352.0","@aws-sdk/util-retry":"3.347.0","@aws-sdk/util-user-agent-browser":"3.347.0","@aws-sdk/util-user-agent-node":"3.354.0","@aws-sdk/util-utf8":"3.310.0","@smithy/protocol-http":"^1.0.1","@smithy/types":"^1.0.0","tslib":"^2.5.0"},"devDependencies":{"@aws-sdk/service-client-documentation-generator":"3.310.0","@tsconfig/node14":"1.0.3","@types/node":"^14.14.31","concurrently":"7.0.0","downlevel-dts":"0.10.1","rimraf":"3.0.2","typedoc":"0.23.23","typescript":"~4.9.5"},"engines":{"node":">=14.0.0"},"typesVersions":{"<4.0":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-ecr-public","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-ecr-public"}}');
+module.exports = JSON.parse('{"name":"@aws-sdk/client-ecr-public","description":"AWS SDK for JavaScript Ecr Public Client for Node.js, Browser and React Native","version":"3.360.0","scripts":{"build":"concurrently \'yarn:build:cjs\' \'yarn:build:es\' \'yarn:build:types\'","build:cjs":"tsc -p tsconfig.cjs.json","build:docs":"typedoc","build:es":"tsc -p tsconfig.es.json","build:include:deps":"lerna run --scope $npm_package_name --include-dependencies build","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"rimraf ./dist-* && rimraf *.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo ecr-public"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"3.0.0","@aws-crypto/sha256-js":"3.0.0","@aws-sdk/client-sts":"3.360.0","@aws-sdk/config-resolver":"3.357.0","@aws-sdk/credential-provider-node":"3.360.0","@aws-sdk/fetch-http-handler":"3.357.0","@aws-sdk/hash-node":"3.357.0","@aws-sdk/invalid-dependency":"3.357.0","@aws-sdk/middleware-content-length":"3.357.0","@aws-sdk/middleware-endpoint":"3.357.0","@aws-sdk/middleware-host-header":"3.357.0","@aws-sdk/middleware-logger":"3.357.0","@aws-sdk/middleware-recursion-detection":"3.357.0","@aws-sdk/middleware-retry":"3.357.0","@aws-sdk/middleware-serde":"3.357.0","@aws-sdk/middleware-signing":"3.357.0","@aws-sdk/middleware-stack":"3.357.0","@aws-sdk/middleware-user-agent":"3.357.0","@aws-sdk/node-config-provider":"3.357.0","@aws-sdk/node-http-handler":"3.360.0","@aws-sdk/smithy-client":"3.360.0","@aws-sdk/types":"3.357.0","@aws-sdk/url-parser":"3.357.0","@aws-sdk/util-base64":"3.310.0","@aws-sdk/util-body-length-browser":"3.310.0","@aws-sdk/util-body-length-node":"3.310.0","@aws-sdk/util-defaults-mode-browser":"3.360.0","@aws-sdk/util-defaults-mode-node":"3.360.0","@aws-sdk/util-endpoints":"3.357.0","@aws-sdk/util-retry":"3.357.0","@aws-sdk/util-user-agent-browser":"3.357.0","@aws-sdk/util-user-agent-node":"3.357.0","@aws-sdk/util-utf8":"3.310.0","@smithy/protocol-http":"^1.0.1","@smithy/types":"^1.0.0","tslib":"^2.5.0"},"devDependencies":{"@aws-sdk/service-client-documentation-generator":"3.310.0","@tsconfig/node14":"1.0.3","@types/node":"^14.14.31","concurrently":"7.0.0","downlevel-dts":"0.10.1","rimraf":"3.0.2","typedoc":"0.23.23","typescript":"~4.9.5"},"engines":{"node":">=14.0.0"},"typesVersions":{"<4.0":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-ecr-public","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-ecr-public"}}');
 
 /***/ }),
 
@@ -33623,7 +33763,7 @@ module.exports = JSON.parse('{"name":"@aws-sdk/client-ecr-public","description":
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"@aws-sdk/client-ecr","description":"AWS SDK for JavaScript Ecr Client for Node.js, Browser and React Native","version":"3.354.0","scripts":{"build":"concurrently \'yarn:build:cjs\' \'yarn:build:es\' \'yarn:build:types\'","build:cjs":"tsc -p tsconfig.cjs.json","build:docs":"typedoc","build:es":"tsc -p tsconfig.es.json","build:include:deps":"lerna run --scope $npm_package_name --include-dependencies build","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"rimraf ./dist-* && rimraf *.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo ecr"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"3.0.0","@aws-crypto/sha256-js":"3.0.0","@aws-sdk/client-sts":"3.354.0","@aws-sdk/config-resolver":"3.354.0","@aws-sdk/credential-provider-node":"3.354.0","@aws-sdk/fetch-http-handler":"3.353.0","@aws-sdk/hash-node":"3.347.0","@aws-sdk/invalid-dependency":"3.347.0","@aws-sdk/middleware-content-length":"3.347.0","@aws-sdk/middleware-endpoint":"3.347.0","@aws-sdk/middleware-host-header":"3.347.0","@aws-sdk/middleware-logger":"3.347.0","@aws-sdk/middleware-recursion-detection":"3.347.0","@aws-sdk/middleware-retry":"3.354.0","@aws-sdk/middleware-serde":"3.347.0","@aws-sdk/middleware-signing":"3.354.0","@aws-sdk/middleware-stack":"3.347.0","@aws-sdk/middleware-user-agent":"3.352.0","@aws-sdk/node-config-provider":"3.354.0","@aws-sdk/node-http-handler":"3.350.0","@aws-sdk/smithy-client":"3.347.0","@aws-sdk/types":"3.347.0","@aws-sdk/url-parser":"3.347.0","@aws-sdk/util-base64":"3.310.0","@aws-sdk/util-body-length-browser":"3.310.0","@aws-sdk/util-body-length-node":"3.310.0","@aws-sdk/util-defaults-mode-browser":"3.353.0","@aws-sdk/util-defaults-mode-node":"3.354.0","@aws-sdk/util-endpoints":"3.352.0","@aws-sdk/util-retry":"3.347.0","@aws-sdk/util-user-agent-browser":"3.347.0","@aws-sdk/util-user-agent-node":"3.354.0","@aws-sdk/util-utf8":"3.310.0","@aws-sdk/util-waiter":"3.347.0","@smithy/protocol-http":"^1.0.1","@smithy/types":"^1.0.0","tslib":"^2.5.0"},"devDependencies":{"@aws-sdk/service-client-documentation-generator":"3.310.0","@tsconfig/node14":"1.0.3","@types/node":"^14.14.31","concurrently":"7.0.0","downlevel-dts":"0.10.1","rimraf":"3.0.2","typedoc":"0.23.23","typescript":"~4.9.5"},"engines":{"node":">=14.0.0"},"typesVersions":{"<4.0":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-ecr","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-ecr"}}');
+module.exports = JSON.parse('{"name":"@aws-sdk/client-ecr","description":"AWS SDK for JavaScript Ecr Client for Node.js, Browser and React Native","version":"3.360.0","scripts":{"build":"concurrently \'yarn:build:cjs\' \'yarn:build:es\' \'yarn:build:types\'","build:cjs":"tsc -p tsconfig.cjs.json","build:docs":"typedoc","build:es":"tsc -p tsconfig.es.json","build:include:deps":"lerna run --scope $npm_package_name --include-dependencies build","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"rimraf ./dist-* && rimraf *.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo ecr"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"3.0.0","@aws-crypto/sha256-js":"3.0.0","@aws-sdk/client-sts":"3.360.0","@aws-sdk/config-resolver":"3.357.0","@aws-sdk/credential-provider-node":"3.360.0","@aws-sdk/fetch-http-handler":"3.357.0","@aws-sdk/hash-node":"3.357.0","@aws-sdk/invalid-dependency":"3.357.0","@aws-sdk/middleware-content-length":"3.357.0","@aws-sdk/middleware-endpoint":"3.357.0","@aws-sdk/middleware-host-header":"3.357.0","@aws-sdk/middleware-logger":"3.357.0","@aws-sdk/middleware-recursion-detection":"3.357.0","@aws-sdk/middleware-retry":"3.357.0","@aws-sdk/middleware-serde":"3.357.0","@aws-sdk/middleware-signing":"3.357.0","@aws-sdk/middleware-stack":"3.357.0","@aws-sdk/middleware-user-agent":"3.357.0","@aws-sdk/node-config-provider":"3.357.0","@aws-sdk/node-http-handler":"3.360.0","@aws-sdk/smithy-client":"3.360.0","@aws-sdk/types":"3.357.0","@aws-sdk/url-parser":"3.357.0","@aws-sdk/util-base64":"3.310.0","@aws-sdk/util-body-length-browser":"3.310.0","@aws-sdk/util-body-length-node":"3.310.0","@aws-sdk/util-defaults-mode-browser":"3.360.0","@aws-sdk/util-defaults-mode-node":"3.360.0","@aws-sdk/util-endpoints":"3.357.0","@aws-sdk/util-retry":"3.357.0","@aws-sdk/util-user-agent-browser":"3.357.0","@aws-sdk/util-user-agent-node":"3.357.0","@aws-sdk/util-utf8":"3.310.0","@aws-sdk/util-waiter":"3.357.0","@smithy/protocol-http":"^1.0.1","@smithy/types":"^1.0.0","tslib":"^2.5.0"},"devDependencies":{"@aws-sdk/service-client-documentation-generator":"3.310.0","@tsconfig/node14":"1.0.3","@types/node":"^14.14.31","concurrently":"7.0.0","downlevel-dts":"0.10.1","rimraf":"3.0.2","typedoc":"0.23.23","typescript":"~4.9.5"},"engines":{"node":">=14.0.0"},"typesVersions":{"<4.0":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-ecr","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-ecr"}}');
 
 /***/ }),
 
@@ -33631,7 +33771,7 @@ module.exports = JSON.parse('{"name":"@aws-sdk/client-ecr","description":"AWS SD
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"@aws-sdk/client-sso-oidc","description":"AWS SDK for JavaScript Sso Oidc Client for Node.js, Browser and React Native","version":"3.354.0","scripts":{"build":"concurrently \'yarn:build:cjs\' \'yarn:build:es\' \'yarn:build:types\'","build:cjs":"tsc -p tsconfig.cjs.json","build:docs":"typedoc","build:es":"tsc -p tsconfig.es.json","build:include:deps":"lerna run --scope $npm_package_name --include-dependencies build","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"rimraf ./dist-* && rimraf *.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo sso-oidc"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"3.0.0","@aws-crypto/sha256-js":"3.0.0","@aws-sdk/config-resolver":"3.354.0","@aws-sdk/fetch-http-handler":"3.353.0","@aws-sdk/hash-node":"3.347.0","@aws-sdk/invalid-dependency":"3.347.0","@aws-sdk/middleware-content-length":"3.347.0","@aws-sdk/middleware-endpoint":"3.347.0","@aws-sdk/middleware-host-header":"3.347.0","@aws-sdk/middleware-logger":"3.347.0","@aws-sdk/middleware-recursion-detection":"3.347.0","@aws-sdk/middleware-retry":"3.354.0","@aws-sdk/middleware-serde":"3.347.0","@aws-sdk/middleware-stack":"3.347.0","@aws-sdk/middleware-user-agent":"3.352.0","@aws-sdk/node-config-provider":"3.354.0","@aws-sdk/node-http-handler":"3.350.0","@aws-sdk/smithy-client":"3.347.0","@aws-sdk/types":"3.347.0","@aws-sdk/url-parser":"3.347.0","@aws-sdk/util-base64":"3.310.0","@aws-sdk/util-body-length-browser":"3.310.0","@aws-sdk/util-body-length-node":"3.310.0","@aws-sdk/util-defaults-mode-browser":"3.353.0","@aws-sdk/util-defaults-mode-node":"3.354.0","@aws-sdk/util-endpoints":"3.352.0","@aws-sdk/util-retry":"3.347.0","@aws-sdk/util-user-agent-browser":"3.347.0","@aws-sdk/util-user-agent-node":"3.354.0","@aws-sdk/util-utf8":"3.310.0","@smithy/protocol-http":"^1.0.1","@smithy/types":"^1.0.0","tslib":"^2.5.0"},"devDependencies":{"@aws-sdk/service-client-documentation-generator":"3.310.0","@tsconfig/node14":"1.0.3","@types/node":"^14.14.31","concurrently":"7.0.0","downlevel-dts":"0.10.1","rimraf":"3.0.2","typedoc":"0.23.23","typescript":"~4.9.5"},"engines":{"node":">=14.0.0"},"typesVersions":{"<4.0":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-sso-oidc","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-sso-oidc"}}');
+module.exports = JSON.parse('{"name":"@aws-sdk/client-sso-oidc","description":"AWS SDK for JavaScript Sso Oidc Client for Node.js, Browser and React Native","version":"3.360.0","scripts":{"build":"concurrently \'yarn:build:cjs\' \'yarn:build:es\' \'yarn:build:types\'","build:cjs":"tsc -p tsconfig.cjs.json","build:docs":"typedoc","build:es":"tsc -p tsconfig.es.json","build:include:deps":"lerna run --scope $npm_package_name --include-dependencies build","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"rimraf ./dist-* && rimraf *.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo sso-oidc"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"3.0.0","@aws-crypto/sha256-js":"3.0.0","@aws-sdk/config-resolver":"3.357.0","@aws-sdk/fetch-http-handler":"3.357.0","@aws-sdk/hash-node":"3.357.0","@aws-sdk/invalid-dependency":"3.357.0","@aws-sdk/middleware-content-length":"3.357.0","@aws-sdk/middleware-endpoint":"3.357.0","@aws-sdk/middleware-host-header":"3.357.0","@aws-sdk/middleware-logger":"3.357.0","@aws-sdk/middleware-recursion-detection":"3.357.0","@aws-sdk/middleware-retry":"3.357.0","@aws-sdk/middleware-serde":"3.357.0","@aws-sdk/middleware-stack":"3.357.0","@aws-sdk/middleware-user-agent":"3.357.0","@aws-sdk/node-config-provider":"3.357.0","@aws-sdk/node-http-handler":"3.360.0","@aws-sdk/smithy-client":"3.360.0","@aws-sdk/types":"3.357.0","@aws-sdk/url-parser":"3.357.0","@aws-sdk/util-base64":"3.310.0","@aws-sdk/util-body-length-browser":"3.310.0","@aws-sdk/util-body-length-node":"3.310.0","@aws-sdk/util-defaults-mode-browser":"3.360.0","@aws-sdk/util-defaults-mode-node":"3.360.0","@aws-sdk/util-endpoints":"3.357.0","@aws-sdk/util-retry":"3.357.0","@aws-sdk/util-user-agent-browser":"3.357.0","@aws-sdk/util-user-agent-node":"3.357.0","@aws-sdk/util-utf8":"3.310.0","@smithy/protocol-http":"^1.0.1","@smithy/types":"^1.0.0","tslib":"^2.5.0"},"devDependencies":{"@aws-sdk/service-client-documentation-generator":"3.310.0","@tsconfig/node14":"1.0.3","@types/node":"^14.14.31","concurrently":"7.0.0","downlevel-dts":"0.10.1","rimraf":"3.0.2","typedoc":"0.23.23","typescript":"~4.9.5"},"engines":{"node":">=14.0.0"},"typesVersions":{"<4.0":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-sso-oidc","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-sso-oidc"}}');
 
 /***/ }),
 
@@ -33639,7 +33779,7 @@ module.exports = JSON.parse('{"name":"@aws-sdk/client-sso-oidc","description":"A
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"@aws-sdk/client-sso","description":"AWS SDK for JavaScript Sso Client for Node.js, Browser and React Native","version":"3.354.0","scripts":{"build":"concurrently \'yarn:build:cjs\' \'yarn:build:es\' \'yarn:build:types\'","build:cjs":"tsc -p tsconfig.cjs.json","build:docs":"typedoc","build:es":"tsc -p tsconfig.es.json","build:include:deps":"lerna run --scope $npm_package_name --include-dependencies build","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"rimraf ./dist-* && rimraf *.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo sso"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"3.0.0","@aws-crypto/sha256-js":"3.0.0","@aws-sdk/config-resolver":"3.354.0","@aws-sdk/fetch-http-handler":"3.353.0","@aws-sdk/hash-node":"3.347.0","@aws-sdk/invalid-dependency":"3.347.0","@aws-sdk/middleware-content-length":"3.347.0","@aws-sdk/middleware-endpoint":"3.347.0","@aws-sdk/middleware-host-header":"3.347.0","@aws-sdk/middleware-logger":"3.347.0","@aws-sdk/middleware-recursion-detection":"3.347.0","@aws-sdk/middleware-retry":"3.354.0","@aws-sdk/middleware-serde":"3.347.0","@aws-sdk/middleware-stack":"3.347.0","@aws-sdk/middleware-user-agent":"3.352.0","@aws-sdk/node-config-provider":"3.354.0","@aws-sdk/node-http-handler":"3.350.0","@aws-sdk/smithy-client":"3.347.0","@aws-sdk/types":"3.347.0","@aws-sdk/url-parser":"3.347.0","@aws-sdk/util-base64":"3.310.0","@aws-sdk/util-body-length-browser":"3.310.0","@aws-sdk/util-body-length-node":"3.310.0","@aws-sdk/util-defaults-mode-browser":"3.353.0","@aws-sdk/util-defaults-mode-node":"3.354.0","@aws-sdk/util-endpoints":"3.352.0","@aws-sdk/util-retry":"3.347.0","@aws-sdk/util-user-agent-browser":"3.347.0","@aws-sdk/util-user-agent-node":"3.354.0","@aws-sdk/util-utf8":"3.310.0","@smithy/protocol-http":"^1.0.1","@smithy/types":"^1.0.0","tslib":"^2.5.0"},"devDependencies":{"@aws-sdk/service-client-documentation-generator":"3.310.0","@tsconfig/node14":"1.0.3","@types/node":"^14.14.31","concurrently":"7.0.0","downlevel-dts":"0.10.1","rimraf":"3.0.2","typedoc":"0.23.23","typescript":"~4.9.5"},"engines":{"node":">=14.0.0"},"typesVersions":{"<4.0":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-sso","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-sso"}}');
+module.exports = JSON.parse('{"name":"@aws-sdk/client-sso","description":"AWS SDK for JavaScript Sso Client for Node.js, Browser and React Native","version":"3.360.0","scripts":{"build":"concurrently \'yarn:build:cjs\' \'yarn:build:es\' \'yarn:build:types\'","build:cjs":"tsc -p tsconfig.cjs.json","build:docs":"typedoc","build:es":"tsc -p tsconfig.es.json","build:include:deps":"lerna run --scope $npm_package_name --include-dependencies build","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"rimraf ./dist-* && rimraf *.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo sso"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"3.0.0","@aws-crypto/sha256-js":"3.0.0","@aws-sdk/config-resolver":"3.357.0","@aws-sdk/fetch-http-handler":"3.357.0","@aws-sdk/hash-node":"3.357.0","@aws-sdk/invalid-dependency":"3.357.0","@aws-sdk/middleware-content-length":"3.357.0","@aws-sdk/middleware-endpoint":"3.357.0","@aws-sdk/middleware-host-header":"3.357.0","@aws-sdk/middleware-logger":"3.357.0","@aws-sdk/middleware-recursion-detection":"3.357.0","@aws-sdk/middleware-retry":"3.357.0","@aws-sdk/middleware-serde":"3.357.0","@aws-sdk/middleware-stack":"3.357.0","@aws-sdk/middleware-user-agent":"3.357.0","@aws-sdk/node-config-provider":"3.357.0","@aws-sdk/node-http-handler":"3.360.0","@aws-sdk/smithy-client":"3.360.0","@aws-sdk/types":"3.357.0","@aws-sdk/url-parser":"3.357.0","@aws-sdk/util-base64":"3.310.0","@aws-sdk/util-body-length-browser":"3.310.0","@aws-sdk/util-body-length-node":"3.310.0","@aws-sdk/util-defaults-mode-browser":"3.360.0","@aws-sdk/util-defaults-mode-node":"3.360.0","@aws-sdk/util-endpoints":"3.357.0","@aws-sdk/util-retry":"3.357.0","@aws-sdk/util-user-agent-browser":"3.357.0","@aws-sdk/util-user-agent-node":"3.357.0","@aws-sdk/util-utf8":"3.310.0","@smithy/protocol-http":"^1.0.1","@smithy/types":"^1.0.0","tslib":"^2.5.0"},"devDependencies":{"@aws-sdk/service-client-documentation-generator":"3.310.0","@tsconfig/node14":"1.0.3","@types/node":"^14.14.31","concurrently":"7.0.0","downlevel-dts":"0.10.1","rimraf":"3.0.2","typedoc":"0.23.23","typescript":"~4.9.5"},"engines":{"node":">=14.0.0"},"typesVersions":{"<4.0":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-sso","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-sso"}}');
 
 /***/ }),
 
@@ -33647,7 +33787,7 @@ module.exports = JSON.parse('{"name":"@aws-sdk/client-sso","description":"AWS SD
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"@aws-sdk/client-sts","description":"AWS SDK for JavaScript Sts Client for Node.js, Browser and React Native","version":"3.354.0","scripts":{"build":"concurrently \'yarn:build:cjs\' \'yarn:build:es\' \'yarn:build:types\'","build:cjs":"tsc -p tsconfig.cjs.json","build:docs":"typedoc","build:es":"tsc -p tsconfig.es.json","build:include:deps":"lerna run --scope $npm_package_name --include-dependencies build","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"rimraf ./dist-* && rimraf *.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo sts","test":"yarn test:unit","test:unit":"jest"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"3.0.0","@aws-crypto/sha256-js":"3.0.0","@aws-sdk/config-resolver":"3.354.0","@aws-sdk/credential-provider-node":"3.354.0","@aws-sdk/fetch-http-handler":"3.353.0","@aws-sdk/hash-node":"3.347.0","@aws-sdk/invalid-dependency":"3.347.0","@aws-sdk/middleware-content-length":"3.347.0","@aws-sdk/middleware-endpoint":"3.347.0","@aws-sdk/middleware-host-header":"3.347.0","@aws-sdk/middleware-logger":"3.347.0","@aws-sdk/middleware-recursion-detection":"3.347.0","@aws-sdk/middleware-retry":"3.354.0","@aws-sdk/middleware-sdk-sts":"3.354.0","@aws-sdk/middleware-serde":"3.347.0","@aws-sdk/middleware-signing":"3.354.0","@aws-sdk/middleware-stack":"3.347.0","@aws-sdk/middleware-user-agent":"3.352.0","@aws-sdk/node-config-provider":"3.354.0","@aws-sdk/node-http-handler":"3.350.0","@aws-sdk/smithy-client":"3.347.0","@aws-sdk/types":"3.347.0","@aws-sdk/url-parser":"3.347.0","@aws-sdk/util-base64":"3.310.0","@aws-sdk/util-body-length-browser":"3.310.0","@aws-sdk/util-body-length-node":"3.310.0","@aws-sdk/util-defaults-mode-browser":"3.353.0","@aws-sdk/util-defaults-mode-node":"3.354.0","@aws-sdk/util-endpoints":"3.352.0","@aws-sdk/util-retry":"3.347.0","@aws-sdk/util-user-agent-browser":"3.347.0","@aws-sdk/util-user-agent-node":"3.354.0","@aws-sdk/util-utf8":"3.310.0","@smithy/protocol-http":"^1.0.1","@smithy/types":"^1.0.0","fast-xml-parser":"4.2.4","tslib":"^2.5.0"},"devDependencies":{"@aws-sdk/service-client-documentation-generator":"3.310.0","@tsconfig/node14":"1.0.3","@types/node":"^14.14.31","concurrently":"7.0.0","downlevel-dts":"0.10.1","rimraf":"3.0.2","typedoc":"0.23.23","typescript":"~4.9.5"},"engines":{"node":">=14.0.0"},"typesVersions":{"<4.0":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-sts","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-sts"}}');
+module.exports = JSON.parse('{"name":"@aws-sdk/client-sts","description":"AWS SDK for JavaScript Sts Client for Node.js, Browser and React Native","version":"3.360.0","scripts":{"build":"concurrently \'yarn:build:cjs\' \'yarn:build:es\' \'yarn:build:types\'","build:cjs":"tsc -p tsconfig.cjs.json","build:docs":"typedoc","build:es":"tsc -p tsconfig.es.json","build:include:deps":"lerna run --scope $npm_package_name --include-dependencies build","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"rimraf ./dist-* && rimraf *.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo sts","test":"yarn test:unit","test:unit":"jest"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"3.0.0","@aws-crypto/sha256-js":"3.0.0","@aws-sdk/config-resolver":"3.357.0","@aws-sdk/credential-provider-node":"3.360.0","@aws-sdk/fetch-http-handler":"3.357.0","@aws-sdk/hash-node":"3.357.0","@aws-sdk/invalid-dependency":"3.357.0","@aws-sdk/middleware-content-length":"3.357.0","@aws-sdk/middleware-endpoint":"3.357.0","@aws-sdk/middleware-host-header":"3.357.0","@aws-sdk/middleware-logger":"3.357.0","@aws-sdk/middleware-recursion-detection":"3.357.0","@aws-sdk/middleware-retry":"3.357.0","@aws-sdk/middleware-sdk-sts":"3.357.0","@aws-sdk/middleware-serde":"3.357.0","@aws-sdk/middleware-signing":"3.357.0","@aws-sdk/middleware-stack":"3.357.0","@aws-sdk/middleware-user-agent":"3.357.0","@aws-sdk/node-config-provider":"3.357.0","@aws-sdk/node-http-handler":"3.360.0","@aws-sdk/smithy-client":"3.360.0","@aws-sdk/types":"3.357.0","@aws-sdk/url-parser":"3.357.0","@aws-sdk/util-base64":"3.310.0","@aws-sdk/util-body-length-browser":"3.310.0","@aws-sdk/util-body-length-node":"3.310.0","@aws-sdk/util-defaults-mode-browser":"3.360.0","@aws-sdk/util-defaults-mode-node":"3.360.0","@aws-sdk/util-endpoints":"3.357.0","@aws-sdk/util-retry":"3.357.0","@aws-sdk/util-user-agent-browser":"3.357.0","@aws-sdk/util-user-agent-node":"3.357.0","@aws-sdk/util-utf8":"3.310.0","@smithy/protocol-http":"^1.0.1","@smithy/types":"^1.0.0","fast-xml-parser":"4.2.5","tslib":"^2.5.0"},"devDependencies":{"@aws-sdk/service-client-documentation-generator":"3.310.0","@tsconfig/node14":"1.0.3","@types/node":"^14.14.31","concurrently":"7.0.0","downlevel-dts":"0.10.1","rimraf":"3.0.2","typedoc":"0.23.23","typescript":"~4.9.5"},"engines":{"node":">=14.0.0"},"typesVersions":{"<4.0":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-sts","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-sts"}}');
 
 /***/ }),
 
