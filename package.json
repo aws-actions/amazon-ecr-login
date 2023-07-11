@@ -29,13 +29,13 @@
     "@actions/exec": "^1.1.1",
     "@aws-sdk/client-ecr": "^3.369.0",
     "@aws-sdk/client-ecr-public": "^3.363.0",
-    "@aws-sdk/node-http-handler": "^3.350.0",
+    "@aws-sdk/node-http-handler": "^3.369.0",
     "https-proxy-agent": "^7.0.0"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.36.1",
     "aws-sdk-client-mock": "^3.0.0",
     "eslint": "^8.44.0",
-    "jest": "^29.6.0"
+    "jest": "^29.6.1"
   }
 }
