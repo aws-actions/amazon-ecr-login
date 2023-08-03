@@ -9,10 +9,11 @@ const ECR_LOGIN_GITHUB_ACTION_USER_AGENT = 'amazon-ecr-login-for-github-actions'
 const ECR_PUBLIC_REGISTRY_URI = 'public.ecr.aws';
 
 const INPUTS = {
-  skipLogout: 'skip-logout',
+  httpProxy: 'http-proxy',
+  maskPassword: 'mask-password',
   registries: 'registries',
   registryType: 'registry-type',
-  httpProxy: 'http-proxy'
+  skipLogout: 'skip-logout'
 };
 
 const OUTPUTS = {
@@ -104,10 +105,11 @@ function replaceSpecialCharacters(registryUri) {
 
 async function run() {
   // Get inputs
-  const skipLogout = core.getInput(INPUTS.skipLogout, { required: false }).toLowerCase() === 'true';
+  const httpProxy = core.getInput(INPUTS.httpProxy, { required: false });
+  const maskPassword = core.getInput(INPUTS.maskPassword, { required: false }).toLowerCase() === 'true';
   const registries = core.getInput(INPUTS.registries, { required: false });
   const registryType = core.getInput(INPUTS.registryType, { required: false }).toLowerCase() || REGISTRY_TYPES.private;
-  const httpProxy = core.getInput(INPUTS.httpProxy, { required: false });
+  const skipLogout = core.getInput(INPUTS.skipLogout, { required: false }).toLowerCase() === 'true';
 
   const registryUriState = [];
 
@@ -169,6 +171,7 @@ async function run() {
 
       // Output docker username and password
       const secretSuffix = replaceSpecialCharacters(registryUri);
+      if (maskPassword) core.setSecret(creds[1]);
       core.setOutput(`${OUTPUTS.dockerUsername}_${secretSuffix}`, creds[0]);
       core.setOutput(`${OUTPUTS.dockerPassword}_${secretSuffix}`, creds[1]);
 

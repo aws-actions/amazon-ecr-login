@@ -15,17 +15,19 @@ function mockGetInput(requestResponse) {
 }
 
 const ECR_DEFAULT_INPUTS = {
+  'http-proxy': '',
+  'mask-password': '',
   'registries': '',
-  'skip-logout': '',
   'registry-type': '',
-  'http-proxy': ''
+  'skip-logout': ''
 };
 
 const ECR_PUBLIC_DEFAULT_INPUTS = {
+  'http-proxy': '',
+  'mask-password': '',
   'registries': '',
-  'skip-logout': '',
   'registry-type': 'public',
-  'http-proxy': ''
+  'skip-logout': ''
 };
 
 const defaultAuthToken = {
@@ -76,9 +78,10 @@ describe('Login to ECR', () => {
 
   test('gets auth token from ECR and logins the Docker client for each provided registry', async () => {
     const mockInputs = {
+      'mask-password': '',
       'registries': '123456789012,111111111111',
-      'skip-logout': '',
-      'registry-type': ''
+      'registry-type': '',
+      'skip-logout': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
@@ -116,9 +119,10 @@ describe('Login to ECR', () => {
 
   test('outputs the registry ID if a single registry is provided in the input', async () => {
     const mockInputs = {
+      'mask-password': '',
       'registries': '111111111111',
-      'skip-logout': '',
-      'registry-type': ''
+      'registry-type': '',
+      'skip-logout': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
@@ -160,9 +164,10 @@ describe('Login to ECR', () => {
 
   test('logged-in registries are saved as state even if the action fails', async () => {
     const mockInputs = {
+      'mask-password': '',
       'registries': '123456789012,111111111111',
-      'skip-logout': '',
-      'registry-type': ''
+      'registry-type': '',
+      'skip-logout': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
@@ -261,9 +266,10 @@ describe('Login to ECR', () => {
   test('skips logout when specified and logging into default registry', async () => {
     ecrMock.on(GetAuthorizationTokenCommand).resolves(defaultOutputToken);
     const mockInputs = {
+      'mask-password': '',
       'registries': '',
-      'skip-logout': 'true',
-      'registry-type': ''
+      'registry-type': '',
+      'skip-logout': 'true'
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
 
@@ -280,9 +286,10 @@ describe('Login to ECR', () => {
 
   test('skips logout when specified and logging into multiple registries', async () => {
     const mockInputs = {
+      'mask-password': '',
       'registries': '123456789012,111111111111',
-      'skip-logout': 'true',
-      'registry-type': ''
+      'registry-type': '',
+      'skip-logout': 'true'
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
@@ -314,9 +321,10 @@ describe('Login to ECR', () => {
 
   test('sets the Actions outputs to the docker credentials', async () => {
     const mockInputs = {
+      'mask-password': '',
       'registries': '123456789012,111111111111',
-      'skip-logout': 'true',
-      'registry-type': ''
+      'registry-type': '',
+      'skip-logout': 'true'
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
@@ -335,6 +343,37 @@ describe('Login to ECR', () => {
     await run();
 
     expect(core.setOutput).toHaveBeenCalledTimes(4);
+    expect(core.setOutput).toHaveBeenNthCalledWith(1, 'docker_username_123456789012_dkr_ecr_aws_region_1_amazonaws_com', 'hello');
+    expect(core.setOutput).toHaveBeenNthCalledWith(2, 'docker_password_123456789012_dkr_ecr_aws_region_1_amazonaws_com', 'world');
+    expect(core.setOutput).toHaveBeenNthCalledWith(3, 'docker_username_111111111111_dkr_ecr_aws_region_1_amazonaws_com', 'foo');
+    expect(core.setOutput).toHaveBeenNthCalledWith(4, 'docker_password_111111111111_dkr_ecr_aws_region_1_amazonaws_com', 'bar');
+  });
+
+  test('sets the Actions outputs to the docker credentials with masked password', async () => {
+    const mockInputs = {
+      'mask-password': 'true',
+      'registries': '123456789012,111111111111',
+      'registry-type': '',
+      'skip-logout': 'true'
+    };
+    core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
+    ecrMock.on(GetAuthorizationTokenCommand).resolves({
+      authorizationData: [
+        {
+          authorizationToken: Buffer.from('hello:world').toString('base64'),
+          proxyEndpoint: 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'
+        },
+        {
+          authorizationToken: Buffer.from('foo:bar').toString('base64'),
+          proxyEndpoint: 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'
+        }
+      ]
+    });
+
+    await run();
+
+    expect(core.setOutput).toHaveBeenCalledTimes(4);
+    expect(core.setSecret).toHaveBeenCalledTimes(2);
     expect(core.setOutput).toHaveBeenNthCalledWith(1, 'docker_username_123456789012_dkr_ecr_aws_region_1_amazonaws_com', 'hello');
     expect(core.setOutput).toHaveBeenNthCalledWith(2, 'docker_password_123456789012_dkr_ecr_aws_region_1_amazonaws_com', 'world');
     expect(core.setOutput).toHaveBeenNthCalledWith(3, 'docker_username_111111111111_dkr_ecr_aws_region_1_amazonaws_com', 'foo');
@@ -392,9 +431,10 @@ describe('Login to ECR Public', () => {
   describe('inputs and outputs', () => {
     test('error is caught by core.setFailed for invalid registry-type input', async () => {
       const mockInputs = {
+        'mask-password': '',
         'registries': '',
-        'skip-logout': '',
-        'registry-type': 'invalid'
+        'registry-type': 'invalid',
+        'skip-logout': ''
       };
       core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
       ecrPublicMock.on(GetAuthorizationTokenCommandPublic).resolves(defaultAuthToken);
