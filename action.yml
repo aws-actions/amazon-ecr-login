@@ -10,8 +10,8 @@ inputs:
     required: false
   mask-password:
     description: >-
-      Mask the docker password to prevent it being printed to logs to std-out. This will prevent the
-      password GitHub output from being shared between separate jobs.
+      Mask the docker password to prevent it being printed to action logs if debug logging is enabled.
+      NOTE: This will prevent the Docker password output from being shared between separate jobs.
       Options: ['true', 'false']
     required: false
     default: 'false'
