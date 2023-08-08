@@ -116,7 +116,7 @@ Logs in the local Docker client to one or more Amazon ECR Private registries or 
 Helm uses the same credential store as Docker, so Helm can authenticate with the same credentials that you use for Docker.
 
 > [!WARNING]
-> Setting `mask-password` to `'true'` recommended approach if following any of the examples above.
+> Setting `mask-password` to `'true'` is the recommended approach if following any of the examples above.
 > However, this will prevent the Docker password output from being shared between separate jobs.
 > For more information, see the [Docker Credentials](#docker-credentials) section below.
 
@@ -144,9 +144,9 @@ The repository on account `998877665544` needs to explicitly grant access to rol
 Please refer to [AWS docs](https://aws.amazon.com/premiumsupport/knowledge-center/secondary-account-access-ecr/)
 for details on how to configure ECR policies
 
-#### Use an image as a service
+#### Run an image as a service
 
-Use the action to output your Docker credentials to ECR Private, then use the credentials to run your private image as a service in another job.
+Use the action to output your Docker credentials for logging into ECR Private, then use the credentials to run your private image as a service in another job.
 
 > [!WARNING]
 > Not setting `mask-password` or setting `mask-password` to `'false'` will log your Docker password output if [debug logging is enabled](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging).
