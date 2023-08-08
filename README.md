@@ -44,6 +44,8 @@ Logs in the local Docker client to one or more Amazon ECR Private registries or 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: 'true'
 
       - name: Build, tag, and push docker image to Amazon ECR
         env:
@@ -61,6 +63,7 @@ Logs in the local Docker client to one or more Amazon ECR Private registries or 
         id: login-ecr-public
         uses: aws-actions/amazon-ecr-login@v1
         with:
+          mask-password: 'true'
           registry-type: public
 
       - name: Build, tag, and push docker image to Amazon ECR Public
@@ -79,6 +82,8 @@ Logs in the local Docker client to one or more Amazon ECR Private registries or 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: 'true'
 
       - name: Package and push helm chart to Amazon ECR
         env:
@@ -95,6 +100,7 @@ Logs in the local Docker client to one or more Amazon ECR Private registries or 
         id: login-ecr-public
         uses: aws-actions/amazon-ecr-login@v1
         with:
+          mask-password: 'true'
           registry-type: public
 
       - name: Package and push helm chart to Amazon ECR Public
@@ -107,7 +113,12 @@ Logs in the local Docker client to one or more Amazon ECR Private registries or 
           helm push $REPOSITORY-0.1.0.tgz oci://$REGISTRY/$REGISTRY_ALIAS
 ```
 
-Helm uses the same credential store as Docker, so Helm can authenticate with the same credentials that you use for Docker
+Helm uses the same credential store as Docker, so Helm can authenticate with the same credentials that you use for Docker.
+
+> [!WARNING]
+> Setting `mask-password` to `'true'` recommended approach if following any of the examples above.
+> However, this will prevent the Docker password output from being shared between separate jobs.
+> For more information, see the [Docker Credentials](#docker-credentials) section below.
 
 ### Other use-cases
 
@@ -133,10 +144,13 @@ The repository on account `998877665544` needs to explicitly grant access to rol
 Please refer to [AWS docs](https://aws.amazon.com/premiumsupport/knowledge-center/secondary-account-access-ecr/)
 for details on how to configure ECR policies
 
-#### Using an image as a service
+#### Use an image as a service
 
-Login to Amazon ECR Private, then use the outputted Docker credentials to run your private image as a service in another job.
-For more information, see the [Docker Credentials](#docker-credentials) section below.
+Use the action to output your Docker credentials to ECR Private, then use the credentials to run your private image as a service in another job.
+
+> [!WARNING]
+> Not setting `mask-password` or setting `mask-password` to `'false'` will log your Docker password output if [debug logging is enabled](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging).
+> For more information, see the [Docker Credentials](#docker-credentials) section below.
 
 ```yaml
 jobs:
@@ -172,20 +186,6 @@ jobs:
     steps:
       - name: Run steps in container
         run: echo "run steps in container"
-```
-
-#### Login to Amazon ECR Private while masking the password:
-
-> [!WARNING]
-> Setting `mask-password` to `'true'` will prevent the Docker password output from being shared between separate jobs.
-> For more information, see the [Docker Credentials](#docker-credentials) section below.
-
-```yaml
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-        with:
-          mask-password: 'true'
 ```
 
 See [action.yml](action.yml) for the full documentation for this action's inputs and outputs.
@@ -229,10 +229,10 @@ If using ECR Public:
 - Docker password output: `docker_password_public_ecr_aws`
 
 > [!IMPORTANT]
-> If you are not using the Docker credential outputs, make sure the `mask-password` input is set to `'true'`.
+> If **you are not** using the Docker credential outputs, make sure the `mask-password` input is **set to `'true'`**.
 > This masks your Docker password and prevents it from being printed to the action logs if you [enable debug logging](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging).
 > 
-> If you are using the Docker credential outputs, make sure the `mask-password` input is not set or set to `'false'`.
+> If **you are** using the Docker credential outputs, make sure the `mask-password` input is **not set or set to `'false'`**.
 > Masked values cannot be passed to separate jobs (see [this issue](https://github.com/actions/runner/issues/1498#issuecomment-1066836352)).
 
 ## Self-Hosted Runners
