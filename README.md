@@ -55,6 +55,28 @@ Logs in the local Docker client to one or more Amazon ECR Private registries or 
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 ```
 
+#### Login to Amazon ECR Private, then build and push a Docker image masking the password:
+
+> [!WARNING]
+> Setting mask-password to true will prevent the password GitHub output from being shared between separate jobs.
+
+```yaml
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          mask-password: 'true'
+
+      - name: Build, tag, and push docker image to Amazon ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: my-ecr-repo
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+```
+
 #### Login to Amazon ECR Public, then build and push a Docker image:
 ```yaml
       - name: Login to Amazon ECR Public

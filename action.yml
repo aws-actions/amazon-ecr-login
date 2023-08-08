@@ -4,12 +4,29 @@ branding:
   icon: 'cloud'
   color: 'orange'
 inputs:
+  http-proxy:
+    description: >-
+      Proxy to use for the AWS SDK agent.
+    required: false
+  mask-password:
+    description: >-
+      Mask the docker password to prevent it being printed to logs to std-out. This will prevent the
+      password GitHub output from being shared between separate jobs.
+      Options: ['true', 'false']
+    required: false
+    default: 'false'
   registries:
     description: >-
       A comma-delimited list of AWS account IDs that are associated with the ECR Private registries.
       If you do not specify a registry, the default ECR Private registry is assumed.
       If 'public' is given as input to 'registry-type', this input is ignored.
     required: false
+  registry-type:
+    description: >-
+      Which ECR registry type to log into.
+      Options: [private, public]
+    required: false
+    default: private
   skip-logout:
     description: >-
       Whether to skip explicit logout of the registries during post-job cleanup.
@@ -18,16 +35,6 @@ inputs:
       Options: ['true', 'false']
     required: false
     default: 'false'
-  registry-type:
-    description: >-
-      Which ECR registry type to log into.
-      Options: [private, public]
-    required: false
-    default: private
-  http-proxy:
-    description: >-
-      Proxy to use for the AWS SDK agent.
-    required: false
 outputs:
   registry:
     description: >-
