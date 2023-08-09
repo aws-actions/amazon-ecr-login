@@ -118,6 +118,12 @@ async function run() {
       throw new Error(`Invalid input for '${INPUTS.registryType}', possible options are [${REGISTRY_TYPES.private}, ${REGISTRY_TYPES.public}]`);
     }
 
+    // Notify customer if they don't have their password masked
+    if (!maskPassword) {
+      core.warning('Your docker password is not masked. See https://github.com/aws-actions/amazon-ecr-login#docker-credentials ' +
+        'for more information.')
+    }
+
     // Configures proxy
     const httpsProxyAgent = configureProxy(httpProxy);
 
