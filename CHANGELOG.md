@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0](https://github.com/aws-actions/amazon-ecr-login/compare/v1.6.2...v1.7.0) (2023-08-09)
+
+
+### Features
+
+* provide input to optionally mask output docker password ([#491](https://github.com/aws-actions/amazon-ecr-login/issues/491)) ([98f33d2](https://github.com/aws-actions/amazon-ecr-login/commit/98f33d2eaf29c215bd8a595c94896c64d126dbb7))
+
 ### [1.6.2](https://github.com/aws-actions/amazon-ecr-login/compare/v1.6.1...v1.6.2) (2023-06-26)
 
 

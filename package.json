@@ -1,6 +1,6 @@
 {
   "name": "aws-actions-amazon-ecr-login",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "description": "Logs in the local Docker client to the AWS account's ECR registry",
   "main": "index.js",
   "scripts": {
