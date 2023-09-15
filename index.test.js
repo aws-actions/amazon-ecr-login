@@ -343,6 +343,7 @@ describe('Login to ECR', () => {
     await run();
 
     expect(core.setOutput).toHaveBeenCalledTimes(4);
+    expect(core.setSecret).toHaveBeenCalledTimes(2);
     expect(core.setOutput).toHaveBeenNthCalledWith(1, 'docker_username_123456789012_dkr_ecr_aws_region_1_amazonaws_com', 'hello');
     expect(core.setOutput).toHaveBeenNthCalledWith(2, 'docker_password_123456789012_dkr_ecr_aws_region_1_amazonaws_com', 'world');
     expect(core.setOutput).toHaveBeenNthCalledWith(3, 'docker_username_111111111111_dkr_ecr_aws_region_1_amazonaws_com', 'foo');

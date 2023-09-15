@@ -106,7 +106,9 @@ function replaceSpecialCharacters(registryUri) {
 async function run() {
   // Get inputs
   const httpProxy = core.getInput(INPUTS.httpProxy, { required: false });
-  const maskPassword = core.getInput(INPUTS.maskPassword, { required: false }).toLowerCase() === 'true';
+  core.warning(`mask password in input is ${INPUTS.maskPassword}.`);
+  const maskPassword = core.getInput(INPUTS.maskPassword, { required: false }).toLowerCase() === 'false';
+  core.warning(`mask password after setting ${maskPassword}.`);
   const registries = core.getInput(INPUTS.registries, { required: false });
   const registryType = core.getInput(INPUTS.registryType, { required: false }).toLowerCase() || REGISTRY_TYPES.private;
   const skipLogout = core.getInput(INPUTS.skipLogout, { required: false }).toLowerCase() === 'true';
@@ -122,6 +124,8 @@ async function run() {
     if (!maskPassword) {
       core.warning('Your docker password is not masked. See https://github.com/aws-actions/amazon-ecr-login#docker-credentials ' +
         'for more information.')
+    } else {
+      core.warning('Your docker password is masked. ')
     }
 
     // Configures proxy

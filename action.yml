@@ -14,7 +14,7 @@ inputs:
       NOTE: This will prevent the Docker password output from being shared between separate jobs.
       Options: ['true', 'false']
     required: false
-    default: 'false'
+    default: 'true'
   registries:
     description: >-
       A comma-delimited list of AWS account IDs that are associated with the ECR Private registries.
@@ -26,7 +26,7 @@ inputs:
       Which ECR registry type to log into.
       Options: [private, public]
     required: false
-    default: private
+    default: public
   skip-logout:
     description: >-
       Whether to skip explicit logout of the registries during post-job cleanup.
