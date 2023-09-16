@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - main
+      - mask-credential
 
 name: Package
 
@@ -24,4 +24,4 @@ jobs:
         git config --global user.name "GitHub Actions"
         git add dist/
         git commit -m "chore: Update dist" || echo "No changes to commit"
-        git push origin HEAD:main
+        git push origin HEAD:mask-credential
