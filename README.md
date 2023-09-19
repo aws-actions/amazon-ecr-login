@@ -137,6 +137,9 @@ for details on how to configure ECR policies
 
 Use the action to output your Docker credentials for logging into ECR Private, then use the credentials to run your private image as a service in another job.
 
+> [!WARNING]
+> Setting `mask-password` to `'false'` will log your Docker password output if [debug logging is enabled](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging).
+> For more information, see the [Docker Credentials](#docker-credentials) section below.
 
 ```yaml
 jobs:
@@ -152,6 +155,8 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'false'
     outputs:
       registry: ${{ steps.login-ecr.outputs.registry }}
       docker_username: ${{ steps.login-ecr.outputs.docker_username_123456789012_dkr_ecr_us_east_1_amazonaws_com }} # More information on these outputs can be found below in the 'Docker Credentials' section
