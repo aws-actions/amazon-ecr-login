@@ -6,6 +6,7 @@ Logs in the local Docker client to one or more Amazon ECR Private registries or 
 
 <!-- toc -->
 
+- [New v2 Release](#new-v2-release)
 - [Example of Usage](#examples-of-usage)
   - [Building and pushing an image](#building-and-pushing-an-image)
   - [Using an image as a service](#using-an-image-as-a-service)
@@ -22,6 +23,28 @@ Logs in the local Docker client to one or more Amazon ECR Private registries or 
 - [Security Disclosures](#security-disclosures)
 
 <!-- tocstop -->
+
+## New v2 Release
+
+In the new major version for this action, the default value of the `mask-password` input has changed from `false` to `true`.
+
+If you are **not** consuming the Docker credentials as outputs in subsequent jobs, you can simply update your action version to `aws-actions/amazon-ecr-login@v2`.
+
+For any customer consuming the Docker credentials as outputs in subsequent jobs:
+
+- If you are relying on the default value of the `mask-password` input, which is currently `false` in v1, your workflow will break when upgrading to v2. To fix this, please set the mask-password input to `false`:
+
+```
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'false'
+```
+
+- If you are already setting the `mask-password` input to `false`, you can simply update your action version to `aws-actions/amazon-ecr-login@v2`.
+
+For more information on why this change is being made, see [Masking Docker Credentials in Amazon ECR Login Action](https://github.com/aws-actions/amazon-ecr-login/issues/526).
 
 ## Examples of Usage
 
