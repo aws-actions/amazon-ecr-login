@@ -114,7 +114,6 @@ describe('Login to ECR', () => {
     expect(core.saveState).toHaveBeenNthCalledWith(1, 'registries', '123456789012.dkr.ecr.aws-region-1.amazonaws.com,111111111111.dkr.ecr.aws-region-1.amazonaws.com');
     expect(exec.exec).toHaveBeenCalledTimes(2);
     expect(core.setOutput).toHaveBeenCalledTimes(4);
-    expect(core.setSecret).toHaveBeenCalledTimes(2);
     expect(core.saveState).toHaveBeenCalledTimes(1);
   });
 
@@ -322,7 +321,7 @@ describe('Login to ECR', () => {
 
   test('sets the Actions outputs to the docker credentials', async () => {
     const mockInputs = {
-      'mask-password': 'false',
+      'mask-password': '',
       'registries': '123456789012,111111111111',
       'registry-type': '',
       'skip-logout': 'true'
@@ -352,7 +351,7 @@ describe('Login to ECR', () => {
 
   test('sets the Actions outputs to the docker credentials with masked password', async () => {
     const mockInputs = {
-      'mask-password': '',
+      'mask-password': 'true',
       'registries': '123456789012,111111111111',
       'registry-type': '',
       'skip-logout': 'true'

@@ -14,7 +14,7 @@ inputs:
       NOTE: This will prevent the Docker password output from being shared between separate jobs.
       Options: ['true', 'false']
     required: false
-    default: 'true'
+    default: 'false'
   registries:
     description: >-
       A comma-delimited list of AWS account IDs that are associated with the ECR Private registries.
