@@ -106,7 +106,7 @@ function replaceSpecialCharacters(registryUri) {
 async function run() {
   // Get inputs
   const httpProxy = core.getInput(INPUTS.httpProxy, { required: false });
-  const maskPassword = core.getInput(INPUTS.maskPassword, { required: false }).toLowerCase() === 'true';
+  const maskPassword = (core.getInput(INPUTS.maskPassword, { required: false }).toLowerCase() || 'true') !== 'false';
   const registries = core.getInput(INPUTS.registries, { required: false });
   const registryType = core.getInput(INPUTS.registryType, { required: false }).toLowerCase() || REGISTRY_TYPES.private;
   const skipLogout = core.getInput(INPUTS.skipLogout, { required: false }).toLowerCase() === 'true';
@@ -177,7 +177,10 @@ async function run() {
 
       // Output docker username and password
       const secretSuffix = replaceSpecialCharacters(registryUri);
-      if (maskPassword) core.setSecret(creds[1]);
+      if (maskPassword) {
+        core.setSecret(creds[1]);
+        core.debug('Your docker password is masked.');
+      }
       core.setOutput(`${OUTPUTS.dockerUsername}_${secretSuffix}`, creds[0]);
       core.setOutput(`${OUTPUTS.dockerPassword}_${secretSuffix}`, creds[1]);
 
