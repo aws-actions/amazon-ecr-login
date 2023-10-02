@@ -41,6 +41,6 @@ outputs:
       The URI of the ECR Private or ECR Public registry.
       If logging into multiple registries on ECR Private, this output will not be set.
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/index.js'
   post: 'dist/cleanup/index.js'
