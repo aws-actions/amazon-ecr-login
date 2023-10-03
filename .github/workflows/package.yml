@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - main
+      - 1.x
 
 name: Package
 
@@ -13,7 +13,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
       with:
-        ref: main
+        ref: 1.x
     - name: Package
       run: |
         npm ci
@@ -24,4 +24,4 @@ jobs:
         git config --global user.name "GitHub Actions"
         git add dist/
         git commit -m "chore: Update dist" || echo "No changes to commit"
-        git push origin HEAD:main
+        git push origin HEAD:1.x
