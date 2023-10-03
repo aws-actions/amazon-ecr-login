@@ -121,7 +121,8 @@ async function run() {
     // Notify customer if they don't have their password masked
     if (!maskPassword) {
       core.warning('Your docker password is not masked. See https://github.com/aws-actions/amazon-ecr-login#docker-credentials ' +
-        'for more information.')
+        'for more information. The default value of the \'mask-password\' input has changed from \'false\' to \'true\' in the v2 release. ' +
+        'See https://github.com/aws-actions/amazon-ecr-login/issues/526 for more information.')
     }
 
     // Configures proxy
