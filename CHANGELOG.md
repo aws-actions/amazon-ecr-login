@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.1](https://github.com/aws-actions/amazon-ecr-login/compare/v1.7.0...v1.7.1) (2023-10-03)
+
+
+### Bug Fixes
+
+* update package.yml for 1.x ([78a6870](https://github.com/aws-actions/amazon-ecr-login/commit/78a687010fbdea76aaa964345c47c7f961913e94))
+
 ## [1.7.0](https://github.com/aws-actions/amazon-ecr-login/compare/v1.6.2...v1.7.0) (2023-08-09)
 
 
