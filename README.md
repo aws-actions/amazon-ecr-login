@@ -56,7 +56,7 @@ For more information on why this change is being made, see [Masking Docker Crede
         uses: actions/checkout@v3
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2 # More information on this action can be found below in the 'AWS Credentials' section
+        uses: aws-actions/configure-aws-credentials@v4 # More information on this action can be found below in the 'AWS Credentials' section
         with:
           role-to-assume: arn:aws:iam::123456789012:role/my-github-actions-role
           aws-region: aws-region-1
@@ -138,7 +138,7 @@ Helm uses the same credential store as Docker, so Helm can authenticate with the
 
 ```yaml
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::123456789012:role/my-github-actions-role
           aws-region: aws-region-1
@@ -170,7 +170,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::123456789012:role/my-github-actions-role
           aws-region: us-east-1
@@ -212,7 +212,7 @@ This action relies on the [default behavior of the AWS SDK for Javascript](https
 
 ```yaml
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::123456789012:role/my-github-actions-role
           aws-region: us-east-1
