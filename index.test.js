@@ -1,4 +1,4 @@
-const { run, replaceSpecialCharacters, configureProxy } = require('./index.js');
+const { run, replaceSpecialCharacters, configureProxy, generateEcrClientConfig } = require('./index.js');
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 const { mockClient } = require('aws-sdk-client-mock');
@@ -389,6 +389,17 @@ describe('Login to ECR', () => {
     expect(core.setOutput).toHaveBeenNthCalledWith(3, 'docker_username_111111111111_dkr_ecr_aws_region_1_amazonaws_com', 'foo');
     expect(core.setOutput).toHaveBeenNthCalledWith(4, 'docker_password_111111111111_dkr_ecr_aws_region_1_amazonaws_com', 'bar');
   });
+
+  describe('fips endpoint setting', () => {
+    test('setting use-fips-endpoint to true', async() => {
+      const ecrConfig = generateEcrClientConfig(null, true)
+      expect(ecrConfig.useFipsEndpoint).toBe(true);
+    });
+    test('setting use-fips-endpoint to false', async() => {
+      const ecrConfig = generateEcrClientConfig(null, false)
+      expect(ecrConfig.useFipsEndpoint).toBe(false);
+    })
+  })
 
   describe('proxy settings', () => {
     afterEach(() => {

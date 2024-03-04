@@ -94,6 +94,17 @@ async function getEcrPublicAuthTokenWrapper(ecrClientConfig, authTokenRequest) {
   };
 }
 
+function generateEcrClientConfig(httpsProxyAgent, useFipsEndpoint) {
+  return {
+    customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
+    requestHandler: new NodeHttpHandler({
+      httpAgent: httpsProxyAgent,
+      httpsAgent: httpsProxyAgent
+    }),
+    useFipsEndpoint: useFipsEndpoint
+  }
+}
+
 function replaceSpecialCharacters(registryUri) {
   return registryUri.replace(/[^a-zA-Z0-9_]+/g, '_');
 }
@@ -124,14 +135,7 @@ async function run() {
     const httpsProxyAgent = configureProxy(httpProxy);
 
     // Generate ECR client configuration
-    const ecrClientConfig  = {
-      customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
-      requestHandler: new NodeHttpHandler({
-        httpAgent: httpsProxyAgent,
-        httpsAgent: httpsProxyAgent
-      }),
-      useFipsEndpoint: useFipsEndpoint
-    };
+    const ecrClientConfig  = generateEcrClientConfig(httpsProxyAgent, useFipsEndpoint)
 
     // Get the ECR/ECR Public authorization token(s)
     const authTokenRequest = {};
@@ -208,6 +212,7 @@ async function run() {
 
 module.exports = {
   configureProxy,
+  generateEcrClientConfig,
   run,
   replaceSpecialCharacters
 };
