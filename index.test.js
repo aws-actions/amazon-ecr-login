@@ -19,7 +19,8 @@ const ECR_DEFAULT_INPUTS = {
   'mask-password': '',
   'registries': '',
   'registry-type': '',
-  'skip-logout': ''
+  'skip-logout': '',
+  'use-fips-endpoint': ''
 };
 
 const ECR_PUBLIC_DEFAULT_INPUTS = {
@@ -27,7 +28,8 @@ const ECR_PUBLIC_DEFAULT_INPUTS = {
   'mask-password': '',
   'registries': '',
   'registry-type': 'public',
-  'skip-logout': ''
+  'skip-logout': '',
+  'use-fips-endpoint': ''
 };
 
 const defaultAuthToken = {
@@ -81,7 +83,8 @@ describe('Login to ECR', () => {
       'mask-password': '',
       'registries': '123456789012,111111111111',
       'registry-type': '',
-      'skip-logout': ''
+      'skip-logout': '',
+      'use-fips-endpoint': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
@@ -123,7 +126,8 @@ describe('Login to ECR', () => {
       'mask-password': '',
       'registries': '111111111111',
       'registry-type': '',
-      'skip-logout': ''
+      'skip-logout': '',
+      'use-fips-endpoint': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
@@ -168,7 +172,8 @@ describe('Login to ECR', () => {
       'mask-password': '',
       'registries': '123456789012,111111111111',
       'registry-type': '',
-      'skip-logout': ''
+      'skip-logout': '',
+      'use-fips-endpoint': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
@@ -270,7 +275,8 @@ describe('Login to ECR', () => {
       'mask-password': '',
       'registries': '',
       'registry-type': '',
-      'skip-logout': 'true'
+      'skip-logout': 'true',
+      'use-fips-endpoint': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
 
@@ -290,7 +296,8 @@ describe('Login to ECR', () => {
       'mask-password': '',
       'registries': '123456789012,111111111111',
       'registry-type': '',
-      'skip-logout': 'true'
+      'skip-logout': 'true',
+      'use-fips-endpoint': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
@@ -325,7 +332,8 @@ describe('Login to ECR', () => {
       'mask-password': 'false',
       'registries': '123456789012,111111111111',
       'registry-type': '',
-      'skip-logout': 'true'
+      'skip-logout': 'true',
+      'use-fips-endpoint': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
@@ -355,7 +363,8 @@ describe('Login to ECR', () => {
       'mask-password': '',
       'registries': '123456789012,111111111111',
       'registry-type': '',
-      'skip-logout': 'true'
+      'skip-logout': 'true',
+      'use-fips-endpoint': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
@@ -435,7 +444,8 @@ describe('Login to ECR Public', () => {
         'mask-password': '',
         'registries': '',
         'registry-type': 'invalid',
-        'skip-logout': ''
+        'skip-logout': '',
+        'use-fips-endpoint': ''
       };
       core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
       ecrPublicMock.on(GetAuthorizationTokenCommandPublic).resolves(defaultAuthToken);

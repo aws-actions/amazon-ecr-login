@@ -13,7 +13,8 @@ const INPUTS = {
   maskPassword: 'mask-password',
   registries: 'registries',
   registryType: 'registry-type',
-  skipLogout: 'skip-logout'
+  skipLogout: 'skip-logout',
+  useFipsEndpoint: 'use-fips-endpoint'
 };
 
 const OUTPUTS = {
@@ -50,14 +51,8 @@ function configureProxy(httpProxy) {
   return null;
 }
 
-async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
-  const ecrClient = new ECRClient({
-    customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
-    requestHandler: new NodeHttpHandler({
-      httpAgent: httpsProxyAgent,
-      httpsAgent: httpsProxyAgent
-    }),
-  });
+async function getEcrAuthTokenWrapper(ecrClientConfig, authTokenRequest) {
+  const ecrClient = new ECRClient(ecrClientConfig);
   const command = new GetAuthorizationTokenCommand(authTokenRequest);
   const authTokenResponse = await ecrClient.send(command);
   if (!authTokenResponse) {
@@ -71,14 +66,8 @@ async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
   return authTokenResponse;
 }
 
-async function getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
-  const ecrPublicClient = new ECRPUBLICClient({
-    customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
-    requestHandler: new NodeHttpHandler({
-      httpAgent: httpsProxyAgent,
-      httpsAgent: httpsProxyAgent
-    }),
-  });
+async function getEcrPublicAuthTokenWrapper(ecrClientConfig, authTokenRequest) {
+  const ecrPublicClient = new ECRPUBLICClient(ecrClientConfig);
   const command = new GetAuthorizationTokenCommandPublic(authTokenRequest);
   const authTokenResponse = await ecrPublicClient.send(command);
   if (!authTokenResponse) {
@@ -87,6 +76,12 @@ async function getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
     throw new Error('Amazon ECR Public authorization token is invalid');
   } else if (Object.keys(authTokenResponse.authorizationData).length === 0) {
     throw new Error('Amazon ECR Public authorization token does not contain any authorization data');
+  }
+
+  if(ecrClientConfig.useFipsEndpoint) {
+    // If the registry type is public but `use-fips-endpoints` was also set, warn the action user that there
+    // are no fips compliant public endpoints for ECR
+    core.warning('Amazon ECR Public does not have any FIPS endpoints')
   }
 
   return {
@@ -110,6 +105,7 @@ async function run() {
   const registries = core.getInput(INPUTS.registries, { required: false });
   const registryType = core.getInput(INPUTS.registryType, { required: false }).toLowerCase() || REGISTRY_TYPES.private;
   const skipLogout = core.getInput(INPUTS.skipLogout, { required: false }).toLowerCase() === 'true';
+  const useFipsEndpoint = core.getInput(INPUTS.useFipsEndpoint, { required: false }).toLowerCase() === 'true';
 
   const registryUriState = [];
 
@@ -127,6 +123,16 @@ async function run() {
     // Configures proxy
     const httpsProxyAgent = configureProxy(httpProxy);
 
+    // Generate ECR client configuration
+    const ecrClientConfig  = {
+      customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
+      requestHandler: new NodeHttpHandler({
+        httpAgent: httpsProxyAgent,
+        httpsAgent: httpsProxyAgent
+      }),
+      useFipsEndpoint: useFipsEndpoint
+    };
+
     // Get the ECR/ECR Public authorization token(s)
     const authTokenRequest = {};
     if (registryType === REGISTRY_TYPES.private && registries) {
@@ -138,8 +144,8 @@ async function run() {
       authTokenRequest.registryIds = registryIds;
     }
     const authTokenResponse = registryType === REGISTRY_TYPES.private ?
-      await getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) :
-      await getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent);
+      await getEcrAuthTokenWrapper(ecrClientConfig, authTokenRequest) :
+      await getEcrPublicAuthTokenWrapper(ecrClientConfig, authTokenRequest);
 
     // Login to each registry
     for (const authData of authTokenResponse.authorizationData) {
