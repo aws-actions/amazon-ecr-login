@@ -30,7 +30,7 @@
     "@aws-sdk/client-ecr": "^3.600.0",
     "@aws-sdk/client-ecr-public": "^3.600.0",
     "@aws-sdk/node-http-handler": "^3.374.0",
-    "https-proxy-agent": "^7.0.4"
+    "https-proxy-agent": "^7.0.5"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.38.1",
