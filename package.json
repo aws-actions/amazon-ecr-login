@@ -28,7 +28,7 @@
     "@actions/core": "^1.11.1",
     "@actions/exec": "^1.1.1",
     "@aws-sdk/client-ecr": "^3.709.0",
-    "@aws-sdk/client-ecr-public": "^3.709.0",
+    "@aws-sdk/client-ecr-public": "^3.714.0",
     "@aws-sdk/node-http-handler": "^3.374.0",
     "https-proxy-agent": "^7.0.6"
   },
