@@ -545,3 +545,60 @@ describe('Login to ECR Public', () => {
     });
   });
 });
+
+describe('EKS Pod Identity compatibility', () => {
+  const OLD_ENV = process.env;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env = { ...OLD_ENV };
+    core.getInput = jest.fn().mockReturnValue('');
+    exec.exec.mockReturnValue(0);
+  });
+
+  afterEach(() => {
+    process.env = OLD_ENV;
+  });
+
+  test('removes both credential URIs when Pod Identity is detected', async () => {
+    process.env.AWS_WEB_IDENTITY_TOKEN_FILE = '/var/run/secrets/token';
+    process.env.AWS_CONTAINER_CREDENTIALS_RELATIVE_URI = '/credentials';
+    process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI = 'http://169.254.170.23/credentials';
+
+    await run();
+
+    expect(process.env.AWS_CONTAINER_CREDENTIALS_RELATIVE_URI).toBeUndefined();
+    expect(process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI).toBeUndefined();
+    expect(process.env.AWS_WEB_IDENTITY_TOKEN_FILE).toBeDefined();
+  });
+
+  test('keeps credential URIs when Pod Identity is not detected', async () => {
+    process.env.AWS_CONTAINER_CREDENTIALS_RELATIVE_URI = '/credentials';
+    process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI = 'http://169.254.170.23/credentials';
+
+    await run();
+
+    expect(process.env.AWS_CONTAINER_CREDENTIALS_RELATIVE_URI).toBe('/credentials');
+    expect(process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI).toBe('http://169.254.170.23/credentials');
+  });
+
+  test('removes only RELATIVE_URI when Pod Identity is detected', async () => {
+    process.env.AWS_WEB_IDENTITY_TOKEN_FILE = '/var/run/secrets/token';
+    process.env.AWS_CONTAINER_CREDENTIALS_RELATIVE_URI = '/credentials';
+
+    await run();
+
+    expect(process.env.AWS_CONTAINER_CREDENTIALS_RELATIVE_URI).toBeUndefined();
+    expect(process.env.AWS_WEB_IDENTITY_TOKEN_FILE).toBeDefined();
+  });
+
+  test('removes only FULL_URI when Pod Identity is detected', async () => {
+    process.env.AWS_WEB_IDENTITY_TOKEN_FILE = '/var/run/secrets/token';
+    process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI = 'http://169.254.170.23/credentials';
+
+    await run();
+
+    expect(process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI).toBeUndefined();
+    expect(process.env.AWS_WEB_IDENTITY_TOKEN_FILE).toBeDefined();
+  });
+});
