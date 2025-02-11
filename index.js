@@ -104,6 +104,18 @@ function replaceSpecialCharacters(registryUri) {
 }
 
 async function run() {
+  // Detect if the environment is using EKS Pod Identity and remove invalid container credential variables.
+  if (process.env.AWS_WEB_IDENTITY_TOKEN_FILE || process.env.AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE) {
+    if (process.env.AWS_CONTAINER_CREDENTIALS_RELATIVE_URI) {
+      core.info('Detected AWS_WEB_IDENTITY_TOKEN_FILE. Removing AWS_CONTAINER_CREDENTIALS_RELATIVE_URI for EKS Pod Identity support.');
+      delete process.env.AWS_CONTAINER_CREDENTIALS_RELATIVE_URI;
+    }
+    if (process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI) {
+      core.info('Detected AWS_WEB_IDENTITY_TOKEN_FILE. Removing AWS_CONTAINER_CREDENTIALS_FULL_URI for EKS Pod Identity support.');
+      delete process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI;
+    }
+  }
+  
   // Get inputs
   const httpProxy = core.getInput(INPUTS.httpProxy, { required: false });
   const maskPassword = (core.getInput(INPUTS.maskPassword, { required: false }).toLowerCase() || 'true') !== 'false';
