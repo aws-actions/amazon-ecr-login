@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import { HttpsProxyAgent } from 'https-proxy-agent';
@@ -6,6 +7,15 @@ import { fromHttp } from '@aws-sdk/credential-providers';
 import { ECRClient, GetAuthorizationTokenCommand } from '@aws-sdk/client-ecr';
 import { ECRPUBLICClient, GetAuthorizationTokenCommand as GetAuthorizationTokenCommandPublic } from '@aws-sdk/client-ecr-public';
 import { fileURLToPath } from 'node:url';
+=======
+const core = require('@actions/core');
+const exec = require('@actions/exec');
+const { HttpsProxyAgent } = require('https-proxy-agent');
+const { NodeHttpHandler } = require('@aws-sdk/node-http-handler');
+const { fromHttp } = require("@aws-sdk/credential-providers");
+const { ECRClient, GetAuthorizationTokenCommand } = require("@aws-sdk/client-ecr");
+const { ECRPUBLICClient, GetAuthorizationTokenCommand: GetAuthorizationTokenCommandPublic } = require("@aws-sdk/client-ecr-public");
+>>>>>>> 0515d68 (refactor: Remove unused fromWebToken import)
 
 const ECR_LOGIN_GITHUB_ACTION_USER_AGENT = 'amazon-ecr-login-for-github-actions';
 const ECR_PUBLIC_REGISTRY_URI = 'public.ecr.aws';
