@@ -2,6 +2,7 @@ import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { NodeHttpHandler } from '@aws-sdk/node-http-handler';
+import { fromHttp } from '@aws-sdk/credential-providers';
 import { ECRClient, GetAuthorizationTokenCommand } from '@aws-sdk/client-ecr';
 import { ECRPUBLICClient, GetAuthorizationTokenCommand as GetAuthorizationTokenCommandPublic } from '@aws-sdk/client-ecr-public';
 import { fileURLToPath } from 'node:url';
@@ -51,9 +52,22 @@ function configureProxy(httpProxy) {
   return null;
 }
 
+function getCredentials() {
+  // If running in a Pod Identity environment (EKS Pod Identity)
+  if (process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI) {
+    core.info("Using Pod Identity credentials via fromHttp()");
+    return fromHttp();
+  }
+
+  // Use the default AWS SDK credential chain for other environments
+  core.info("Using default AWS credential chain.");
+  return undefined;
+}
+
 async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
   const ecrClient = new ECRClient({
     customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
+    credentials: getCredentials(), // Added credentials setting
     requestHandler: new NodeHttpHandler({
       httpAgent: httpsProxyAgent,
       httpsAgent: httpsProxyAgent
@@ -77,6 +91,7 @@ async function getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
     customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
     // Authenticating to ECR Public auth only works in us-east-1
     region: "us-east-1",
+    credentials: getCredentials(),
     requestHandler: new NodeHttpHandler({
       httpAgent: httpsProxyAgent,
       httpsAgent: httpsProxyAgent
@@ -205,6 +220,7 @@ async function run() {
 
 export {
   configureProxy,
+  getCredentials,
   run,
   replaceSpecialCharacters
 };
