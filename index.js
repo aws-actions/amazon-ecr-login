@@ -2,7 +2,7 @@ const core = require('@actions/core');
 const exec = require('@actions/exec');
 const { HttpsProxyAgent } = require('https-proxy-agent');
 const { NodeHttpHandler } = require('@aws-sdk/node-http-handler');
-const { fromWebToken, fromHttp } = require("@aws-sdk/credential-providers");
+const { fromHttp } = require("@aws-sdk/credential-providers");
 const { ECRClient, GetAuthorizationTokenCommand } = require("@aws-sdk/client-ecr");
 const { ECRPUBLICClient, GetAuthorizationTokenCommand: GetAuthorizationTokenCommandPublic } = require("@aws-sdk/client-ecr-public");
 

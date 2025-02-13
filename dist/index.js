@@ -8,7 +8,7 @@ const core = __nccwpck_require__(7484);
 const exec = __nccwpck_require__(5236);
 const { HttpsProxyAgent } = __nccwpck_require__(3669);
 const { NodeHttpHandler } = __nccwpck_require__(9613);
-const { fromWebToken, fromHttp } = __nccwpck_require__(9719);
+const { fromHttp } = __nccwpck_require__(9719);
 const { ECRClient, GetAuthorizationTokenCommand } = __nccwpck_require__(8249);
 const { ECRPUBLICClient, GetAuthorizationTokenCommand: GetAuthorizationTokenCommandPublic } = __nccwpck_require__(9821);
 
