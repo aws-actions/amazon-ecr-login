@@ -2,6 +2,7 @@ const core = require('@actions/core');
 const exec = require('@actions/exec');
 const { HttpsProxyAgent } = require('https-proxy-agent');
 const { NodeHttpHandler } = require('@aws-sdk/node-http-handler');
+const { fromWebToken, fromHttp } = require("@aws-sdk/credential-providers");
 const { ECRClient, GetAuthorizationTokenCommand } = require("@aws-sdk/client-ecr");
 const { ECRPUBLICClient, GetAuthorizationTokenCommand: GetAuthorizationTokenCommandPublic } = require("@aws-sdk/client-ecr-public");
 
@@ -50,9 +51,22 @@ function configureProxy(httpProxy) {
   return null;
 }
 
+function getCredentials() {
+  // If running in a Pod Identity environment (EKS Pod Identity)
+  if (process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI) {
+    core.info("Using Pod Identity credentials via fromHttp()");
+    return fromHttp();
+  }
+
+  // Use the default AWS SDK credential chain for other environments
+  core.info("Using default AWS credential chain.");
+  return undefined;
+}
+
 async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
   const ecrClient = new ECRClient({
     customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
+    credentials: getCredentials(), // Added credentials setting
     requestHandler: new NodeHttpHandler({
       httpAgent: httpsProxyAgent,
       httpsAgent: httpsProxyAgent
@@ -74,6 +88,7 @@ async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
 async function getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
   const ecrPublicClient = new ECRPUBLICClient({
     customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
+    credentials: getCredentials(), // Added credentials setting
     requestHandler: new NodeHttpHandler({
       httpAgent: httpsProxyAgent,
       httpsAgent: httpsProxyAgent
