@@ -548,7 +548,7 @@ describe('Login to ECR Public', () => {
 
 describe('Pod Identity Support', () => {
   const TEST_CONSTANTS = {
-    POD_IDENTITY_URI: 'http://169.254.170.2/v2/credentials',
+    POD_IDENTITY_URI: 'http://169.254.170.23/v2/credentials',
     REGISTRY_ID: '111111111111',
     REGISTRY_ENDPOINT: 'https://111111111111.dkr.ecr.region.amazonaws.com',
     DEFAULT_USERNAME: 'AWS',
