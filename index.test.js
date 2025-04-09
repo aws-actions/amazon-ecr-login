@@ -545,3 +545,132 @@ describe('Login to ECR Public', () => {
     });
   });
 });
+
+describe('Pod Identity Support', () => {
+  const TEST_CONSTANTS = {
+    POD_IDENTITY_URI: 'http://169.254.170.23/v2/credentials',
+    REGISTRY_ID: '111111111111',
+    REGISTRY_ENDPOINT: 'https://111111111111.dkr.ecr.region.amazonaws.com',
+    DEFAULT_USERNAME: 'AWS',
+    DEFAULT_PASSWORD: 'token'
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env = {};
+    ecrMock.reset();
+    ecrPublicMock.reset();
+    core.getInput = jest.fn().mockImplementation(mockGetInput({
+      ...ECR_DEFAULT_INPUTS,
+      'mask-password': 'true',
+    }));
+  });
+
+  test('uses Pod Identity credentials when AWS_CONTAINER_CREDENTIALS_FULL_URI is set', async () => {
+    process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI = TEST_CONSTANTS.POD_IDENTITY_URI;
+    process.env.AWS_SDK_LOAD_CONFIG = '1';
+    ecrMock.on(GetAuthorizationTokenCommand).resolves({
+      authorizationData: [{
+        authorizationToken: Buffer.from('AWS:token').toString('base64'),
+        proxyEndpoint: TEST_CONSTANTS.REGISTRY_ENDPOINT
+      }]
+    });
+
+    await run();
+
+    expect(process.env.AWS_SDK_LOAD_CONFIG).toBe('1');
+    expect(exec.exec).toHaveBeenCalledWith(
+      'docker',
+      ['login', '-u', 'AWS', '-p', 'token', TEST_CONSTANTS.REGISTRY_ENDPOINT],
+      expect.anything()
+    );
+  });
+
+  test('uses default credential chain when AWS_CONTAINER_CREDENTIALS_FULL_URI is not set', async () => {
+    delete process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI;
+    ecrMock.on(GetAuthorizationTokenCommand).resolves({
+      authorizationData: [{
+        authorizationToken: Buffer.from('AWS:token').toString('base64'),
+        proxyEndpoint: TEST_CONSTANTS.REGISTRY_ENDPOINT
+      }]
+    });
+
+    await run();
+
+    expect(process.env.AWS_SDK_LOAD_CONFIG).toBeUndefined();
+    expect(exec.exec).toHaveBeenCalledWith(
+      'docker',
+      ['login', '-u', 'AWS', '-p', 'token', TEST_CONSTANTS.REGISTRY_ENDPOINT],
+      expect.anything()
+    );
+  });
+
+  test('prefers IRSA over Pod Identity when both are configured', async () => {
+    process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI = TEST_CONSTANTS.POD_IDENTITY_URI;
+    process.env.AWS_WEB_IDENTITY_TOKEN_FILE = '/var/run/secrets/token';
+    ecrMock.on(GetAuthorizationTokenCommand).resolves({
+      authorizationData: [{
+        authorizationToken: Buffer.from('AWS:token').toString('base64'),
+        proxyEndpoint: TEST_CONSTANTS.REGISTRY_ENDPOINT
+      }]
+    });
+
+    await run();
+
+    expect(process.env.AWS_SDK_LOAD_CONFIG).toBeUndefined();
+    expect(exec.exec).toHaveBeenCalledWith(
+      'docker',
+      ['login', '-u', 'AWS', '-p', 'token', TEST_CONSTANTS.REGISTRY_ENDPOINT],
+      expect.anything()
+    );
+  });
+
+  test('handles both ECR Public and Private with Pod Identity', async () => {
+    process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI = TEST_CONSTANTS.POD_IDENTITY_URI;
+    process.env.AWS_SDK_LOAD_CONFIG = '1';
+    const mockInputs = {
+      'mask-password': 'true',
+      'registries': TEST_CONSTANTS.REGISTRY_ID,
+      'registry-type': 'private',
+      'skip-logout': 'false'
+    };
+    core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
+    
+    ecrMock.on(GetAuthorizationTokenCommand).resolves({
+      authorizationData: [{
+        authorizationToken: Buffer.from('AWS:token').toString('base64'),
+        proxyEndpoint: TEST_CONSTANTS.REGISTRY_ENDPOINT
+      }]
+    });
+
+    await run();
+
+    expect(process.env.AWS_SDK_LOAD_CONFIG).toBe('1');
+    expect(exec.exec).toHaveBeenCalledWith(
+      'docker',
+      ['login', '-u', 'AWS', '-p', 'token', TEST_CONSTANTS.REGISTRY_ENDPOINT],
+      expect.anything()
+    );
+  });
+
+  test('handles error when Pod Identity credentials are invalid', async () => {
+    process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI = TEST_CONSTANTS.POD_IDENTITY_URI;
+    ecrMock.on(GetAuthorizationTokenCommand).rejects(new Error('Invalid credentials'));
+
+    await run();
+
+    expect(core.setFailed).toHaveBeenCalledWith('Invalid credentials');
+    expect(exec.exec).not.toHaveBeenCalled();
+  });
+
+  test('handles docker login failure in Pod Identity environment', async () => {
+    process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI = TEST_CONSTANTS.POD_IDENTITY_URI;
+    ecrMock.on(GetAuthorizationTokenCommand).resolves(defaultOutputToken);
+    exec.exec.mockRejectedValue(new Error('Docker login failed'));
+
+    await run();
+
+    expect(core.setFailed).toHaveBeenCalledWith(expect.stringContaining('Docker login failed'));
+    expect(exec.exec).toHaveBeenCalledTimes(1);
+  });
+});

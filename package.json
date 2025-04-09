@@ -27,9 +27,10 @@
   "dependencies": {
     "@actions/core": "^1.11.1",
     "@actions/exec": "^1.1.1",
-    "@aws-sdk/client-ecr": "^3.782.0",
-    "@aws-sdk/client-ecr-public": "^3.782.0",
+    "@aws-sdk/client-ecr": "^3.741.0",
+    "@aws-sdk/client-ecr-public": "^3.741.0",
     "@aws-sdk/node-http-handler": "^3.374.0",
+    "@aws-sdk/credential-providers": "^3.354.0",
     "https-proxy-agent": "^7.0.6"
   },
   "devDependencies": {
