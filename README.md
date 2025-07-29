@@ -39,7 +39,7 @@ For any customer consuming the Docker credentials as outputs in subsequent jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
         with:
-          mask-password: 'false'
+          mask-password: 'true'
 ```
 
 - If you are already setting the `mask-password` input to `false`, you can simply update your action version to `aws-actions/amazon-ecr-login@v2`.
