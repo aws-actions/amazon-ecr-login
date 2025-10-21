@@ -5,6 +5,9 @@ on:
 
 name: Package
 
+permissions:
+  contents: write
+
 jobs:
   check:
     name: Package distribution file
