@@ -6,12 +6,14 @@ const exec = require('@actions/exec');
  */
 
 const STATES = {
-  registries: 'registries'
+  registries: 'registries',
+  containerCli: 'containerCli'
 };
 
 async function cleanup() {
   try {
     const registriesState = core.getState(STATES.registries);
+    const containerCli = core.getState(STATES.containerCli) || 'docker';
 
     if (registriesState) {
       const registries = registriesState.split(',');
@@ -21,10 +23,10 @@ async function cleanup() {
       for (const registry of registries) {
         core.info(`Logging out of registry ${registry}`);
 
-        // Execute the docker logout command
+        // Execute the container logout command
         let doLogoutStdout = '';
         let doLogoutStderr = '';
-        const exitCode = await exec.exec('docker', ['logout', registry], {
+        const exitCode = await exec.exec(containerCli, ['logout', registry], {
           silent: true,
           ignoreReturnCode: true,
           listeners: {

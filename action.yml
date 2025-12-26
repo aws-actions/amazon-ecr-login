@@ -27,6 +27,12 @@ inputs:
       Options: [private, public]
     required: false
     default: private
+  container-cli:
+    description: >
+      Container CLI to use for login/logout.
+      If not specified, auto-detects: docker, buildah, podman, nerdctl.
+      Options: [docker, buildah, podman, nerdctl]
+    required: false
   skip-logout:
     description: >-
       Whether to skip explicit logout of the registries during post-job cleanup.

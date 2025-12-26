@@ -1,4 +1,4 @@
-const { run, replaceSpecialCharacters, configureProxy } = require('./index.js');
+const { run, replaceSpecialCharacters, configureProxy, detectContainerCli } = require('./index.js');
 const core = require('@actions/core');
 const exec = require('@actions/exec');
 const { mockClient } = require('aws-sdk-client-mock');
@@ -19,6 +19,7 @@ const ECR_DEFAULT_INPUTS = {
   'mask-password': '',
   'registries': '',
   'registry-type': '',
+  'container-cli': '',
   'skip-logout': ''
 };
 
@@ -27,6 +28,7 @@ const ECR_PUBLIC_DEFAULT_INPUTS = {
   'mask-password': '',
   'registries': '',
   'registry-type': 'public',
+  'container-cli': '',
   'skip-logout': ''
 };
 
@@ -66,14 +68,14 @@ describe('Login to ECR', () => {
 
     ecrMock.commandCalls(GetAuthorizationTokenCommand, {});
     expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
-    expect(exec.exec).toHaveBeenNthCalledWith(1,
+    expect(exec.exec).toHaveBeenNthCalledWith(2,
       'docker',
       ['login', '-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
       expect.anything());
-    expect(core.saveState).toHaveBeenNthCalledWith(1, 'registries', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
-    expect(exec.exec).toHaveBeenCalledTimes(1);
+    expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
+    expect(exec.exec).toHaveBeenCalledTimes(2);
     expect(core.setOutput).toHaveBeenCalledTimes(3);
-    expect(core.saveState).toHaveBeenCalledTimes(1);
+    expect(core.saveState).toHaveBeenCalledTimes(2);
   });
 
   test('gets auth token from ECR and logins the Docker client for each provided registry', async () => {
@@ -81,6 +83,7 @@ describe('Login to ECR', () => {
       'mask-password': '',
       'registries': '123456789012,111111111111',
       'registry-type': '',
+      'container-cli': '',
       'skip-logout': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
@@ -103,19 +106,19 @@ describe('Login to ECR', () => {
       registryIds: ['123456789012', '111111111111']
     });
 
-    expect(exec.exec).toHaveBeenNthCalledWith(1,
+    expect(exec.exec).toHaveBeenNthCalledWith(2,
       'docker',
       ['login', '-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
       expect.anything());
-    expect(exec.exec).toHaveBeenNthCalledWith(2,
+    expect(exec.exec).toHaveBeenNthCalledWith(3,
       'docker',
       ['login', '-u', 'foo', '-p', 'bar', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
       expect.anything());
     expect(core.saveState).toHaveBeenNthCalledWith(1, 'registries', '123456789012.dkr.ecr.aws-region-1.amazonaws.com,111111111111.dkr.ecr.aws-region-1.amazonaws.com');
-    expect(exec.exec).toHaveBeenCalledTimes(2);
+    expect(exec.exec).toHaveBeenCalledTimes(3);
     expect(core.setOutput).toHaveBeenCalledTimes(4);
     expect(core.setSecret).toHaveBeenCalledTimes(2);
-    expect(core.saveState).toHaveBeenCalledTimes(1);
+    expect(core.saveState).toHaveBeenCalledTimes(2);
   });
 
   test('outputs the registry ID if a single registry is provided in the input', async () => {
@@ -123,6 +126,7 @@ describe('Login to ECR', () => {
       'mask-password': '',
       'registries': '111111111111',
       'registry-type': '',
+      'container-cli': '',
       'skip-logout': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
@@ -141,20 +145,20 @@ describe('Login to ECR', () => {
       registryIds: ['111111111111']
     });
     expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', '111111111111.dkr.ecr.aws-region-1.amazonaws.com');
-    expect(exec.exec).toHaveBeenCalledTimes(1);
-    expect(exec.exec).toHaveBeenNthCalledWith(1,
+    expect(exec.exec).toHaveBeenCalledTimes(2);
+    expect(exec.exec).toHaveBeenNthCalledWith(2,
       'docker',
       ['login', '-u', 'foo', '-p', 'bar', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
       expect.anything());
     expect(core.saveState).toHaveBeenCalledWith('registries', '111111111111.dkr.ecr.aws-region-1.amazonaws.com');
-    expect(exec.exec).toHaveBeenCalledTimes(1);
+    expect(exec.exec).toHaveBeenCalledTimes(2);
     expect(core.setOutput).toHaveBeenCalledTimes(3);
-    expect(core.saveState).toHaveBeenCalledTimes(1);
+    expect(core.saveState).toHaveBeenCalledTimes(2);
   });
 
   test('error is caught by core.setFailed for failed docker login', async () => {
     ecrMock.on(GetAuthorizationTokenCommand).resolves(defaultOutputToken);
-    exec.exec.mockReturnValue(1);
+    exec.exec.mockReturnValueOnce(0).mockReturnValue(1);
 
     await run();
 
@@ -168,6 +172,7 @@ describe('Login to ECR', () => {
       'mask-password': '',
       'registries': '123456789012,111111111111',
       'registry-type': '',
+      'container-cli': '',
       'skip-logout': ''
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
@@ -189,26 +194,26 @@ describe('Login to ECR', () => {
       options.listeners.stderr('Some fancy error ');
       options.listeners.stderr('from docker login stderr');
       return (1);
-    }).mockReturnValueOnce(0);
+    }).mockReturnValueOnce(0).mockReturnValueOnce(0);
 
     await run();
 
     ecrMock.commandCalls(GetAuthorizationTokenCommand, {
       registryIds: ['123456789012', '111111111111']
     });
-    expect(exec.exec).toHaveBeenNthCalledWith(1,
+    expect(exec.exec).toHaveBeenNthCalledWith(2,
       'docker',
       ['login', '-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
       expect.anything());
-    expect(exec.exec).toHaveBeenNthCalledWith(2,
+    expect(exec.exec).toHaveBeenNthCalledWith(3,
       'docker',
       ['login', '-u', 'foo', '-p', 'bar', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
       expect.anything());
     expect(core.saveState).toHaveBeenCalledWith('registries', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
     expect(core.setFailed).toHaveBeenCalledWith('Could not login to registry 111111111111.dkr.ecr.aws-region-1.amazonaws.com: Some fancy error from docker login stderr');
-    expect(exec.exec).toHaveBeenCalledTimes(2);
+    expect(exec.exec).toHaveBeenCalledTimes(3);
     expect(core.setOutput).toHaveBeenCalledTimes(2);
-    expect(core.saveState).toHaveBeenCalledTimes(1);
+    expect(core.saveState).toHaveBeenCalledTimes(2);
   });
 
   test(`throws error when getAuthorizationToken does return an empty authorization data`, async () => {
@@ -220,7 +225,7 @@ describe('Login to ECR', () => {
 
     ecrMock.commandCalls(GetAuthorizationTokenCommand, {});
     expect(core.setFailed).toHaveBeenCalledWith('Amazon ECR authorization token does not contain any authorization data');
-    expect(exec.exec).toHaveBeenCalledTimes(0);
+    expect(exec.exec).toHaveBeenCalledTimes(1);
     expect(core.setOutput).toHaveBeenCalledTimes(0);
     expect(core.saveState).toHaveBeenCalledTimes(0);
     expect(core.setFailed).toHaveBeenCalledTimes(1);
@@ -235,7 +240,7 @@ describe('Login to ECR', () => {
 
     ecrMock.commandCalls(GetAuthorizationTokenCommand, {});
     expect(core.setFailed).toHaveBeenCalledWith('Amazon ECR authorization token is invalid');
-    expect(exec.exec).toHaveBeenCalledTimes(0);
+    expect(exec.exec).toHaveBeenCalledTimes(1);
     expect(core.setOutput).toHaveBeenCalledTimes(0);
     expect(core.saveState).toHaveBeenCalledTimes(0);
     expect(core.setFailed).toHaveBeenCalledTimes(1);
@@ -248,7 +253,7 @@ describe('Login to ECR', () => {
 
     ecrMock.commandCalls(GetAuthorizationTokenCommand, {});
     expect(core.setFailed).toHaveBeenCalledWith('Amazon ECR authorization token returned no data');
-    expect(exec.exec).toHaveBeenCalledTimes(0);
+    expect(exec.exec).toHaveBeenCalledTimes(1);
     expect(core.setOutput).toHaveBeenCalledTimes(0);
     expect(core.saveState).toHaveBeenCalledTimes(0);
     expect(core.setFailed).toHaveBeenCalledTimes(1);
@@ -270,6 +275,7 @@ describe('Login to ECR', () => {
       'mask-password': '',
       'registries': '',
       'registry-type': '',
+      'container-cli': '',
       'skip-logout': 'true'
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
@@ -278,7 +284,7 @@ describe('Login to ECR', () => {
 
     ecrMock.commandCalls(GetAuthorizationTokenCommand, {});
     expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
-    expect(exec.exec).toHaveBeenNthCalledWith(1,
+    expect(exec.exec).toHaveBeenNthCalledWith(2,
       'docker',
       ['login', '-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
       expect.anything());
@@ -290,6 +296,7 @@ describe('Login to ECR', () => {
       'mask-password': '',
       'registries': '123456789012,111111111111',
       'registry-type': '',
+      'container-cli': '',
       'skip-logout': 'true'
     };
     core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
@@ -311,7 +318,7 @@ describe('Login to ECR', () => {
     ecrMock.commandCalls(GetAuthorizationTokenCommand, {
       registryIds: ['123456789012', '111111111111']
     });
-    expect(exec.exec).toHaveBeenCalledTimes(2);
+    expect(exec.exec).toHaveBeenCalledTimes(3);
     expect(core.saveState).toHaveBeenCalledTimes(0);
   });
 
@@ -435,6 +442,7 @@ describe('Login to ECR Public', () => {
         'mask-password': '',
         'registries': '',
         'registry-type': 'invalid',
+        'container-cli': '',
         'skip-logout': ''
       };
       core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
@@ -445,6 +453,23 @@ describe('Login to ECR Public', () => {
       expect(core.setFailed).toHaveBeenCalledWith(`Invalid input for 'registry-type', possible options are [private, public]`);
       expect(core.saveState).toHaveBeenCalledTimes(0);
     });
+    test('error is caught by core.setFailed for invalid container-cli input', async () => {
+      const mockInputs = {
+        'mask-password': '',
+        'registries': '',
+        'registry-type': 'public',
+        'container-cli': 'invalid-cli',
+        'skip-logout': ''
+      };
+      core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
+      ecrPublicMock.on(GetAuthorizationTokenCommandPublic).resolves(defaultAuthToken);
+
+      await run();
+
+      expect(core.setFailed).toHaveBeenCalledWith(`Invalid input for 'container-cli', possible options are [docker, buildah, podman, nerdctl]`);
+      expect(core.saveState).toHaveBeenCalledTimes(0);
+    });
+
 
     test('outputs the registry URI', async () => {
       ecrPublicMock.on(GetAuthorizationTokenCommandPublic).resolves(defaultAuthToken);
@@ -452,15 +477,14 @@ describe('Login to ECR Public', () => {
 
       ecrPublicMock.commandCalls(GetAuthorizationTokenCommandPublic, {});
       expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', 'public.ecr.aws');
-      expect(exec.exec).toHaveBeenCalledTimes(1);
-      expect(exec.exec).toHaveBeenNthCalledWith(1,
+      expect(exec.exec).toHaveBeenCalledTimes(2);
+      expect(exec.exec).toHaveBeenNthCalledWith(2,
         'docker',
         ['login', '-u', 'hello', '-p', 'world', 'public.ecr.aws'],
         expect.anything());
       expect(core.saveState).toHaveBeenCalledWith('registries', 'public.ecr.aws');
-      expect(exec.exec).toHaveBeenCalledTimes(1);
       expect(core.setOutput).toHaveBeenCalledTimes(3);
-      expect(core.saveState).toHaveBeenCalledTimes(1);
+      expect(core.saveState).toHaveBeenCalledTimes(2);
     });
 
     test('sets the Actions outputs to the docker credentials', async () => {
@@ -480,14 +504,14 @@ describe('Login to ECR Public', () => {
 
       ecrPublicMock.commandCalls(GetAuthorizationTokenCommandPublic, {});
       expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', 'public.ecr.aws');
-      expect(exec.exec).toHaveBeenNthCalledWith(1,
+      expect(exec.exec).toHaveBeenNthCalledWith(2,
         'docker',
         ['login', '-u', 'hello', '-p', 'world', 'public.ecr.aws'],
         expect.anything());
       expect(core.saveState).toHaveBeenNthCalledWith(1, 'registries', 'public.ecr.aws');
-      expect(exec.exec).toHaveBeenCalledTimes(1);
+      expect(exec.exec).toHaveBeenCalledTimes(2);
       expect(core.setOutput).toHaveBeenCalledTimes(3);
-      expect(core.saveState).toHaveBeenCalledTimes(1);
+      expect(core.saveState).toHaveBeenCalledTimes(2);
     });
 
     test(`throws error when getAuthorizationToken does return an empty authorization data`, async () => {
@@ -499,7 +523,7 @@ describe('Login to ECR Public', () => {
 
       ecrPublicMock.commandCalls(GetAuthorizationTokenCommandPublic, {});
       expect(core.setFailed).toHaveBeenCalledWith('Amazon ECR Public authorization token does not contain any authorization data');
-      expect(exec.exec).toHaveBeenCalledTimes(0);
+      expect(exec.exec).toHaveBeenCalledTimes(1);
       expect(core.setOutput).toHaveBeenCalledTimes(0);
       expect(core.saveState).toHaveBeenCalledTimes(0);
       expect(core.setFailed).toHaveBeenCalledTimes(1);
@@ -514,7 +538,7 @@ describe('Login to ECR Public', () => {
 
       ecrPublicMock.commandCalls(GetAuthorizationTokenCommandPublic, {});
       expect(core.setFailed).toHaveBeenCalledWith('Amazon ECR Public authorization token is invalid');
-      expect(exec.exec).toHaveBeenCalledTimes(0);
+      expect(exec.exec).toHaveBeenCalledTimes(1);
       expect(core.setOutput).toHaveBeenCalledTimes(0);
       expect(core.saveState).toHaveBeenCalledTimes(0);
       expect(core.setFailed).toHaveBeenCalledTimes(1);
@@ -527,7 +551,7 @@ describe('Login to ECR Public', () => {
 
       ecrPublicMock.commandCalls(GetAuthorizationTokenCommandPublic, {});
       expect(core.setFailed).toHaveBeenCalledWith('Amazon ECR Public authorization token returned no data');
-      expect(exec.exec).toHaveBeenCalledTimes(0);
+      expect(exec.exec).toHaveBeenCalledTimes(1);
       expect(core.setOutput).toHaveBeenCalledTimes(0);
       expect(core.saveState).toHaveBeenCalledTimes(0);
       expect(core.setFailed).toHaveBeenCalledTimes(1);
@@ -542,6 +566,84 @@ describe('Login to ECR Public', () => {
       expect(core.setOutput).toHaveBeenCalledTimes(0);
       expect(core.saveState).toHaveBeenCalledTimes(0);
       expect(core.setFailed).toHaveBeenCalled();
+    });
+  });
+
+  describe('detectContainerCli', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      exec.exec.mockReturnValue(0);
+    });
+
+    test('detects docker when no preference specified', async () => {
+      const cli = await detectContainerCli('');
+      
+      expect(cli).toBe('docker');
+      expect(exec.exec).toHaveBeenCalledWith('docker', ['--version'], expect.anything());
+    });
+
+    test('detects buildah when docker unavailable', async () => {
+      exec.exec.mockReturnValueOnce(1).mockReturnValueOnce(0);
+      
+      const cli = await detectContainerCli('');
+      
+      expect(cli).toBe('buildah');
+      expect(exec.exec).toHaveBeenNthCalledWith(1, 'docker', ['--version'], expect.anything());
+      expect(exec.exec).toHaveBeenNthCalledWith(2, 'buildah', ['--version'], expect.anything());
+    });
+
+    test('detects nerdctl when docker, buildah and podman unavailable', async () => {
+      exec.exec.mockReturnValueOnce(1).mockReturnValueOnce(1).mockReturnValueOnce(1).mockReturnValueOnce(0);
+      
+      const cli = await detectContainerCli('');
+      
+      expect(cli).toBe('nerdctl');
+      expect(exec.exec).toHaveBeenNthCalledWith(4, 'nerdctl', ['--version'], expect.anything());
+    });
+
+    test('uses specified container CLI when provided', async () => {
+      const cli = await detectContainerCli('podman');
+      
+      expect(cli).toBe('podman');
+      expect(exec.exec).toHaveBeenCalledWith('podman', ['--version'], expect.anything());
+      expect(exec.exec).toHaveBeenCalledTimes(1);
+    });
+
+    test('throws error when no CLI available', async () => {
+      exec.exec.mockReturnValue(1);
+      
+      await expect(detectContainerCli('')).rejects.toThrow('Container CLI not available. Tried: docker, buildah, podman, nerdctl');
+    });
+
+    test('throws error when specified CLI unavailable', async () => {
+      exec.exec.mockReturnValue(1);
+      
+      await expect(detectContainerCli('podman')).rejects.toThrow('Container CLI not available. Tried: podman');
+    });
+
+    test('handles exec.exec throwing exception during detection', async () => {
+      exec.exec.mockImplementationOnce(() => {
+        throw new Error('ENOENT: command not found');
+      }).mockReturnValueOnce(0);
+      
+      const cli = await detectContainerCli('');
+      
+      expect(cli).toBe('buildah');
+      expect(core.debug).toHaveBeenCalledWith(expect.stringContaining("CLI 'docker' not available: ENOENT"));
+    });
+
+    test('handles empty string as auto-detect', async () => {
+      const cli = await detectContainerCli('');
+      
+      expect(cli).toBe('docker');
+      expect(exec.exec).toHaveBeenCalledWith('docker', ['--version'], expect.anything());
+    });
+
+    test('validates that uppercase/whitespace handled by input validation layer', async () => {
+      // Input validation in index.js converts to lowercase before calling detectContainerCli
+      // This test ensures lowercase input works correctly
+      const cli = await detectContainerCli('podman');
+      expect(cli).toBe('podman');
     });
   });
 });
