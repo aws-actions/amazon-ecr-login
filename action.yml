@@ -35,6 +35,12 @@ inputs:
       Options: ['true', 'false']
     required: false
     default: 'false'
+  use-fips-endpoint:
+    description: >-
+      Whether to use the FIPS endpoint when looking into ECR.
+      Options: ['true', 'false']
+    required: false
+    default: 'false'
 outputs:
   registry:
     description: >-
