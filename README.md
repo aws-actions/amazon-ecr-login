@@ -1,6 +1,6 @@
 ## Amazon ECR "Login" Action for GitHub Actions
 
-Logs in the local Docker client to one or more Amazon ECR Private registries or an Amazon ECR Public registry.
+Logs in the local Docker client to one or more Amazon ECR Private registries or an Amazon ECR Public registry. Supports Docker, Buildah, Podman, and nerdctl.
 
 **Table of Contents**
 

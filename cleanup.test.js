@@ -70,6 +70,64 @@ describe('Logout from ECR', () => {
     expect(core.setFailed).toHaveBeenCalledTimes(0);
   });
 
+  test('uses podman from state instead of default docker', async () => {
+    const mockStates = {
+      'registries': 'public.ecr.aws',
+      'containerCli': 'podman'
+    };
+    core.getState = jest.fn().mockImplementation(mockGetState(mockStates));
+
+    await cleanup();
+
+    expect(core.getState).toHaveBeenCalledWith('registries');
+    expect(core.getState).toHaveBeenCalledWith('containerCli');
+    expect(exec.exec).toHaveBeenCalledWith('podman', ['logout', 'public.ecr.aws'], expect.anything());
+    expect(exec.exec).toHaveBeenCalledTimes(1);
+  });
+
+  test('uses nerdctl from state', async () => {
+    const mockStates = {
+      'registries': '123456789012.dkr.ecr.aws-region-1.amazonaws.com',
+      'containerCli': 'nerdctl'
+    };
+    core.getState = jest.fn().mockImplementation(mockGetState(mockStates));
+
+    await cleanup();
+
+    expect(core.getState).toHaveBeenCalledWith('containerCli');
+    expect(exec.exec).toHaveBeenCalledWith('nerdctl', ['logout', '123456789012.dkr.ecr.aws-region-1.amazonaws.com'], expect.anything());
+    expect(exec.exec).toHaveBeenCalledTimes(1);
+  });
+
+  test('uses CLI from state even if unusual value', async () => {
+    const mockStates = {
+      'registries': 'public.ecr.aws',
+      'containerCli': 'sh -c "malicious code"'
+    };
+    core.getState = jest.fn().mockImplementation(mockGetState(mockStates));
+
+    await cleanup();
+
+    expect(core.getState).toHaveBeenCalledWith('containerCli');
+    // Uses whatever CLI is in state (no validation in cleanup)
+    expect(exec.exec).toHaveBeenCalledWith('sh -c "malicious code"', ['logout', 'public.ecr.aws'], expect.anything());
+    expect(exec.exec).toHaveBeenCalledTimes(1);
+  });
+
+  test('handles empty string CLI from state', async () => {
+    const mockStates = {
+      'registries': 'public.ecr.aws',
+      'containerCli': ''
+    };
+    core.getState = jest.fn().mockImplementation(mockGetState(mockStates));
+
+    await cleanup();
+
+    // Empty string should fall back to 'docker'
+    expect(exec.exec).toHaveBeenCalledWith('docker', ['logout', 'public.ecr.aws'], expect.anything());
+    expect(exec.exec).toHaveBeenCalledTimes(1);
+  });
+
   test('error is caught by core.setFailed for failed docker logout', async () => {
     exec.exec.mockReturnValue(1);
 
