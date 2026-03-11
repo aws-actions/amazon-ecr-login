@@ -1,12 +1,28 @@
-const { run, replaceSpecialCharacters, configureProxy } = require('./index.js');
-const core = require('@actions/core');
-const exec = require('@actions/exec');
-const { mockClient } = require('aws-sdk-client-mock');
-const { ECRClient, GetAuthorizationTokenCommand } = require('@aws-sdk/client-ecr');
-const { ECRPUBLICClient, GetAuthorizationTokenCommand: GetAuthorizationTokenCommandPublic } = require('@aws-sdk/client-ecr-public');
+import {jest} from '@jest/globals';
+import { mockClient } from 'aws-sdk-client-mock';
+import { ECRClient, GetAuthorizationTokenCommand } from '@aws-sdk/client-ecr';
+import { ECRPUBLICClient, GetAuthorizationTokenCommand as GetAuthorizationTokenCommandPublic } from '@aws-sdk/client-ecr-public';
 
-jest.mock('@actions/core');
-jest.mock('@actions/exec');
+jest.unstable_mockModule('@actions/core', () => ({
+  getInput: jest.fn(),
+  setOutput: jest.fn(),
+  setFailed: jest.fn(),
+  setSecret: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warning: jest.fn(),
+  error: jest.fn(),
+}));
+
+jest.unstable_mockModule('@actions/exec', () => ({
+  exec: jest.fn(),
+}));
+
+const core = await import('@actions/core');
+const exec = await import('@actions/exec');
+const { run, replaceSpecialCharacters, configureProxy } = await import('./index.js');
 
 function mockGetInput(requestResponse) {
   return function (name, options) { // eslint-disable-line no-unused-vars
@@ -52,7 +68,7 @@ describe('Login to ECR', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    core.getInput = jest.fn().mockImplementation(mockGetInput(ECR_DEFAULT_INPUTS));
+    core.getInput.mockImplementation(mockGetInput(ECR_DEFAULT_INPUTS));
 
     ecrMock.reset();
 
@@ -83,7 +99,7 @@ describe('Login to ECR', () => {
       'registry-type': '',
       'skip-logout': ''
     };
-    core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
+    core.getInput.mockImplementation(mockGetInput(mockInputs));
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
       authorizationData: [
         {
@@ -125,7 +141,7 @@ describe('Login to ECR', () => {
       'registry-type': '',
       'skip-logout': ''
     };
-    core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
+    core.getInput.mockImplementation(mockGetInput(mockInputs));
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
       authorizationData: [
         {
@@ -170,7 +186,7 @@ describe('Login to ECR', () => {
       'registry-type': '',
       'skip-logout': ''
     };
-    core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
+    core.getInput.mockImplementation(mockGetInput(mockInputs));
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
       authorizationData: [
         {
@@ -272,7 +288,7 @@ describe('Login to ECR', () => {
       'registry-type': '',
       'skip-logout': 'true'
     };
-    core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
+    core.getInput.mockImplementation(mockGetInput(mockInputs));
 
     await run();
 
@@ -292,7 +308,7 @@ describe('Login to ECR', () => {
       'registry-type': '',
       'skip-logout': 'true'
     };
-    core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
+    core.getInput.mockImplementation(mockGetInput(mockInputs));
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
       authorizationData: [
         {
@@ -327,7 +343,7 @@ describe('Login to ECR', () => {
       'registry-type': '',
       'skip-logout': 'true'
     };
-    core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
+    core.getInput.mockImplementation(mockGetInput(mockInputs));
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
       authorizationData: [
         {
@@ -357,7 +373,7 @@ describe('Login to ECR', () => {
       'registry-type': '',
       'skip-logout': 'true'
     };
-    core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
+    core.getInput.mockImplementation(mockGetInput(mockInputs));
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
       authorizationData: [
         {
@@ -424,7 +440,7 @@ describe('Login to ECR Public', () => {
     jest.clearAllMocks();
     ecrPublicMock.reset();
 
-    core.getInput = jest.fn().mockImplementation(mockGetInput(ECR_PUBLIC_DEFAULT_INPUTS));
+    core.getInput.mockImplementation(mockGetInput(ECR_PUBLIC_DEFAULT_INPUTS));
 
     exec.exec.mockReturnValue(0);
   });
@@ -437,7 +453,7 @@ describe('Login to ECR Public', () => {
         'registry-type': 'invalid',
         'skip-logout': ''
       };
-      core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
+      core.getInput.mockImplementation(mockGetInput(mockInputs));
       ecrPublicMock.on(GetAuthorizationTokenCommandPublic).resolves(defaultAuthToken);
 
       await run();
