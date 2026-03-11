@@ -33,7 +33,7 @@
     "https-proxy-agent": "^7.0.6"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.38.3",
+    "@vercel/ncc": "^0.38.4",
     "aws-sdk-client-mock": "^4.1.0",
     "eslint": "^8.57.0",
     "jest": "^30.0.0"
