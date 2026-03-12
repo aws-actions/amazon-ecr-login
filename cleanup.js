@@ -1,5 +1,6 @@
-const core = require('@actions/core');
-const exec = require('@actions/exec');
+import * as core from '@actions/core';
+import * as exec from '@actions/exec';
+import { fileURLToPath } from 'node:url';
 
 /**
  * When the GitHub Actions job is done, logout of ECR Private/Public.
@@ -53,9 +54,9 @@ async function cleanup() {
   }
 }
 
-module.exports = cleanup;
+export default cleanup;
 
 /* istanbul ignore next */
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   cleanup();
 }

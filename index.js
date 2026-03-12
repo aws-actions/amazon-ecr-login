@@ -1,9 +1,10 @@
-const core = require('@actions/core');
-const exec = require('@actions/exec');
-const { HttpsProxyAgent } = require('https-proxy-agent');
-const { NodeHttpHandler } = require('@aws-sdk/node-http-handler');
-const { ECRClient, GetAuthorizationTokenCommand } = require("@aws-sdk/client-ecr");
-const { ECRPUBLICClient, GetAuthorizationTokenCommand: GetAuthorizationTokenCommandPublic } = require("@aws-sdk/client-ecr-public");
+import * as core from '@actions/core';
+import * as exec from '@actions/exec';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import { NodeHttpHandler } from '@aws-sdk/node-http-handler';
+import { ECRClient, GetAuthorizationTokenCommand } from '@aws-sdk/client-ecr';
+import { ECRPUBLICClient, GetAuthorizationTokenCommand as GetAuthorizationTokenCommandPublic } from '@aws-sdk/client-ecr-public';
+import { fileURLToPath } from 'node:url';
 
 const ECR_LOGIN_GITHUB_ACTION_USER_AGENT = 'amazon-ecr-login-for-github-actions';
 const ECR_PUBLIC_REGISTRY_URI = 'public.ecr.aws';
@@ -200,13 +201,13 @@ async function run() {
   }
 }
 
-module.exports = {
+export {
   configureProxy,
   run,
   replaceSpecialCharacters
 };
 
 /* istanbul ignore next */
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   run();
 }
