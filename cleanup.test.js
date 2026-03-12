@@ -1,9 +1,25 @@
-const cleanup = require('./cleanup.js');
-const core = require('@actions/core');
-const exec = require('@actions/exec');
+import {jest} from '@jest/globals';
 
-jest.mock('@actions/core');
-jest.mock('@actions/exec');
+jest.unstable_mockModule('@actions/core', () => ({
+  getInput: jest.fn(),
+  setOutput: jest.fn(),
+  setFailed: jest.fn(),
+  setSecret: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warning: jest.fn(),
+  error: jest.fn(),
+}));
+
+jest.unstable_mockModule('@actions/exec', () => ({
+  exec: jest.fn(),
+}));
+
+const core = await import('@actions/core');
+const exec = await import('@actions/exec');
+const { default: cleanup } = await import('./cleanup.js');
 
 function mockGetState(requestResponse) {
   return function (name, options) { // eslint-disable-line no-unused-vars
@@ -20,7 +36,7 @@ describe('Logout from ECR', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    core.getState = jest.fn().mockImplementation(mockGetState(ECR_STATES));
+    core.getState.mockImplementation(mockGetState(ECR_STATES));
     exec.exec.mockReturnValue(0);
   });
 
@@ -44,7 +60,7 @@ describe('Logout from ECR', () => {
     const mockStates = {
       'registries': 'public.ecr.aws'
     };
-    core.getState = jest.fn().mockImplementation(mockGetState(mockStates));
+    core.getState.mockImplementation(mockGetState(mockStates));
 
     await cleanup();
 
@@ -61,7 +77,7 @@ describe('Logout from ECR', () => {
     const mockStates = {
       'registries' : ''
     };
-    core.getState = jest.fn().mockImplementation(mockGetState(mockStates));
+    core.getState.mockImplementation(mockGetState(mockStates));
 
     await cleanup();
 
@@ -82,7 +98,7 @@ describe('Logout from ECR', () => {
     const mockStates = {
       'registries' : '123456789012.dkr.ecr.aws-region-1.amazonaws.com,111111111111.dkr.ecr.aws-region-1.amazonaws.com,222222222222.dkr.ecr.aws-region-1.amazonaws.com'
     };
-    core.getState = jest.fn().mockImplementation(mockGetState(mockStates));
+    core.getState.mockImplementation(mockGetState(mockStates));
     exec.exec.mockImplementationOnce((commandLine, args, options) => {
       options.listeners.stdout('stdout of ');
       options.listeners.stdout('registry 1');
