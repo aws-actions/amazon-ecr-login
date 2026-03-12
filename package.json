@@ -2,11 +2,12 @@
   "name": "aws-actions-amazon-ecr-login",
   "version": "2.0.1",
   "description": "Logs in the local Docker client to the AWS account's ECR registry",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "lint": "eslint **.js",
     "package": "ncc build index.js -o dist && ncc build cleanup.js -o dist/cleanup",
-    "test": "eslint **.js && jest --coverage --verbose"
+    "test": "eslint **.js && NODE_OPTIONS=\"$NODE_OPTIONS --experimental-vm-modules\" jest --coverage --verbose"
   },
   "repository": {
     "type": "git",
@@ -25,7 +26,7 @@
   },
   "homepage": "https://github.com/aws-actions/amazon-ecr-login#readme",
   "dependencies": {
-    "@actions/core": "^1.11.1",
+    "@actions/core": "^3.0.0",
     "@actions/exec": "^1.1.1",
     "@aws-sdk/client-ecr": "^3.830.0",
     "@aws-sdk/client-ecr-public": "^3.830.0",
