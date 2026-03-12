@@ -34,9 +34,11 @@
     "https-proxy-agent": "^7.0.6"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@vercel/ncc": "^0.38.4",
     "aws-sdk-client-mock": "^4.1.0",
     "eslint": "^10.0.3",
+    "globals": "^17.4.0",
     "jest": "^30.2.0"
   }
 }
