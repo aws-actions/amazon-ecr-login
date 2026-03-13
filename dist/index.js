@@ -62632,6 +62632,8 @@ async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
 async function getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
   const ecrPublicClient = new client_ecr_public_dist_cjs/* ECRPUBLICClient */.Rr({
     customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
+    // Authenticating to ECR Public auth only works in us-east-1
+    region: "us-east-1",
     requestHandler: new dist_cjs.NodeHttpHandler({
       httpAgent: httpsProxyAgent,
       httpsAgent: httpsProxyAgent
