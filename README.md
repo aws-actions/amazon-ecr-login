@@ -391,18 +391,6 @@ The following minimum permissions are required for pushing an image to an ECR Pu
 
 ## Troubleshooting
 
-### Configure credentials
-
-`Inaccessible host: 'api.ecr-public.aws-region-1.amazonaws.com' at port 'undefined'. This service may not be available in the 'aws-region-1' region.`
-
-- The `AWS_DEFAULT_REGION` environment variable is configured as a region where ECR Public isn't available.
-- ECR Public can only be logged into from the `us-east-1` region. In the `aws-actions/configure-aws-credentials` action, the `aws-region` input must be `us-east-1`.
-
-`GetAuthorizationToken command is only supported in us-east-1.`
-
-- The `AWS_DEFAULT_REGION` environment variable is configured as `us-west-2`.
-- ECR Public can only be logged into from the `us-east-1` region. In the `aws-actions/configure-aws-credentials` action, the `aws-region` input must be `us-east-1`.
-
 ### Inputs
 
 `Invalid parameter at 'registryIds' failed to satisfy constraint: 'Member must satisfy constraint: [Member must satisfy regular expression pattern: [0-9]{12}]'`
