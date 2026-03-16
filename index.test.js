@@ -1,4 +1,4 @@
-import {jest} from '@jest/globals';
+import { jest } from '@jest/globals';
 import { mockClient } from 'aws-sdk-client-mock';
 import { ECRClient, GetAuthorizationTokenCommand } from '@aws-sdk/client-ecr';
 import { ECRPUBLICClient, GetAuthorizationTokenCommand as GetAuthorizationTokenCommandPublic } from '@aws-sdk/client-ecr-public';
@@ -429,8 +429,8 @@ describe('Login to ECR', () => {
     });
 
     test('ignoring proxy - without anything set', async () => {
-        const option = configureProxy();
-        expect(option).toBeNull();
+      const option = configureProxy();
+      expect(option).toBeNull();
     });
   });
 });
@@ -576,7 +576,7 @@ describe('Pod Identity Support', () => {
     process.env = {};
     ecrMock.reset();
     ecrPublicMock.reset();
-    core.getInput = jest.fn().mockImplementation(mockGetInput({
+    core.getInput.mockImplementation(mockGetInput({
       ...ECR_DEFAULT_INPUTS,
       'mask-password': 'true',
     }));
@@ -650,8 +650,8 @@ describe('Pod Identity Support', () => {
       'registry-type': 'private',
       'skip-logout': 'false'
     };
-    core.getInput = jest.fn().mockImplementation(mockGetInput(mockInputs));
-    
+    core.getInput.mockImplementation(mockGetInput(mockInputs));
+
     ecrMock.on(GetAuthorizationTokenCommand).resolves({
       authorizationData: [{
         authorizationToken: Buffer.from('AWS:token').toString('base64'),
