@@ -236,10 +236,9 @@ Object.defineProperty(exports, "fromHttp", ({ enumerable: true, get: function ()
 
 var protocolHttp = __webpack_require__(8821);
 var querystringBuilder = __webpack_require__(71649);
-var http = __webpack_require__(58611);
-var https = __webpack_require__(65692);
-var stream = __webpack_require__(2203);
-var http2 = __webpack_require__(85675);
+var node_https = __webpack_require__(44708);
+var node_stream = __webpack_require__(57075);
+var http2 = __webpack_require__(32467);
 
 function buildAbortError(abortSignal) {
     const reason = abortSignal && typeof abortSignal === "object" && "reason" in abortSignal
@@ -247,7 +246,10 @@ function buildAbortError(abortSignal) {
         : undefined;
     if (reason) {
         if (reason instanceof Error) {
-            return reason;
+            const abortError = new Error("Request aborted");
+            abortError.name = "AbortError";
+            abortError.cause = reason;
+            return abortError;
         }
         const abortError = new Error(String(reason));
         abortError.name = "AbortError";
@@ -408,7 +410,7 @@ async function writeRequestBody(httpRequest, request, maxContinueTimeoutMs = MIN
     }
 }
 function writeBody(httpRequest, body) {
-    if (body instanceof stream.Readable) {
+    if (body instanceof node_stream.Readable) {
         body.pipe(httpRequest);
         return;
     }
@@ -439,6 +441,8 @@ function writeBody(httpRequest, body) {
 }
 
 const DEFAULT_REQUEST_TIMEOUT = 0;
+let hAgent = undefined;
+let hRequest = undefined;
 class NodeHttpHandler {
     config;
     configProvider;
@@ -488,33 +492,6 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             }
         });
     }
-    resolveDefaultConfig(options) {
-        const { requestTimeout, connectionTimeout, socketTimeout, socketAcquisitionWarningTimeout, httpAgent, httpsAgent, throwOnRequestTimeout, logger, } = options || {};
-        const keepAlive = true;
-        const maxSockets = 50;
-        return {
-            connectionTimeout,
-            requestTimeout,
-            socketTimeout,
-            socketAcquisitionWarningTimeout,
-            throwOnRequestTimeout,
-            httpAgent: (() => {
-                if (httpAgent instanceof http.Agent || typeof httpAgent?.destroy === "function") {
-                    this.externalAgent = true;
-                    return httpAgent;
-                }
-                return new http.Agent({ keepAlive, maxSockets, ...httpAgent });
-            })(),
-            httpsAgent: (() => {
-                if (httpsAgent instanceof https.Agent || typeof httpsAgent?.destroy === "function") {
-                    this.externalAgent = true;
-                    return httpsAgent;
-                }
-                return new https.Agent({ keepAlive, maxSockets, ...httpsAgent });
-            })(),
-            logger,
-        };
-    }
     destroy() {
         this.config?.httpAgent?.destroy();
         this.config?.httpsAgent?.destroy();
@@ -523,8 +500,12 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
         if (!this.config) {
             this.config = await this.configProvider;
         }
+        const config = this.config;
+        const isSSL = request.protocol === "https:";
+        if (!isSSL && !this.config.httpAgent) {
+            this.config.httpAgent = await this.config.httpAgentProvider();
+        }
         return new Promise((_resolve, _reject) => {
-            const config = this.config;
             let writeRequestBodyPromise = undefined;
             const timeouts = [];
             const resolve = async (arg) => {
@@ -542,12 +523,11 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
                 reject(abortError);
                 return;
             }
-            const isSSL = request.protocol === "https:";
             const headers = request.headers ?? {};
             const expectContinue = (headers.Expect ?? headers.expect) === "100-continue";
             let agent = isSSL ? config.httpsAgent : config.httpAgent;
             if (expectContinue && !this.externalAgent) {
-                agent = new (isSSL ? https.Agent : http.Agent)({
+                agent = new (isSSL ? node_https.Agent : hAgent)({
                     keepAlive: false,
                     maxSockets: Infinity,
                 });
@@ -585,7 +565,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
                 agent,
                 auth,
             };
-            const requestFunc = isSSL ? https.request : http.request;
+            const requestFunc = isSSL ? node_https.request : hRequest;
             const req = requestFunc(nodeHttpsOptions, (res) => {
                 const httpResponse = new protocolHttp.HttpResponse({
                     statusCode: res.statusCode || -1,
@@ -646,6 +626,36 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
     }
     httpHandlerConfigs() {
         return this.config ?? {};
+    }
+    resolveDefaultConfig(options) {
+        const { requestTimeout, connectionTimeout, socketTimeout, socketAcquisitionWarningTimeout, httpAgent, httpsAgent, throwOnRequestTimeout, logger, } = options || {};
+        const keepAlive = true;
+        const maxSockets = 50;
+        return {
+            connectionTimeout,
+            requestTimeout,
+            socketTimeout,
+            socketAcquisitionWarningTimeout,
+            throwOnRequestTimeout,
+            httpAgentProvider: async () => {
+                const { Agent, request } = await Promise.resolve(/* import() */).then(__webpack_require__.t.bind(__webpack_require__, 37067, 23));
+                hRequest = request;
+                hAgent = Agent;
+                if (httpAgent instanceof hAgent || typeof httpAgent?.destroy === "function") {
+                    this.externalAgent = true;
+                    return httpAgent;
+                }
+                return new hAgent({ keepAlive, maxSockets, ...httpAgent });
+            },
+            httpsAgent: (() => {
+                if (httpsAgent instanceof node_https.Agent || typeof httpsAgent?.destroy === "function") {
+                    this.externalAgent = true;
+                    return httpsAgent;
+                }
+                return new node_https.Agent({ keepAlive, maxSockets, ...httpsAgent });
+            })(),
+            logger,
+        };
     }
 }
 
@@ -931,7 +941,7 @@ class NodeHttp2Handler {
     }
 }
 
-class Collector extends stream.Writable {
+class Collector extends node_stream.Writable {
     bufferedBytes = [];
     _write(chunk, encoding, callback) {
         this.bufferedBytes.push(chunk);

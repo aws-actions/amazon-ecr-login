@@ -11637,7 +11637,7 @@ exports.resolveHttpAuthSchemeConfig = resolveHttpAuthSchemeConfig;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.defaultEndpointResolver = void 0;
-const util_endpoints_1 = __nccwpck_require__(16053);
+const util_endpoints_1 = __nccwpck_require__(83068);
 const util_endpoints_2 = __nccwpck_require__(79674);
 const ruleset_1 = __nccwpck_require__(41829);
 const cache = new util_endpoints_2.EndpointCache({
@@ -11673,7 +11673,6 @@ exports.ruleSet = _data;
 /***/ 29821:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-var __webpack_unused_export__;
 
 
 var middlewareHostHeader = __nccwpck_require__(52590);
@@ -11691,6 +11690,9 @@ var httpAuthSchemeProvider = __nccwpck_require__(93182);
 var runtimeConfig = __nccwpck_require__(58199);
 var regionConfigResolver = __nccwpck_require__(36463);
 var protocolHttp = __nccwpck_require__(40389);
+var schemas_0 = __nccwpck_require__(23917);
+var errors = __nccwpck_require__(20977);
+var ECRPUBLICServiceException = __nccwpck_require__(3303);
 
 const resolveClientEndpointParameters = (options) => {
     return Object.assign(options, {
@@ -11786,14 +11788,435 @@ class ECRPUBLICClient extends smithyClient.Client {
     }
 }
 
-class ECRPUBLICServiceException extends smithyClient.ServiceException {
+class BatchCheckLayerAvailabilityCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "BatchCheckLayerAvailability", {})
+    .n("ECRPUBLICClient", "BatchCheckLayerAvailabilityCommand")
+    .sc(schemas_0.BatchCheckLayerAvailability$)
+    .build() {
+}
+
+class BatchDeleteImageCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "BatchDeleteImage", {})
+    .n("ECRPUBLICClient", "BatchDeleteImageCommand")
+    .sc(schemas_0.BatchDeleteImage$)
+    .build() {
+}
+
+class CompleteLayerUploadCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "CompleteLayerUpload", {})
+    .n("ECRPUBLICClient", "CompleteLayerUploadCommand")
+    .sc(schemas_0.CompleteLayerUpload$)
+    .build() {
+}
+
+class CreateRepositoryCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "CreateRepository", {})
+    .n("ECRPUBLICClient", "CreateRepositoryCommand")
+    .sc(schemas_0.CreateRepository$)
+    .build() {
+}
+
+class DeleteRepositoryCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "DeleteRepository", {})
+    .n("ECRPUBLICClient", "DeleteRepositoryCommand")
+    .sc(schemas_0.DeleteRepository$)
+    .build() {
+}
+
+class DeleteRepositoryPolicyCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "DeleteRepositoryPolicy", {})
+    .n("ECRPUBLICClient", "DeleteRepositoryPolicyCommand")
+    .sc(schemas_0.DeleteRepositoryPolicy$)
+    .build() {
+}
+
+class DescribeImagesCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "DescribeImages", {})
+    .n("ECRPUBLICClient", "DescribeImagesCommand")
+    .sc(schemas_0.DescribeImages$)
+    .build() {
+}
+
+class DescribeImageTagsCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "DescribeImageTags", {})
+    .n("ECRPUBLICClient", "DescribeImageTagsCommand")
+    .sc(schemas_0.DescribeImageTags$)
+    .build() {
+}
+
+class DescribeRegistriesCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "DescribeRegistries", {})
+    .n("ECRPUBLICClient", "DescribeRegistriesCommand")
+    .sc(schemas_0.DescribeRegistries$)
+    .build() {
+}
+
+class DescribeRepositoriesCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "DescribeRepositories", {})
+    .n("ECRPUBLICClient", "DescribeRepositoriesCommand")
+    .sc(schemas_0.DescribeRepositories$)
+    .build() {
+}
+
+class GetAuthorizationTokenCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "GetAuthorizationToken", {})
+    .n("ECRPUBLICClient", "GetAuthorizationTokenCommand")
+    .sc(schemas_0.GetAuthorizationToken$)
+    .build() {
+}
+
+class GetRegistryCatalogDataCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "GetRegistryCatalogData", {})
+    .n("ECRPUBLICClient", "GetRegistryCatalogDataCommand")
+    .sc(schemas_0.GetRegistryCatalogData$)
+    .build() {
+}
+
+class GetRepositoryCatalogDataCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "GetRepositoryCatalogData", {})
+    .n("ECRPUBLICClient", "GetRepositoryCatalogDataCommand")
+    .sc(schemas_0.GetRepositoryCatalogData$)
+    .build() {
+}
+
+class GetRepositoryPolicyCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "GetRepositoryPolicy", {})
+    .n("ECRPUBLICClient", "GetRepositoryPolicyCommand")
+    .sc(schemas_0.GetRepositoryPolicy$)
+    .build() {
+}
+
+class InitiateLayerUploadCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "InitiateLayerUpload", {})
+    .n("ECRPUBLICClient", "InitiateLayerUploadCommand")
+    .sc(schemas_0.InitiateLayerUpload$)
+    .build() {
+}
+
+class ListTagsForResourceCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "ListTagsForResource", {})
+    .n("ECRPUBLICClient", "ListTagsForResourceCommand")
+    .sc(schemas_0.ListTagsForResource$)
+    .build() {
+}
+
+class PutImageCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "PutImage", {})
+    .n("ECRPUBLICClient", "PutImageCommand")
+    .sc(schemas_0.PutImage$)
+    .build() {
+}
+
+class PutRegistryCatalogDataCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "PutRegistryCatalogData", {})
+    .n("ECRPUBLICClient", "PutRegistryCatalogDataCommand")
+    .sc(schemas_0.PutRegistryCatalogData$)
+    .build() {
+}
+
+class PutRepositoryCatalogDataCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "PutRepositoryCatalogData", {})
+    .n("ECRPUBLICClient", "PutRepositoryCatalogDataCommand")
+    .sc(schemas_0.PutRepositoryCatalogData$)
+    .build() {
+}
+
+class SetRepositoryPolicyCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "SetRepositoryPolicy", {})
+    .n("ECRPUBLICClient", "SetRepositoryPolicyCommand")
+    .sc(schemas_0.SetRepositoryPolicy$)
+    .build() {
+}
+
+class TagResourceCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "TagResource", {})
+    .n("ECRPUBLICClient", "TagResourceCommand")
+    .sc(schemas_0.TagResource$)
+    .build() {
+}
+
+class UntagResourceCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "UntagResource", {})
+    .n("ECRPUBLICClient", "UntagResourceCommand")
+    .sc(schemas_0.UntagResource$)
+    .build() {
+}
+
+class UploadLayerPartCommand extends smithyClient.Command
+    .classBuilder()
+    .ep(commonParams)
+    .m(function (Command, cs, config, o) {
+    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+})
+    .s("SpencerFrontendService", "UploadLayerPart", {})
+    .n("ECRPUBLICClient", "UploadLayerPartCommand")
+    .sc(schemas_0.UploadLayerPart$)
+    .build() {
+}
+
+const paginateDescribeImages = core.createPaginator(ECRPUBLICClient, DescribeImagesCommand, "nextToken", "nextToken", "maxResults");
+
+const paginateDescribeImageTags = core.createPaginator(ECRPUBLICClient, DescribeImageTagsCommand, "nextToken", "nextToken", "maxResults");
+
+const paginateDescribeRegistries = core.createPaginator(ECRPUBLICClient, DescribeRegistriesCommand, "nextToken", "nextToken", "maxResults");
+
+const paginateDescribeRepositories = core.createPaginator(ECRPUBLICClient, DescribeRepositoriesCommand, "nextToken", "nextToken", "maxResults");
+
+const commands = {
+    BatchCheckLayerAvailabilityCommand,
+    BatchDeleteImageCommand,
+    CompleteLayerUploadCommand,
+    CreateRepositoryCommand,
+    DeleteRepositoryCommand,
+    DeleteRepositoryPolicyCommand,
+    DescribeImagesCommand,
+    DescribeImageTagsCommand,
+    DescribeRegistriesCommand,
+    DescribeRepositoriesCommand,
+    GetAuthorizationTokenCommand,
+    GetRegistryCatalogDataCommand,
+    GetRepositoryCatalogDataCommand,
+    GetRepositoryPolicyCommand,
+    InitiateLayerUploadCommand,
+    ListTagsForResourceCommand,
+    PutImageCommand,
+    PutRegistryCatalogDataCommand,
+    PutRepositoryCatalogDataCommand,
+    SetRepositoryPolicyCommand,
+    TagResourceCommand,
+    UntagResourceCommand,
+    UploadLayerPartCommand,
+};
+const paginators = {
+    paginateDescribeImages,
+    paginateDescribeImageTags,
+    paginateDescribeRegistries,
+    paginateDescribeRepositories,
+};
+class ECRPUBLIC extends ECRPUBLICClient {
+}
+smithyClient.createAggregatedClient(commands, ECRPUBLIC, { paginators });
+
+const LayerFailureCode = {
+    InvalidLayerDigest: "InvalidLayerDigest",
+    MissingLayerDigest: "MissingLayerDigest",
+};
+const LayerAvailability = {
+    AVAILABLE: "AVAILABLE",
+    UNAVAILABLE: "UNAVAILABLE",
+};
+const ImageFailureCode = {
+    ImageNotFound: "ImageNotFound",
+    ImageReferencedByManifestList: "ImageReferencedByManifestList",
+    ImageTagDoesNotMatchDigest: "ImageTagDoesNotMatchDigest",
+    InvalidImageDigest: "InvalidImageDigest",
+    InvalidImageTag: "InvalidImageTag",
+    KmsError: "KmsError",
+    MissingDigestAndTag: "MissingDigestAndTag",
+};
+const RegistryAliasStatus = {
+    ACTIVE: "ACTIVE",
+    PENDING: "PENDING",
+    REJECTED: "REJECTED",
+};
+
+exports.$Command = smithyClient.Command;
+exports.__Client = smithyClient.Client;
+exports.ECRPUBLICServiceException = ECRPUBLICServiceException.ECRPUBLICServiceException;
+exports.BatchCheckLayerAvailabilityCommand = BatchCheckLayerAvailabilityCommand;
+exports.BatchDeleteImageCommand = BatchDeleteImageCommand;
+exports.CompleteLayerUploadCommand = CompleteLayerUploadCommand;
+exports.CreateRepositoryCommand = CreateRepositoryCommand;
+exports.DeleteRepositoryCommand = DeleteRepositoryCommand;
+exports.DeleteRepositoryPolicyCommand = DeleteRepositoryPolicyCommand;
+exports.DescribeImageTagsCommand = DescribeImageTagsCommand;
+exports.DescribeImagesCommand = DescribeImagesCommand;
+exports.DescribeRegistriesCommand = DescribeRegistriesCommand;
+exports.DescribeRepositoriesCommand = DescribeRepositoriesCommand;
+exports.ECRPUBLIC = ECRPUBLIC;
+exports.ECRPUBLICClient = ECRPUBLICClient;
+exports.GetAuthorizationTokenCommand = GetAuthorizationTokenCommand;
+exports.GetRegistryCatalogDataCommand = GetRegistryCatalogDataCommand;
+exports.GetRepositoryCatalogDataCommand = GetRepositoryCatalogDataCommand;
+exports.GetRepositoryPolicyCommand = GetRepositoryPolicyCommand;
+exports.ImageFailureCode = ImageFailureCode;
+exports.InitiateLayerUploadCommand = InitiateLayerUploadCommand;
+exports.LayerAvailability = LayerAvailability;
+exports.LayerFailureCode = LayerFailureCode;
+exports.ListTagsForResourceCommand = ListTagsForResourceCommand;
+exports.PutImageCommand = PutImageCommand;
+exports.PutRegistryCatalogDataCommand = PutRegistryCatalogDataCommand;
+exports.PutRepositoryCatalogDataCommand = PutRepositoryCatalogDataCommand;
+exports.RegistryAliasStatus = RegistryAliasStatus;
+exports.SetRepositoryPolicyCommand = SetRepositoryPolicyCommand;
+exports.TagResourceCommand = TagResourceCommand;
+exports.UntagResourceCommand = UntagResourceCommand;
+exports.UploadLayerPartCommand = UploadLayerPartCommand;
+exports.paginateDescribeImageTags = paginateDescribeImageTags;
+exports.paginateDescribeImages = paginateDescribeImages;
+exports.paginateDescribeRegistries = paginateDescribeRegistries;
+exports.paginateDescribeRepositories = paginateDescribeRepositories;
+Object.prototype.hasOwnProperty.call(schemas_0, '__proto__') &&
+    !Object.prototype.hasOwnProperty.call(exports, '__proto__') &&
+    Object.defineProperty(exports, '__proto__', {
+        enumerable: true,
+        value: schemas_0['__proto__']
+    });
+
+Object.keys(schemas_0).forEach(function (k) {
+    if (k !== 'default' && !Object.prototype.hasOwnProperty.call(exports, k)) exports[k] = schemas_0[k];
+});
+Object.prototype.hasOwnProperty.call(errors, '__proto__') &&
+    !Object.prototype.hasOwnProperty.call(exports, '__proto__') &&
+    Object.defineProperty(exports, '__proto__', {
+        enumerable: true,
+        value: errors['__proto__']
+    });
+
+Object.keys(errors).forEach(function (k) {
+    if (k !== 'default' && !Object.prototype.hasOwnProperty.call(exports, k)) exports[k] = errors[k];
+});
+
+
+/***/ }),
+
+/***/ 3303:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ECRPUBLICServiceException = exports.__ServiceException = void 0;
+const smithy_client_1 = __nccwpck_require__(61411);
+Object.defineProperty(exports, "__ServiceException", ({ enumerable: true, get: function () { return smithy_client_1.ServiceException; } }));
+class ECRPUBLICServiceException extends smithy_client_1.ServiceException {
     constructor(options) {
         super(options);
         Object.setPrototypeOf(this, ECRPUBLICServiceException.prototype);
     }
 }
+exports.ECRPUBLICServiceException = ECRPUBLICServiceException;
 
-class InvalidParameterException extends ECRPUBLICServiceException {
+
+/***/ }),
+
+/***/ 20977:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ReferencedImagesNotFoundException = exports.LayersNotFoundException = exports.InvalidLayerPartException = exports.ImageTagAlreadyExistsException = exports.ImageDigestDoesNotMatchException = exports.ImageAlreadyExistsException = exports.RepositoryCatalogDataNotFoundException = exports.ImageNotFoundException = exports.RepositoryPolicyNotFoundException = exports.RepositoryNotEmptyException = exports.TooManyTagsException = exports.RepositoryAlreadyExistsException = exports.LimitExceededException = exports.InvalidTagParameterException = exports.UploadNotFoundException = exports.LayerPartTooSmallException = exports.LayerAlreadyExistsException = exports.InvalidLayerException = exports.EmptyUploadException = exports.UnsupportedCommandException = exports.ServerException = exports.RepositoryNotFoundException = exports.RegistryNotFoundException = exports.InvalidParameterException = void 0;
+const ECRPUBLICServiceException_1 = __nccwpck_require__(3303);
+class InvalidParameterException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "InvalidParameterException";
     $fault = "client";
     constructor(opts) {
@@ -11805,7 +12228,8 @@ class InvalidParameterException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, InvalidParameterException.prototype);
     }
 }
-class RegistryNotFoundException extends ECRPUBLICServiceException {
+exports.InvalidParameterException = InvalidParameterException;
+class RegistryNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "RegistryNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -11817,7 +12241,8 @@ class RegistryNotFoundException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, RegistryNotFoundException.prototype);
     }
 }
-class RepositoryNotFoundException extends ECRPUBLICServiceException {
+exports.RegistryNotFoundException = RegistryNotFoundException;
+class RepositoryNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "RepositoryNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -11829,7 +12254,8 @@ class RepositoryNotFoundException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, RepositoryNotFoundException.prototype);
     }
 }
-class ServerException extends ECRPUBLICServiceException {
+exports.RepositoryNotFoundException = RepositoryNotFoundException;
+class ServerException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "ServerException";
     $fault = "server";
     constructor(opts) {
@@ -11841,7 +12267,8 @@ class ServerException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, ServerException.prototype);
     }
 }
-class UnsupportedCommandException extends ECRPUBLICServiceException {
+exports.ServerException = ServerException;
+class UnsupportedCommandException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "UnsupportedCommandException";
     $fault = "client";
     constructor(opts) {
@@ -11853,7 +12280,8 @@ class UnsupportedCommandException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, UnsupportedCommandException.prototype);
     }
 }
-class EmptyUploadException extends ECRPUBLICServiceException {
+exports.UnsupportedCommandException = UnsupportedCommandException;
+class EmptyUploadException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "EmptyUploadException";
     $fault = "client";
     constructor(opts) {
@@ -11865,7 +12293,8 @@ class EmptyUploadException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, EmptyUploadException.prototype);
     }
 }
-class InvalidLayerException extends ECRPUBLICServiceException {
+exports.EmptyUploadException = EmptyUploadException;
+class InvalidLayerException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "InvalidLayerException";
     $fault = "client";
     constructor(opts) {
@@ -11877,7 +12306,8 @@ class InvalidLayerException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, InvalidLayerException.prototype);
     }
 }
-class LayerAlreadyExistsException extends ECRPUBLICServiceException {
+exports.InvalidLayerException = InvalidLayerException;
+class LayerAlreadyExistsException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "LayerAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -11889,7 +12319,8 @@ class LayerAlreadyExistsException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, LayerAlreadyExistsException.prototype);
     }
 }
-class LayerPartTooSmallException extends ECRPUBLICServiceException {
+exports.LayerAlreadyExistsException = LayerAlreadyExistsException;
+class LayerPartTooSmallException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "LayerPartTooSmallException";
     $fault = "client";
     constructor(opts) {
@@ -11901,7 +12332,8 @@ class LayerPartTooSmallException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, LayerPartTooSmallException.prototype);
     }
 }
-class UploadNotFoundException extends ECRPUBLICServiceException {
+exports.LayerPartTooSmallException = LayerPartTooSmallException;
+class UploadNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "UploadNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -11913,7 +12345,8 @@ class UploadNotFoundException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, UploadNotFoundException.prototype);
     }
 }
-class InvalidTagParameterException extends ECRPUBLICServiceException {
+exports.UploadNotFoundException = UploadNotFoundException;
+class InvalidTagParameterException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "InvalidTagParameterException";
     $fault = "client";
     constructor(opts) {
@@ -11925,7 +12358,8 @@ class InvalidTagParameterException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, InvalidTagParameterException.prototype);
     }
 }
-class LimitExceededException extends ECRPUBLICServiceException {
+exports.InvalidTagParameterException = InvalidTagParameterException;
+class LimitExceededException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "LimitExceededException";
     $fault = "client";
     constructor(opts) {
@@ -11937,7 +12371,8 @@ class LimitExceededException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, LimitExceededException.prototype);
     }
 }
-class RepositoryAlreadyExistsException extends ECRPUBLICServiceException {
+exports.LimitExceededException = LimitExceededException;
+class RepositoryAlreadyExistsException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "RepositoryAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -11949,7 +12384,8 @@ class RepositoryAlreadyExistsException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, RepositoryAlreadyExistsException.prototype);
     }
 }
-class TooManyTagsException extends ECRPUBLICServiceException {
+exports.RepositoryAlreadyExistsException = RepositoryAlreadyExistsException;
+class TooManyTagsException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "TooManyTagsException";
     $fault = "client";
     constructor(opts) {
@@ -11961,7 +12397,8 @@ class TooManyTagsException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, TooManyTagsException.prototype);
     }
 }
-class RepositoryNotEmptyException extends ECRPUBLICServiceException {
+exports.TooManyTagsException = TooManyTagsException;
+class RepositoryNotEmptyException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "RepositoryNotEmptyException";
     $fault = "client";
     constructor(opts) {
@@ -11973,7 +12410,8 @@ class RepositoryNotEmptyException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, RepositoryNotEmptyException.prototype);
     }
 }
-class RepositoryPolicyNotFoundException extends ECRPUBLICServiceException {
+exports.RepositoryNotEmptyException = RepositoryNotEmptyException;
+class RepositoryPolicyNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "RepositoryPolicyNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -11985,7 +12423,8 @@ class RepositoryPolicyNotFoundException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, RepositoryPolicyNotFoundException.prototype);
     }
 }
-class ImageNotFoundException extends ECRPUBLICServiceException {
+exports.RepositoryPolicyNotFoundException = RepositoryPolicyNotFoundException;
+class ImageNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "ImageNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -11997,7 +12436,8 @@ class ImageNotFoundException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, ImageNotFoundException.prototype);
     }
 }
-class RepositoryCatalogDataNotFoundException extends ECRPUBLICServiceException {
+exports.ImageNotFoundException = ImageNotFoundException;
+class RepositoryCatalogDataNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "RepositoryCatalogDataNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -12009,7 +12449,8 @@ class RepositoryCatalogDataNotFoundException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, RepositoryCatalogDataNotFoundException.prototype);
     }
 }
-class ImageAlreadyExistsException extends ECRPUBLICServiceException {
+exports.RepositoryCatalogDataNotFoundException = RepositoryCatalogDataNotFoundException;
+class ImageAlreadyExistsException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "ImageAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -12021,7 +12462,8 @@ class ImageAlreadyExistsException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, ImageAlreadyExistsException.prototype);
     }
 }
-class ImageDigestDoesNotMatchException extends ECRPUBLICServiceException {
+exports.ImageAlreadyExistsException = ImageAlreadyExistsException;
+class ImageDigestDoesNotMatchException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "ImageDigestDoesNotMatchException";
     $fault = "client";
     constructor(opts) {
@@ -12033,7 +12475,8 @@ class ImageDigestDoesNotMatchException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, ImageDigestDoesNotMatchException.prototype);
     }
 }
-class ImageTagAlreadyExistsException extends ECRPUBLICServiceException {
+exports.ImageDigestDoesNotMatchException = ImageDigestDoesNotMatchException;
+class ImageTagAlreadyExistsException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "ImageTagAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -12045,7 +12488,8 @@ class ImageTagAlreadyExistsException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, ImageTagAlreadyExistsException.prototype);
     }
 }
-class InvalidLayerPartException extends ECRPUBLICServiceException {
+exports.ImageTagAlreadyExistsException = ImageTagAlreadyExistsException;
+class InvalidLayerPartException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "InvalidLayerPartException";
     $fault = "client";
     registryId;
@@ -12065,7 +12509,8 @@ class InvalidLayerPartException extends ECRPUBLICServiceException {
         this.lastValidByteReceived = opts.lastValidByteReceived;
     }
 }
-class LayersNotFoundException extends ECRPUBLICServiceException {
+exports.InvalidLayerPartException = InvalidLayerPartException;
+class LayersNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "LayersNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -12077,7 +12522,8 @@ class LayersNotFoundException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, LayersNotFoundException.prototype);
     }
 }
-class ReferencedImagesNotFoundException extends ECRPUBLICServiceException {
+exports.LayersNotFoundException = LayersNotFoundException;
+class ReferencedImagesNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
     name = "ReferencedImagesNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -12089,7 +12535,130 @@ class ReferencedImagesNotFoundException extends ECRPUBLICServiceException {
         Object.setPrototypeOf(this, ReferencedImagesNotFoundException.prototype);
     }
 }
+exports.ReferencedImagesNotFoundException = ReferencedImagesNotFoundException;
 
+
+/***/ }),
+
+/***/ 58199:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getRuntimeConfig = void 0;
+const tslib_1 = __nccwpck_require__(61860);
+const package_json_1 = tslib_1.__importDefault(__nccwpck_require__(47643));
+const core_1 = __nccwpck_require__(8704);
+const credential_provider_node_1 = __nccwpck_require__(5861);
+const util_user_agent_node_1 = __nccwpck_require__(51656);
+const config_resolver_1 = __nccwpck_require__(39316);
+const hash_node_1 = __nccwpck_require__(5092);
+const middleware_retry_1 = __nccwpck_require__(19618);
+const node_config_provider_1 = __nccwpck_require__(55704);
+const node_http_handler_1 = __nccwpck_require__(16453);
+const smithy_client_1 = __nccwpck_require__(61411);
+const util_body_length_node_1 = __nccwpck_require__(13638);
+const util_defaults_mode_node_1 = __nccwpck_require__(15435);
+const util_retry_1 = __nccwpck_require__(15518);
+const runtimeConfig_shared_1 = __nccwpck_require__(92180);
+const getRuntimeConfig = (config) => {
+    (0, smithy_client_1.emitWarningIfUnsupportedVersion)(process.version);
+    const defaultsMode = (0, util_defaults_mode_node_1.resolveDefaultsModeConfig)(config);
+    const defaultConfigProvider = () => defaultsMode().then(smithy_client_1.loadConfigsForDefaultMode);
+    const clientSharedValues = (0, runtimeConfig_shared_1.getRuntimeConfig)(config);
+    (0, core_1.emitWarningIfUnsupportedVersion)(process.version);
+    const loaderConfig = {
+        profile: config?.profile,
+        logger: clientSharedValues.logger,
+    };
+    return {
+        ...clientSharedValues,
+        ...config,
+        runtime: "node",
+        defaultsMode,
+        authSchemePreference: config?.authSchemePreference ?? (0, node_config_provider_1.loadConfig)(core_1.NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
+        bodyLengthChecker: config?.bodyLengthChecker ?? util_body_length_node_1.calculateBodyLength,
+        credentialDefaultProvider: config?.credentialDefaultProvider ?? credential_provider_node_1.defaultProvider,
+        defaultUserAgentProvider: config?.defaultUserAgentProvider ?? (0, util_user_agent_node_1.createDefaultUserAgentProvider)({ serviceId: clientSharedValues.serviceId, clientVersion: package_json_1.default.version }),
+        maxAttempts: config?.maxAttempts ?? (0, node_config_provider_1.loadConfig)(middleware_retry_1.NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config),
+        region: config?.region ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_REGION_CONFIG_OPTIONS, { ...config_resolver_1.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
+        requestHandler: node_http_handler_1.NodeHttpHandler.create(config?.requestHandler ?? defaultConfigProvider),
+        retryMode: config?.retryMode ??
+            (0, node_config_provider_1.loadConfig)({
+                ...middleware_retry_1.NODE_RETRY_MODE_CONFIG_OPTIONS,
+                default: async () => (await defaultConfigProvider()).retryMode || util_retry_1.DEFAULT_RETRY_MODE,
+            }, config),
+        sha256: config?.sha256 ?? hash_node_1.Hash.bind(null, "sha256"),
+        streamCollector: config?.streamCollector ?? node_http_handler_1.streamCollector,
+        useDualstackEndpoint: config?.useDualstackEndpoint ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
+        useFipsEndpoint: config?.useFipsEndpoint ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
+        userAgentAppId: config?.userAgentAppId ?? (0, node_config_provider_1.loadConfig)(util_user_agent_node_1.NODE_APP_ID_CONFIG_OPTIONS, loaderConfig),
+    };
+};
+exports.getRuntimeConfig = getRuntimeConfig;
+
+
+/***/ }),
+
+/***/ 92180:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getRuntimeConfig = void 0;
+const core_1 = __nccwpck_require__(8704);
+const protocols_1 = __nccwpck_require__(37288);
+const smithy_client_1 = __nccwpck_require__(61411);
+const url_parser_1 = __nccwpck_require__(14494);
+const util_base64_1 = __nccwpck_require__(68385);
+const util_utf8_1 = __nccwpck_require__(71577);
+const httpAuthSchemeProvider_1 = __nccwpck_require__(93182);
+const endpointResolver_1 = __nccwpck_require__(96072);
+const schemas_0_1 = __nccwpck_require__(23917);
+const getRuntimeConfig = (config) => {
+    return {
+        apiVersion: "2020-10-30",
+        base64Decoder: config?.base64Decoder ?? util_base64_1.fromBase64,
+        base64Encoder: config?.base64Encoder ?? util_base64_1.toBase64,
+        disableHostPrefix: config?.disableHostPrefix ?? false,
+        endpointProvider: config?.endpointProvider ?? endpointResolver_1.defaultEndpointResolver,
+        extensions: config?.extensions ?? [],
+        httpAuthSchemeProvider: config?.httpAuthSchemeProvider ?? httpAuthSchemeProvider_1.defaultECRPUBLICHttpAuthSchemeProvider,
+        httpAuthSchemes: config?.httpAuthSchemes ?? [
+            {
+                schemeId: "aws.auth#sigv4",
+                identityProvider: (ipc) => ipc.getIdentityProvider("aws.auth#sigv4"),
+                signer: new core_1.AwsSdkSigV4Signer(),
+            },
+        ],
+        logger: config?.logger ?? new smithy_client_1.NoOpLogger(),
+        protocol: config?.protocol ?? protocols_1.AwsJson1_1Protocol,
+        protocolSettings: config?.protocolSettings ?? {
+            defaultNamespace: "com.amazonaws.ecrpublic",
+            errorTypeRegistries: schemas_0_1.errorTypeRegistries,
+            xmlNamespace: "http://ecr-public.amazonaws.com/doc/2020-12-02/",
+            version: "2020-10-30",
+            serviceTarget: "SpencerFrontendService",
+        },
+        serviceId: config?.serviceId ?? "ECR PUBLIC",
+        urlParser: config?.urlParser ?? url_parser_1.parseUrl,
+        utf8Decoder: config?.utf8Decoder ?? util_utf8_1.fromUtf8,
+        utf8Encoder: config?.utf8Encoder ?? util_utf8_1.toUtf8,
+    };
+};
+exports.getRuntimeConfig = getRuntimeConfig;
+
+
+/***/ }),
+
+/***/ 23917:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.GetRegistryCatalogDataRequest$ = exports.GetAuthorizationTokenResponse$ = exports.GetAuthorizationTokenRequest$ = exports.DescribeRepositoriesResponse$ = exports.DescribeRepositoriesRequest$ = exports.DescribeRegistriesResponse$ = exports.DescribeRegistriesRequest$ = exports.DescribeImageTagsResponse$ = exports.DescribeImageTagsRequest$ = exports.DescribeImagesResponse$ = exports.DescribeImagesRequest$ = exports.DeleteRepositoryResponse$ = exports.DeleteRepositoryRequest$ = exports.DeleteRepositoryPolicyResponse$ = exports.DeleteRepositoryPolicyRequest$ = exports.CreateRepositoryResponse$ = exports.CreateRepositoryRequest$ = exports.CompleteLayerUploadResponse$ = exports.CompleteLayerUploadRequest$ = exports.BatchDeleteImageResponse$ = exports.BatchDeleteImageRequest$ = exports.BatchCheckLayerAvailabilityResponse$ = exports.BatchCheckLayerAvailabilityRequest$ = exports.AuthorizationData$ = exports.errorTypeRegistries = exports.UploadNotFoundException$ = exports.UnsupportedCommandException$ = exports.TooManyTagsException$ = exports.ServerException$ = exports.RepositoryPolicyNotFoundException$ = exports.RepositoryNotFoundException$ = exports.RepositoryNotEmptyException$ = exports.RepositoryCatalogDataNotFoundException$ = exports.RepositoryAlreadyExistsException$ = exports.RegistryNotFoundException$ = exports.ReferencedImagesNotFoundException$ = exports.LimitExceededException$ = exports.LayersNotFoundException$ = exports.LayerPartTooSmallException$ = exports.LayerAlreadyExistsException$ = exports.InvalidTagParameterException$ = exports.InvalidParameterException$ = exports.InvalidLayerPartException$ = exports.InvalidLayerException$ = exports.ImageTagAlreadyExistsException$ = exports.ImageNotFoundException$ = exports.ImageDigestDoesNotMatchException$ = exports.ImageAlreadyExistsException$ = exports.EmptyUploadException$ = exports.ECRPUBLICServiceException$ = void 0;
+exports.GetRegistryCatalogData$ = exports.GetAuthorizationToken$ = exports.DescribeRepositories$ = exports.DescribeRegistries$ = exports.DescribeImageTags$ = exports.DescribeImages$ = exports.DeleteRepositoryPolicy$ = exports.DeleteRepository$ = exports.CreateRepository$ = exports.CompleteLayerUpload$ = exports.BatchDeleteImage$ = exports.BatchCheckLayerAvailability$ = exports.UploadLayerPartResponse$ = exports.UploadLayerPartRequest$ = exports.UntagResourceResponse$ = exports.UntagResourceRequest$ = exports.TagResourceResponse$ = exports.TagResourceRequest$ = exports.Tag$ = exports.SetRepositoryPolicyResponse$ = exports.SetRepositoryPolicyRequest$ = exports.RepositoryCatalogDataInput$ = exports.RepositoryCatalogData$ = exports.Repository$ = exports.RegistryCatalogData$ = exports.RegistryAlias$ = exports.Registry$ = exports.ReferencedImageDetail$ = exports.PutRepositoryCatalogDataResponse$ = exports.PutRepositoryCatalogDataRequest$ = exports.PutRegistryCatalogDataResponse$ = exports.PutRegistryCatalogDataRequest$ = exports.PutImageResponse$ = exports.PutImageRequest$ = exports.ListTagsForResourceResponse$ = exports.ListTagsForResourceRequest$ = exports.LayerFailure$ = exports.Layer$ = exports.InitiateLayerUploadResponse$ = exports.InitiateLayerUploadRequest$ = exports.ImageTagDetail$ = exports.ImageIdentifier$ = exports.ImageFailure$ = exports.ImageDetail$ = exports.Image$ = exports.GetRepositoryPolicyResponse$ = exports.GetRepositoryPolicyRequest$ = exports.GetRepositoryCatalogDataResponse$ = exports.GetRepositoryCatalogDataRequest$ = exports.GetRegistryCatalogDataResponse$ = void 0;
+exports.UploadLayerPart$ = exports.UntagResource$ = exports.TagResource$ = exports.SetRepositoryPolicy$ = exports.PutRepositoryCatalogData$ = exports.PutRegistryCatalogData$ = exports.PutImage$ = exports.ListTagsForResource$ = exports.InitiateLayerUpload$ = exports.GetRepositoryPolicy$ = exports.GetRepositoryCatalogData$ = void 0;
 const _AD = "AuthorizationData";
 const _BCLA = "BatchCheckLayerAvailability";
 const _BCLAR = "BatchCheckLayerAvailabilityRequest";
@@ -12276,1620 +12845,586 @@ const _rU = "registryUri";
 const _rUe = "repositoryUri";
 const _re = "registries";
 const _rep = "repositories";
-const _s = "status";
+const _s = "smithy.ts.sdk.synthetic.com.amazonaws.ecrpublic";
 const _se = "server";
-const _sm = "smithy.ts.sdk.synthetic.com.amazonaws.ecrpublic";
+const _st = "status";
 const _t = "tags";
 const _tK = "tagKeys";
 const _uI = "uploadId";
 const _uT = "usageText";
 const _v = "verified";
 const n0 = "com.amazonaws.ecrpublic";
-var AuthorizationData$ = [3, n0, _AD,
-    0,
-    [_aT, _eA],
-    [0, 4]
-];
-var BatchCheckLayerAvailabilityRequest$ = [3, n0, _BCLAR,
-    0,
-    [_rN, _lD, _rI],
-    [0, 64 | 0, 0], 2
-];
-var BatchCheckLayerAvailabilityResponse$ = [3, n0, _BCLARa,
-    0,
-    [_l, _f],
-    [() => LayerList, () => LayerFailureList]
-];
-var BatchDeleteImageRequest$ = [3, n0, _BDIR,
-    0,
-    [_rN, _iI, _rI],
-    [0, () => ImageIdentifierList, 0], 2
-];
-var BatchDeleteImageResponse$ = [3, n0, _BDIRa,
-    0,
-    [_iI, _f],
-    [() => ImageIdentifierList, () => ImageFailureList]
-];
-var CompleteLayerUploadRequest$ = [3, n0, _CLUR,
-    0,
-    [_rN, _uI, _lD, _rI],
-    [0, 0, 64 | 0, 0], 3
-];
-var CompleteLayerUploadResponse$ = [3, n0, _CLURo,
-    0,
-    [_rI, _rN, _uI, _lDa],
-    [0, 0, 0, 0]
-];
-var CreateRepositoryRequest$ = [3, n0, _CRR,
-    0,
-    [_rN, _cD, _t],
-    [0, () => RepositoryCatalogDataInput$, () => TagList], 1
-];
-var CreateRepositoryResponse$ = [3, n0, _CRRr,
-    0,
-    [_r, _cD],
-    [() => Repository$, () => RepositoryCatalogData$]
-];
-var DeleteRepositoryPolicyRequest$ = [3, n0, _DRPR,
-    0,
-    [_rN, _rI],
-    [0, 0], 1
-];
-var DeleteRepositoryPolicyResponse$ = [3, n0, _DRPRe,
-    0,
-    [_rI, _rN, _pT],
-    [0, 0, 0]
-];
-var DeleteRepositoryRequest$ = [3, n0, _DRR,
-    0,
-    [_rN, _rI, _fo],
-    [0, 0, 2], 1
-];
-var DeleteRepositoryResponse$ = [3, n0, _DRRe,
-    0,
-    [_r],
-    [() => Repository$]
-];
-var DescribeImagesRequest$ = [3, n0, _DIR,
-    0,
-    [_rN, _rI, _iI, _nT, _mR],
-    [0, 0, () => ImageIdentifierList, 0, 1], 1
-];
-var DescribeImagesResponse$ = [3, n0, _DIRe,
-    0,
-    [_iD, _nT],
-    [() => ImageDetailList, 0]
-];
-var DescribeImageTagsRequest$ = [3, n0, _DITR,
-    0,
-    [_rN, _rI, _nT, _mR],
-    [0, 0, 0, 1], 1
-];
-var DescribeImageTagsResponse$ = [3, n0, _DITRe,
-    0,
-    [_iTD, _nT],
-    [() => ImageTagDetailList, 0]
-];
-var DescribeRegistriesRequest$ = [3, n0, _DRRes,
-    0,
-    [_nT, _mR],
-    [0, 1]
-];
-var DescribeRegistriesResponse$ = [3, n0, _DRResc,
-    0,
-    [_re, _nT],
-    [() => RegistryList, 0], 1
-];
-var DescribeRepositoriesRequest$ = [3, n0, _DRRescr,
-    0,
-    [_rI, _rNe, _nT, _mR],
-    [0, 64 | 0, 0, 1]
-];
-var DescribeRepositoriesResponse$ = [3, n0, _DRRescri,
-    0,
-    [_rep, _nT],
-    [() => RepositoryList, 0]
-];
-var EmptyUploadException$ = [-3, n0, _EUE,
+const schema_1 = __nccwpck_require__(26890);
+const ECRPUBLICServiceException_1 = __nccwpck_require__(3303);
+const errors_1 = __nccwpck_require__(20977);
+const _s_registry = schema_1.TypeRegistry.for(_s);
+exports.ECRPUBLICServiceException$ = [-3, _s, "ECRPUBLICServiceException", 0, [], []];
+_s_registry.registerError(exports.ECRPUBLICServiceException$, ECRPUBLICServiceException_1.ECRPUBLICServiceException);
+const n0_registry = schema_1.TypeRegistry.for(n0);
+exports.EmptyUploadException$ = [-3, n0, _EUE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(EmptyUploadException$, EmptyUploadException);
-var GetAuthorizationTokenRequest$ = [3, n0, _GATR,
-    0,
-    [],
-    []
-];
-var GetAuthorizationTokenResponse$ = [3, n0, _GATRe,
-    0,
-    [_aD],
-    [() => AuthorizationData$]
-];
-var GetRegistryCatalogDataRequest$ = [3, n0, _GRCDR,
-    0,
-    [],
-    []
-];
-var GetRegistryCatalogDataResponse$ = [3, n0, _GRCDRe,
-    0,
-    [_rCD],
-    [() => RegistryCatalogData$], 1
-];
-var GetRepositoryCatalogDataRequest$ = [3, n0, _GRCDRet,
-    0,
-    [_rN, _rI],
-    [0, 0], 1
-];
-var GetRepositoryCatalogDataResponse$ = [3, n0, _GRCDRete,
-    0,
-    [_cD],
-    [() => RepositoryCatalogData$]
-];
-var GetRepositoryPolicyRequest$ = [3, n0, _GRPR,
-    0,
-    [_rN, _rI],
-    [0, 0], 1
-];
-var GetRepositoryPolicyResponse$ = [3, n0, _GRPRe,
-    0,
-    [_rI, _rN, _pT],
-    [0, 0, 0]
-];
-var Image$ = [3, n0, _I,
-    0,
-    [_rI, _rN, _iIm, _iM, _iMMT],
-    [0, 0, () => ImageIdentifier$, 0, 0]
-];
-var ImageAlreadyExistsException$ = [-3, n0, _IAEE,
+n0_registry.registerError(exports.EmptyUploadException$, errors_1.EmptyUploadException);
+exports.ImageAlreadyExistsException$ = [-3, n0, _IAEE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(ImageAlreadyExistsException$, ImageAlreadyExistsException);
-var ImageDetail$ = [3, n0, _ID,
-    0,
-    [_rI, _rN, _iDm, _iT, _iSIB, _iPA, _iMMT, _aMT],
-    [0, 0, 0, 64 | 0, 1, 4, 0, 0]
-];
-var ImageDigestDoesNotMatchException$ = [-3, n0, _IDDNME,
+n0_registry.registerError(exports.ImageAlreadyExistsException$, errors_1.ImageAlreadyExistsException);
+exports.ImageDigestDoesNotMatchException$ = [-3, n0, _IDDNME,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(ImageDigestDoesNotMatchException$, ImageDigestDoesNotMatchException);
-var ImageFailure$ = [3, n0, _IF,
-    0,
-    [_iIm, _fC, _fR],
-    [() => ImageIdentifier$, 0, 0]
-];
-var ImageIdentifier$ = [3, n0, _II,
-    0,
-    [_iDm, _iTm],
-    [0, 0]
-];
-var ImageNotFoundException$ = [-3, n0, _INFE,
+n0_registry.registerError(exports.ImageDigestDoesNotMatchException$, errors_1.ImageDigestDoesNotMatchException);
+exports.ImageNotFoundException$ = [-3, n0, _INFE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(ImageNotFoundException$, ImageNotFoundException);
-var ImageTagAlreadyExistsException$ = [-3, n0, _ITAEE,
+n0_registry.registerError(exports.ImageNotFoundException$, errors_1.ImageNotFoundException);
+exports.ImageTagAlreadyExistsException$ = [-3, n0, _ITAEE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(ImageTagAlreadyExistsException$, ImageTagAlreadyExistsException);
-var ImageTagDetail$ = [3, n0, _ITD,
-    0,
-    [_iTm, _cA, _iDma],
-    [0, 4, () => ReferencedImageDetail$]
-];
-var InitiateLayerUploadRequest$ = [3, n0, _ILUR,
-    0,
-    [_rN, _rI],
-    [0, 0], 1
-];
-var InitiateLayerUploadResponse$ = [3, n0, _ILURn,
-    0,
-    [_uI, _pS],
-    [0, 1]
-];
-var InvalidLayerException$ = [-3, n0, _ILE,
+n0_registry.registerError(exports.ImageTagAlreadyExistsException$, errors_1.ImageTagAlreadyExistsException);
+exports.InvalidLayerException$ = [-3, n0, _ILE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(InvalidLayerException$, InvalidLayerException);
-var InvalidLayerPartException$ = [-3, n0, _ILPE,
+n0_registry.registerError(exports.InvalidLayerException$, errors_1.InvalidLayerException);
+exports.InvalidLayerPartException$ = [-3, n0, _ILPE,
     { [_e]: _c },
     [_rI, _rN, _uI, _lVBR, _m],
     [0, 0, 0, 1, 0]
 ];
-schema.TypeRegistry.for(n0).registerError(InvalidLayerPartException$, InvalidLayerPartException);
-var InvalidParameterException$ = [-3, n0, _IPE,
+n0_registry.registerError(exports.InvalidLayerPartException$, errors_1.InvalidLayerPartException);
+exports.InvalidParameterException$ = [-3, n0, _IPE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(InvalidParameterException$, InvalidParameterException);
-var InvalidTagParameterException$ = [-3, n0, _ITPE,
+n0_registry.registerError(exports.InvalidParameterException$, errors_1.InvalidParameterException);
+exports.InvalidTagParameterException$ = [-3, n0, _ITPE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(InvalidTagParameterException$, InvalidTagParameterException);
-var Layer$ = [3, n0, _L,
-    0,
-    [_lDa, _lA, _lS, _mT],
-    [0, 0, 1, 0]
-];
-var LayerAlreadyExistsException$ = [-3, n0, _LAEE,
+n0_registry.registerError(exports.InvalidTagParameterException$, errors_1.InvalidTagParameterException);
+exports.LayerAlreadyExistsException$ = [-3, n0, _LAEE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(LayerAlreadyExistsException$, LayerAlreadyExistsException);
-var LayerFailure$ = [3, n0, _LF,
-    0,
-    [_lDa, _fC, _fR],
-    [0, 0, 0]
-];
-var LayerPartTooSmallException$ = [-3, n0, _LPTSE,
+n0_registry.registerError(exports.LayerAlreadyExistsException$, errors_1.LayerAlreadyExistsException);
+exports.LayerPartTooSmallException$ = [-3, n0, _LPTSE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(LayerPartTooSmallException$, LayerPartTooSmallException);
-var LayersNotFoundException$ = [-3, n0, _LNFE,
+n0_registry.registerError(exports.LayerPartTooSmallException$, errors_1.LayerPartTooSmallException);
+exports.LayersNotFoundException$ = [-3, n0, _LNFE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(LayersNotFoundException$, LayersNotFoundException);
-var LimitExceededException$ = [-3, n0, _LEE,
+n0_registry.registerError(exports.LayersNotFoundException$, errors_1.LayersNotFoundException);
+exports.LimitExceededException$ = [-3, n0, _LEE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(LimitExceededException$, LimitExceededException);
-var ListTagsForResourceRequest$ = [3, n0, _LTFRR,
-    0,
-    [_rA],
-    [0], 1
-];
-var ListTagsForResourceResponse$ = [3, n0, _LTFRRi,
-    0,
-    [_t],
-    [() => TagList]
-];
-var PutImageRequest$ = [3, n0, _PIR,
-    0,
-    [_rN, _iM, _rI, _iMMT, _iTm, _iDm],
-    [0, 0, 0, 0, 0, 0], 2
-];
-var PutImageResponse$ = [3, n0, _PIRu,
-    0,
-    [_i],
-    [() => Image$]
-];
-var PutRegistryCatalogDataRequest$ = [3, n0, _PRCDR,
-    0,
-    [_dN],
-    [0]
-];
-var PutRegistryCatalogDataResponse$ = [3, n0, _PRCDRu,
-    0,
-    [_rCD],
-    [() => RegistryCatalogData$], 1
-];
-var PutRepositoryCatalogDataRequest$ = [3, n0, _PRCDRut,
-    0,
-    [_rN, _cD, _rI],
-    [0, () => RepositoryCatalogDataInput$, 0], 2
-];
-var PutRepositoryCatalogDataResponse$ = [3, n0, _PRCDRute,
-    0,
-    [_cD],
-    [() => RepositoryCatalogData$]
-];
-var ReferencedImageDetail$ = [3, n0, _RID,
-    0,
-    [_iDm, _iSIB, _iPA, _iMMT, _aMT],
-    [0, 1, 4, 0, 0]
-];
-var ReferencedImagesNotFoundException$ = [-3, n0, _RINFE,
+n0_registry.registerError(exports.LimitExceededException$, errors_1.LimitExceededException);
+exports.ReferencedImagesNotFoundException$ = [-3, n0, _RINFE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(ReferencedImagesNotFoundException$, ReferencedImagesNotFoundException);
-var Registry$ = [3, n0, _R,
-    0,
-    [_rI, _rAe, _rU, _v, _a],
-    [0, 0, 0, 2, () => RegistryAliasList], 5
-];
-var RegistryAlias$ = [3, n0, _RA,
-    0,
-    [_n, _s, _pRA, _dRA],
-    [0, 0, 2, 2], 4
-];
-var RegistryCatalogData$ = [3, n0, _RCD,
-    0,
-    [_dN],
-    [0]
-];
-var RegistryNotFoundException$ = [-3, n0, _RNFE,
+n0_registry.registerError(exports.ReferencedImagesNotFoundException$, errors_1.ReferencedImagesNotFoundException);
+exports.RegistryNotFoundException$ = [-3, n0, _RNFE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(RegistryNotFoundException$, RegistryNotFoundException);
-var Repository$ = [3, n0, _Re,
-    0,
-    [_rAep, _rI, _rN, _rUe, _cA],
-    [0, 0, 0, 0, 4]
-];
-var RepositoryAlreadyExistsException$ = [-3, n0, _RAEE,
+n0_registry.registerError(exports.RegistryNotFoundException$, errors_1.RegistryNotFoundException);
+exports.RepositoryAlreadyExistsException$ = [-3, n0, _RAEE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(RepositoryAlreadyExistsException$, RepositoryAlreadyExistsException);
-var RepositoryCatalogData$ = [3, n0, _RCDe,
-    0,
-    [_d, _ar, _oS, _lU, _aTb, _uT, _mC],
-    [0, 64 | 0, 64 | 0, 0, 0, 0, 2]
-];
-var RepositoryCatalogDataInput$ = [3, n0, _RCDI,
-    0,
-    [_d, _ar, _oS, _lIB, _aTb, _uT],
-    [0, 64 | 0, 64 | 0, 21, 0, 0]
-];
-var RepositoryCatalogDataNotFoundException$ = [-3, n0, _RCDNFE,
+n0_registry.registerError(exports.RepositoryAlreadyExistsException$, errors_1.RepositoryAlreadyExistsException);
+exports.RepositoryCatalogDataNotFoundException$ = [-3, n0, _RCDNFE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(RepositoryCatalogDataNotFoundException$, RepositoryCatalogDataNotFoundException);
-var RepositoryNotEmptyException$ = [-3, n0, _RNEE,
+n0_registry.registerError(exports.RepositoryCatalogDataNotFoundException$, errors_1.RepositoryCatalogDataNotFoundException);
+exports.RepositoryNotEmptyException$ = [-3, n0, _RNEE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(RepositoryNotEmptyException$, RepositoryNotEmptyException);
-var RepositoryNotFoundException$ = [-3, n0, _RNFEe,
+n0_registry.registerError(exports.RepositoryNotEmptyException$, errors_1.RepositoryNotEmptyException);
+exports.RepositoryNotFoundException$ = [-3, n0, _RNFEe,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(RepositoryNotFoundException$, RepositoryNotFoundException);
-var RepositoryPolicyNotFoundException$ = [-3, n0, _RPNFE,
+n0_registry.registerError(exports.RepositoryNotFoundException$, errors_1.RepositoryNotFoundException);
+exports.RepositoryPolicyNotFoundException$ = [-3, n0, _RPNFE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(RepositoryPolicyNotFoundException$, RepositoryPolicyNotFoundException);
-var ServerException$ = [-3, n0, _SE,
+n0_registry.registerError(exports.RepositoryPolicyNotFoundException$, errors_1.RepositoryPolicyNotFoundException);
+exports.ServerException$ = [-3, n0, _SE,
     { [_e]: _se },
     [_m],
     [0]
 ];
-schema.TypeRegistry.for(n0).registerError(ServerException$, ServerException);
-var SetRepositoryPolicyRequest$ = [3, n0, _SRPR,
-    0,
-    [_rN, _pT, _rI, _fo],
-    [0, 0, 0, 2], 2
+n0_registry.registerError(exports.ServerException$, errors_1.ServerException);
+exports.TooManyTagsException$ = [-3, n0, _TMTE,
+    { [_e]: _c },
+    [_m],
+    [0]
 ];
-var SetRepositoryPolicyResponse$ = [3, n0, _SRPRe,
+n0_registry.registerError(exports.TooManyTagsException$, errors_1.TooManyTagsException);
+exports.UnsupportedCommandException$ = [-3, n0, _UCE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(exports.UnsupportedCommandException$, errors_1.UnsupportedCommandException);
+exports.UploadNotFoundException$ = [-3, n0, _UNFE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(exports.UploadNotFoundException$, errors_1.UploadNotFoundException);
+exports.errorTypeRegistries = [
+    _s_registry,
+    n0_registry,
+];
+exports.AuthorizationData$ = [3, n0, _AD,
+    0,
+    [_aT, _eA],
+    [0, 4]
+];
+exports.BatchCheckLayerAvailabilityRequest$ = [3, n0, _BCLAR,
+    0,
+    [_rN, _lD, _rI],
+    [0, 64 | 0, 0], 2
+];
+exports.BatchCheckLayerAvailabilityResponse$ = [3, n0, _BCLARa,
+    0,
+    [_l, _f],
+    [() => LayerList, () => LayerFailureList]
+];
+exports.BatchDeleteImageRequest$ = [3, n0, _BDIR,
+    0,
+    [_rN, _iI, _rI],
+    [0, () => ImageIdentifierList, 0], 2
+];
+exports.BatchDeleteImageResponse$ = [3, n0, _BDIRa,
+    0,
+    [_iI, _f],
+    [() => ImageIdentifierList, () => ImageFailureList]
+];
+exports.CompleteLayerUploadRequest$ = [3, n0, _CLUR,
+    0,
+    [_rN, _uI, _lD, _rI],
+    [0, 0, 64 | 0, 0], 3
+];
+exports.CompleteLayerUploadResponse$ = [3, n0, _CLURo,
+    0,
+    [_rI, _rN, _uI, _lDa],
+    [0, 0, 0, 0]
+];
+exports.CreateRepositoryRequest$ = [3, n0, _CRR,
+    0,
+    [_rN, _cD, _t],
+    [0, () => exports.RepositoryCatalogDataInput$, () => TagList], 1
+];
+exports.CreateRepositoryResponse$ = [3, n0, _CRRr,
+    0,
+    [_r, _cD],
+    [() => exports.Repository$, () => exports.RepositoryCatalogData$]
+];
+exports.DeleteRepositoryPolicyRequest$ = [3, n0, _DRPR,
+    0,
+    [_rN, _rI],
+    [0, 0], 1
+];
+exports.DeleteRepositoryPolicyResponse$ = [3, n0, _DRPRe,
     0,
     [_rI, _rN, _pT],
     [0, 0, 0]
 ];
-var Tag$ = [3, n0, _T,
+exports.DeleteRepositoryRequest$ = [3, n0, _DRR,
+    0,
+    [_rN, _rI, _fo],
+    [0, 0, 2], 1
+];
+exports.DeleteRepositoryResponse$ = [3, n0, _DRRe,
+    0,
+    [_r],
+    [() => exports.Repository$]
+];
+exports.DescribeImagesRequest$ = [3, n0, _DIR,
+    0,
+    [_rN, _rI, _iI, _nT, _mR],
+    [0, 0, () => ImageIdentifierList, 0, 1], 1
+];
+exports.DescribeImagesResponse$ = [3, n0, _DIRe,
+    0,
+    [_iD, _nT],
+    [() => ImageDetailList, 0]
+];
+exports.DescribeImageTagsRequest$ = [3, n0, _DITR,
+    0,
+    [_rN, _rI, _nT, _mR],
+    [0, 0, 0, 1], 1
+];
+exports.DescribeImageTagsResponse$ = [3, n0, _DITRe,
+    0,
+    [_iTD, _nT],
+    [() => ImageTagDetailList, 0]
+];
+exports.DescribeRegistriesRequest$ = [3, n0, _DRRes,
+    0,
+    [_nT, _mR],
+    [0, 1]
+];
+exports.DescribeRegistriesResponse$ = [3, n0, _DRResc,
+    0,
+    [_re, _nT],
+    [() => RegistryList, 0], 1
+];
+exports.DescribeRepositoriesRequest$ = [3, n0, _DRRescr,
+    0,
+    [_rI, _rNe, _nT, _mR],
+    [0, 64 | 0, 0, 1]
+];
+exports.DescribeRepositoriesResponse$ = [3, n0, _DRRescri,
+    0,
+    [_rep, _nT],
+    [() => RepositoryList, 0]
+];
+exports.GetAuthorizationTokenRequest$ = [3, n0, _GATR,
+    0,
+    [],
+    []
+];
+exports.GetAuthorizationTokenResponse$ = [3, n0, _GATRe,
+    0,
+    [_aD],
+    [() => exports.AuthorizationData$]
+];
+exports.GetRegistryCatalogDataRequest$ = [3, n0, _GRCDR,
+    0,
+    [],
+    []
+];
+exports.GetRegistryCatalogDataResponse$ = [3, n0, _GRCDRe,
+    0,
+    [_rCD],
+    [() => exports.RegistryCatalogData$], 1
+];
+exports.GetRepositoryCatalogDataRequest$ = [3, n0, _GRCDRet,
+    0,
+    [_rN, _rI],
+    [0, 0], 1
+];
+exports.GetRepositoryCatalogDataResponse$ = [3, n0, _GRCDRete,
+    0,
+    [_cD],
+    [() => exports.RepositoryCatalogData$]
+];
+exports.GetRepositoryPolicyRequest$ = [3, n0, _GRPR,
+    0,
+    [_rN, _rI],
+    [0, 0], 1
+];
+exports.GetRepositoryPolicyResponse$ = [3, n0, _GRPRe,
+    0,
+    [_rI, _rN, _pT],
+    [0, 0, 0]
+];
+exports.Image$ = [3, n0, _I,
+    0,
+    [_rI, _rN, _iIm, _iM, _iMMT],
+    [0, 0, () => exports.ImageIdentifier$, 0, 0]
+];
+exports.ImageDetail$ = [3, n0, _ID,
+    0,
+    [_rI, _rN, _iDm, _iT, _iSIB, _iPA, _iMMT, _aMT],
+    [0, 0, 0, 64 | 0, 1, 4, 0, 0]
+];
+exports.ImageFailure$ = [3, n0, _IF,
+    0,
+    [_iIm, _fC, _fR],
+    [() => exports.ImageIdentifier$, 0, 0]
+];
+exports.ImageIdentifier$ = [3, n0, _II,
+    0,
+    [_iDm, _iTm],
+    [0, 0]
+];
+exports.ImageTagDetail$ = [3, n0, _ITD,
+    0,
+    [_iTm, _cA, _iDma],
+    [0, 4, () => exports.ReferencedImageDetail$]
+];
+exports.InitiateLayerUploadRequest$ = [3, n0, _ILUR,
+    0,
+    [_rN, _rI],
+    [0, 0], 1
+];
+exports.InitiateLayerUploadResponse$ = [3, n0, _ILURn,
+    0,
+    [_uI, _pS],
+    [0, 1]
+];
+exports.Layer$ = [3, n0, _L,
+    0,
+    [_lDa, _lA, _lS, _mT],
+    [0, 0, 1, 0]
+];
+exports.LayerFailure$ = [3, n0, _LF,
+    0,
+    [_lDa, _fC, _fR],
+    [0, 0, 0]
+];
+exports.ListTagsForResourceRequest$ = [3, n0, _LTFRR,
+    0,
+    [_rA],
+    [0], 1
+];
+exports.ListTagsForResourceResponse$ = [3, n0, _LTFRRi,
+    0,
+    [_t],
+    [() => TagList]
+];
+exports.PutImageRequest$ = [3, n0, _PIR,
+    0,
+    [_rN, _iM, _rI, _iMMT, _iTm, _iDm],
+    [0, 0, 0, 0, 0, 0], 2
+];
+exports.PutImageResponse$ = [3, n0, _PIRu,
+    0,
+    [_i],
+    [() => exports.Image$]
+];
+exports.PutRegistryCatalogDataRequest$ = [3, n0, _PRCDR,
+    0,
+    [_dN],
+    [0]
+];
+exports.PutRegistryCatalogDataResponse$ = [3, n0, _PRCDRu,
+    0,
+    [_rCD],
+    [() => exports.RegistryCatalogData$], 1
+];
+exports.PutRepositoryCatalogDataRequest$ = [3, n0, _PRCDRut,
+    0,
+    [_rN, _cD, _rI],
+    [0, () => exports.RepositoryCatalogDataInput$, 0], 2
+];
+exports.PutRepositoryCatalogDataResponse$ = [3, n0, _PRCDRute,
+    0,
+    [_cD],
+    [() => exports.RepositoryCatalogData$]
+];
+exports.ReferencedImageDetail$ = [3, n0, _RID,
+    0,
+    [_iDm, _iSIB, _iPA, _iMMT, _aMT],
+    [0, 1, 4, 0, 0]
+];
+exports.Registry$ = [3, n0, _R,
+    0,
+    [_rI, _rAe, _rU, _v, _a],
+    [0, 0, 0, 2, () => RegistryAliasList], 5
+];
+exports.RegistryAlias$ = [3, n0, _RA,
+    0,
+    [_n, _st, _pRA, _dRA],
+    [0, 0, 2, 2], 4
+];
+exports.RegistryCatalogData$ = [3, n0, _RCD,
+    0,
+    [_dN],
+    [0]
+];
+exports.Repository$ = [3, n0, _Re,
+    0,
+    [_rAep, _rI, _rN, _rUe, _cA],
+    [0, 0, 0, 0, 4]
+];
+exports.RepositoryCatalogData$ = [3, n0, _RCDe,
+    0,
+    [_d, _ar, _oS, _lU, _aTb, _uT, _mC],
+    [0, 64 | 0, 64 | 0, 0, 0, 0, 2]
+];
+exports.RepositoryCatalogDataInput$ = [3, n0, _RCDI,
+    0,
+    [_d, _ar, _oS, _lIB, _aTb, _uT],
+    [0, 64 | 0, 64 | 0, 21, 0, 0]
+];
+exports.SetRepositoryPolicyRequest$ = [3, n0, _SRPR,
+    0,
+    [_rN, _pT, _rI, _fo],
+    [0, 0, 0, 2], 2
+];
+exports.SetRepositoryPolicyResponse$ = [3, n0, _SRPRe,
+    0,
+    [_rI, _rN, _pT],
+    [0, 0, 0]
+];
+exports.Tag$ = [3, n0, _T,
     0,
     [_K, _V],
     [0, 0]
 ];
-var TagResourceRequest$ = [3, n0, _TRR,
+exports.TagResourceRequest$ = [3, n0, _TRR,
     0,
     [_rA, _t],
     [0, () => TagList], 2
 ];
-var TagResourceResponse$ = [3, n0, _TRRa,
+exports.TagResourceResponse$ = [3, n0, _TRRa,
     0,
     [],
     []
 ];
-var TooManyTagsException$ = [-3, n0, _TMTE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-schema.TypeRegistry.for(n0).registerError(TooManyTagsException$, TooManyTagsException);
-var UnsupportedCommandException$ = [-3, n0, _UCE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-schema.TypeRegistry.for(n0).registerError(UnsupportedCommandException$, UnsupportedCommandException);
-var UntagResourceRequest$ = [3, n0, _URR,
+exports.UntagResourceRequest$ = [3, n0, _URR,
     0,
     [_rA, _tK],
     [0, 64 | 0], 2
 ];
-var UntagResourceResponse$ = [3, n0, _URRn,
+exports.UntagResourceResponse$ = [3, n0, _URRn,
     0,
     [],
     []
 ];
-var UploadLayerPartRequest$ = [3, n0, _ULPR,
+exports.UploadLayerPartRequest$ = [3, n0, _ULPR,
     0,
     [_rN, _uI, _pFB, _pLB, _lPB, _rI],
     [0, 0, 1, 1, 21, 0], 5
 ];
-var UploadLayerPartResponse$ = [3, n0, _ULPRp,
+exports.UploadLayerPartResponse$ = [3, n0, _ULPRp,
     0,
     [_rI, _rN, _uI, _lBR],
     [0, 0, 0, 1]
 ];
-var UploadNotFoundException$ = [-3, n0, _UNFE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-schema.TypeRegistry.for(n0).registerError(UploadNotFoundException$, UploadNotFoundException);
-var ECRPUBLICServiceException$ = [-3, _sm, "ECRPUBLICServiceException", 0, [], []];
-schema.TypeRegistry.for(_sm).registerError(ECRPUBLICServiceException$, ECRPUBLICServiceException);
+var ArchitectureList = (/* unused pure expression or super */ null && (64 | 0));
+var BatchedOperationLayerDigestList = (/* unused pure expression or super */ null && (64 | 0));
 var ImageDetailList = [1, n0, _IDL,
-    0, () => ImageDetail$
+    0, () => exports.ImageDetail$
 ];
 var ImageFailureList = [1, n0, _IFL,
-    0, () => ImageFailure$
+    0, () => exports.ImageFailure$
 ];
 var ImageIdentifierList = [1, n0, _IIL,
-    0, () => ImageIdentifier$
+    0, () => exports.ImageIdentifier$
 ];
 var ImageTagDetailList = [1, n0, _ITDL,
-    0, () => ImageTagDetail$
+    0, () => exports.ImageTagDetail$
 ];
+var ImageTagList = (/* unused pure expression or super */ null && (64 | 0));
+var LayerDigestList = (/* unused pure expression or super */ null && (64 | 0));
 var LayerFailureList = [1, n0, _LFL,
-    0, () => LayerFailure$
+    0, () => exports.LayerFailure$
 ];
 var LayerList = [1, n0, _LL,
-    0, () => Layer$
+    0, () => exports.Layer$
 ];
+var OperatingSystemList = (/* unused pure expression or super */ null && (64 | 0));
 var RegistryAliasList = [1, n0, _RAL,
-    0, () => RegistryAlias$
+    0, () => exports.RegistryAlias$
 ];
 var RegistryList = [1, n0, _RL,
-    0, () => Registry$
+    0, () => exports.Registry$
 ];
 var RepositoryList = [1, n0, _RLe,
-    0, () => Repository$
+    0, () => exports.Repository$
 ];
+var RepositoryNameList = (/* unused pure expression or super */ null && (64 | 0));
+var TagKeyList = (/* unused pure expression or super */ null && (64 | 0));
 var TagList = [1, n0, _TL,
-    0, () => Tag$
+    0, () => exports.Tag$
 ];
-var BatchCheckLayerAvailability$ = [9, n0, _BCLA,
-    0, () => BatchCheckLayerAvailabilityRequest$, () => BatchCheckLayerAvailabilityResponse$
+exports.BatchCheckLayerAvailability$ = [9, n0, _BCLA,
+    0, () => exports.BatchCheckLayerAvailabilityRequest$, () => exports.BatchCheckLayerAvailabilityResponse$
 ];
-var BatchDeleteImage$ = [9, n0, _BDI,
-    0, () => BatchDeleteImageRequest$, () => BatchDeleteImageResponse$
+exports.BatchDeleteImage$ = [9, n0, _BDI,
+    0, () => exports.BatchDeleteImageRequest$, () => exports.BatchDeleteImageResponse$
 ];
-var CompleteLayerUpload$ = [9, n0, _CLU,
-    0, () => CompleteLayerUploadRequest$, () => CompleteLayerUploadResponse$
+exports.CompleteLayerUpload$ = [9, n0, _CLU,
+    0, () => exports.CompleteLayerUploadRequest$, () => exports.CompleteLayerUploadResponse$
 ];
-var CreateRepository$ = [9, n0, _CR,
-    0, () => CreateRepositoryRequest$, () => CreateRepositoryResponse$
+exports.CreateRepository$ = [9, n0, _CR,
+    0, () => exports.CreateRepositoryRequest$, () => exports.CreateRepositoryResponse$
 ];
-var DeleteRepository$ = [9, n0, _DR,
-    0, () => DeleteRepositoryRequest$, () => DeleteRepositoryResponse$
+exports.DeleteRepository$ = [9, n0, _DR,
+    0, () => exports.DeleteRepositoryRequest$, () => exports.DeleteRepositoryResponse$
 ];
-var DeleteRepositoryPolicy$ = [9, n0, _DRP,
-    0, () => DeleteRepositoryPolicyRequest$, () => DeleteRepositoryPolicyResponse$
+exports.DeleteRepositoryPolicy$ = [9, n0, _DRP,
+    0, () => exports.DeleteRepositoryPolicyRequest$, () => exports.DeleteRepositoryPolicyResponse$
 ];
-var DescribeImages$ = [9, n0, _DI,
-    0, () => DescribeImagesRequest$, () => DescribeImagesResponse$
+exports.DescribeImages$ = [9, n0, _DI,
+    0, () => exports.DescribeImagesRequest$, () => exports.DescribeImagesResponse$
 ];
-var DescribeImageTags$ = [9, n0, _DIT,
-    0, () => DescribeImageTagsRequest$, () => DescribeImageTagsResponse$
+exports.DescribeImageTags$ = [9, n0, _DIT,
+    0, () => exports.DescribeImageTagsRequest$, () => exports.DescribeImageTagsResponse$
 ];
-var DescribeRegistries$ = [9, n0, _DRe,
-    0, () => DescribeRegistriesRequest$, () => DescribeRegistriesResponse$
+exports.DescribeRegistries$ = [9, n0, _DRe,
+    0, () => exports.DescribeRegistriesRequest$, () => exports.DescribeRegistriesResponse$
 ];
-var DescribeRepositories$ = [9, n0, _DRes,
-    0, () => DescribeRepositoriesRequest$, () => DescribeRepositoriesResponse$
+exports.DescribeRepositories$ = [9, n0, _DRes,
+    0, () => exports.DescribeRepositoriesRequest$, () => exports.DescribeRepositoriesResponse$
 ];
-var GetAuthorizationToken$ = [9, n0, _GAT,
-    0, () => GetAuthorizationTokenRequest$, () => GetAuthorizationTokenResponse$
+exports.GetAuthorizationToken$ = [9, n0, _GAT,
+    0, () => exports.GetAuthorizationTokenRequest$, () => exports.GetAuthorizationTokenResponse$
 ];
-var GetRegistryCatalogData$ = [9, n0, _GRCD,
-    0, () => GetRegistryCatalogDataRequest$, () => GetRegistryCatalogDataResponse$
+exports.GetRegistryCatalogData$ = [9, n0, _GRCD,
+    0, () => exports.GetRegistryCatalogDataRequest$, () => exports.GetRegistryCatalogDataResponse$
 ];
-var GetRepositoryCatalogData$ = [9, n0, _GRCDe,
-    0, () => GetRepositoryCatalogDataRequest$, () => GetRepositoryCatalogDataResponse$
+exports.GetRepositoryCatalogData$ = [9, n0, _GRCDe,
+    0, () => exports.GetRepositoryCatalogDataRequest$, () => exports.GetRepositoryCatalogDataResponse$
 ];
-var GetRepositoryPolicy$ = [9, n0, _GRP,
-    0, () => GetRepositoryPolicyRequest$, () => GetRepositoryPolicyResponse$
+exports.GetRepositoryPolicy$ = [9, n0, _GRP,
+    0, () => exports.GetRepositoryPolicyRequest$, () => exports.GetRepositoryPolicyResponse$
 ];
-var InitiateLayerUpload$ = [9, n0, _ILU,
-    0, () => InitiateLayerUploadRequest$, () => InitiateLayerUploadResponse$
+exports.InitiateLayerUpload$ = [9, n0, _ILU,
+    0, () => exports.InitiateLayerUploadRequest$, () => exports.InitiateLayerUploadResponse$
 ];
-var ListTagsForResource$ = [9, n0, _LTFR,
-    0, () => ListTagsForResourceRequest$, () => ListTagsForResourceResponse$
+exports.ListTagsForResource$ = [9, n0, _LTFR,
+    0, () => exports.ListTagsForResourceRequest$, () => exports.ListTagsForResourceResponse$
 ];
-var PutImage$ = [9, n0, _PI,
-    0, () => PutImageRequest$, () => PutImageResponse$
+exports.PutImage$ = [9, n0, _PI,
+    0, () => exports.PutImageRequest$, () => exports.PutImageResponse$
 ];
-var PutRegistryCatalogData$ = [9, n0, _PRCD,
-    0, () => PutRegistryCatalogDataRequest$, () => PutRegistryCatalogDataResponse$
+exports.PutRegistryCatalogData$ = [9, n0, _PRCD,
+    0, () => exports.PutRegistryCatalogDataRequest$, () => exports.PutRegistryCatalogDataResponse$
 ];
-var PutRepositoryCatalogData$ = [9, n0, _PRCDu,
-    0, () => PutRepositoryCatalogDataRequest$, () => PutRepositoryCatalogDataResponse$
+exports.PutRepositoryCatalogData$ = [9, n0, _PRCDu,
+    0, () => exports.PutRepositoryCatalogDataRequest$, () => exports.PutRepositoryCatalogDataResponse$
 ];
-var SetRepositoryPolicy$ = [9, n0, _SRP,
-    0, () => SetRepositoryPolicyRequest$, () => SetRepositoryPolicyResponse$
+exports.SetRepositoryPolicy$ = [9, n0, _SRP,
+    0, () => exports.SetRepositoryPolicyRequest$, () => exports.SetRepositoryPolicyResponse$
 ];
-var TagResource$ = [9, n0, _TR,
-    0, () => TagResourceRequest$, () => TagResourceResponse$
+exports.TagResource$ = [9, n0, _TR,
+    0, () => exports.TagResourceRequest$, () => exports.TagResourceResponse$
 ];
-var UntagResource$ = [9, n0, _UR,
-    0, () => UntagResourceRequest$, () => UntagResourceResponse$
+exports.UntagResource$ = [9, n0, _UR,
+    0, () => exports.UntagResourceRequest$, () => exports.UntagResourceResponse$
 ];
-var UploadLayerPart$ = [9, n0, _ULP,
-    0, () => UploadLayerPartRequest$, () => UploadLayerPartResponse$
+exports.UploadLayerPart$ = [9, n0, _ULP,
+    0, () => exports.UploadLayerPartRequest$, () => exports.UploadLayerPartResponse$
 ];
-
-class BatchCheckLayerAvailabilityCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "BatchCheckLayerAvailability", {})
-    .n("ECRPUBLICClient", "BatchCheckLayerAvailabilityCommand")
-    .sc(BatchCheckLayerAvailability$)
-    .build() {
-}
-
-class BatchDeleteImageCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "BatchDeleteImage", {})
-    .n("ECRPUBLICClient", "BatchDeleteImageCommand")
-    .sc(BatchDeleteImage$)
-    .build() {
-}
-
-class CompleteLayerUploadCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "CompleteLayerUpload", {})
-    .n("ECRPUBLICClient", "CompleteLayerUploadCommand")
-    .sc(CompleteLayerUpload$)
-    .build() {
-}
-
-class CreateRepositoryCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "CreateRepository", {})
-    .n("ECRPUBLICClient", "CreateRepositoryCommand")
-    .sc(CreateRepository$)
-    .build() {
-}
-
-class DeleteRepositoryCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "DeleteRepository", {})
-    .n("ECRPUBLICClient", "DeleteRepositoryCommand")
-    .sc(DeleteRepository$)
-    .build() {
-}
-
-class DeleteRepositoryPolicyCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "DeleteRepositoryPolicy", {})
-    .n("ECRPUBLICClient", "DeleteRepositoryPolicyCommand")
-    .sc(DeleteRepositoryPolicy$)
-    .build() {
-}
-
-class DescribeImagesCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "DescribeImages", {})
-    .n("ECRPUBLICClient", "DescribeImagesCommand")
-    .sc(DescribeImages$)
-    .build() {
-}
-
-class DescribeImageTagsCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "DescribeImageTags", {})
-    .n("ECRPUBLICClient", "DescribeImageTagsCommand")
-    .sc(DescribeImageTags$)
-    .build() {
-}
-
-class DescribeRegistriesCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "DescribeRegistries", {})
-    .n("ECRPUBLICClient", "DescribeRegistriesCommand")
-    .sc(DescribeRegistries$)
-    .build() {
-}
-
-class DescribeRepositoriesCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "DescribeRepositories", {})
-    .n("ECRPUBLICClient", "DescribeRepositoriesCommand")
-    .sc(DescribeRepositories$)
-    .build() {
-}
-
-class GetAuthorizationTokenCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "GetAuthorizationToken", {})
-    .n("ECRPUBLICClient", "GetAuthorizationTokenCommand")
-    .sc(GetAuthorizationToken$)
-    .build() {
-}
-
-class GetRegistryCatalogDataCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "GetRegistryCatalogData", {})
-    .n("ECRPUBLICClient", "GetRegistryCatalogDataCommand")
-    .sc(GetRegistryCatalogData$)
-    .build() {
-}
-
-class GetRepositoryCatalogDataCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "GetRepositoryCatalogData", {})
-    .n("ECRPUBLICClient", "GetRepositoryCatalogDataCommand")
-    .sc(GetRepositoryCatalogData$)
-    .build() {
-}
-
-class GetRepositoryPolicyCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "GetRepositoryPolicy", {})
-    .n("ECRPUBLICClient", "GetRepositoryPolicyCommand")
-    .sc(GetRepositoryPolicy$)
-    .build() {
-}
-
-class InitiateLayerUploadCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "InitiateLayerUpload", {})
-    .n("ECRPUBLICClient", "InitiateLayerUploadCommand")
-    .sc(InitiateLayerUpload$)
-    .build() {
-}
-
-class ListTagsForResourceCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "ListTagsForResource", {})
-    .n("ECRPUBLICClient", "ListTagsForResourceCommand")
-    .sc(ListTagsForResource$)
-    .build() {
-}
-
-class PutImageCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "PutImage", {})
-    .n("ECRPUBLICClient", "PutImageCommand")
-    .sc(PutImage$)
-    .build() {
-}
-
-class PutRegistryCatalogDataCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "PutRegistryCatalogData", {})
-    .n("ECRPUBLICClient", "PutRegistryCatalogDataCommand")
-    .sc(PutRegistryCatalogData$)
-    .build() {
-}
-
-class PutRepositoryCatalogDataCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "PutRepositoryCatalogData", {})
-    .n("ECRPUBLICClient", "PutRepositoryCatalogDataCommand")
-    .sc(PutRepositoryCatalogData$)
-    .build() {
-}
-
-class SetRepositoryPolicyCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "SetRepositoryPolicy", {})
-    .n("ECRPUBLICClient", "SetRepositoryPolicyCommand")
-    .sc(SetRepositoryPolicy$)
-    .build() {
-}
-
-class TagResourceCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "TagResource", {})
-    .n("ECRPUBLICClient", "TagResourceCommand")
-    .sc(TagResource$)
-    .build() {
-}
-
-class UntagResourceCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "UntagResource", {})
-    .n("ECRPUBLICClient", "UntagResourceCommand")
-    .sc(UntagResource$)
-    .build() {
-}
-
-class UploadLayerPartCommand extends smithyClient.Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [middlewareEndpoint.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "UploadLayerPart", {})
-    .n("ECRPUBLICClient", "UploadLayerPartCommand")
-    .sc(UploadLayerPart$)
-    .build() {
-}
-
-const paginateDescribeImages = core.createPaginator(ECRPUBLICClient, DescribeImagesCommand, "nextToken", "nextToken", "maxResults");
-
-const paginateDescribeImageTags = core.createPaginator(ECRPUBLICClient, DescribeImageTagsCommand, "nextToken", "nextToken", "maxResults");
-
-const paginateDescribeRegistries = core.createPaginator(ECRPUBLICClient, DescribeRegistriesCommand, "nextToken", "nextToken", "maxResults");
-
-const paginateDescribeRepositories = core.createPaginator(ECRPUBLICClient, DescribeRepositoriesCommand, "nextToken", "nextToken", "maxResults");
-
-const commands = {
-    BatchCheckLayerAvailabilityCommand,
-    BatchDeleteImageCommand,
-    CompleteLayerUploadCommand,
-    CreateRepositoryCommand,
-    DeleteRepositoryCommand,
-    DeleteRepositoryPolicyCommand,
-    DescribeImagesCommand,
-    DescribeImageTagsCommand,
-    DescribeRegistriesCommand,
-    DescribeRepositoriesCommand,
-    GetAuthorizationTokenCommand,
-    GetRegistryCatalogDataCommand,
-    GetRepositoryCatalogDataCommand,
-    GetRepositoryPolicyCommand,
-    InitiateLayerUploadCommand,
-    ListTagsForResourceCommand,
-    PutImageCommand,
-    PutRegistryCatalogDataCommand,
-    PutRepositoryCatalogDataCommand,
-    SetRepositoryPolicyCommand,
-    TagResourceCommand,
-    UntagResourceCommand,
-    UploadLayerPartCommand,
-};
-const paginators = {
-    paginateDescribeImages,
-    paginateDescribeImageTags,
-    paginateDescribeRegistries,
-    paginateDescribeRepositories,
-};
-class ECRPUBLIC extends ECRPUBLICClient {
-}
-smithyClient.createAggregatedClient(commands, ECRPUBLIC, { paginators });
-
-const LayerFailureCode = {
-    InvalidLayerDigest: "InvalidLayerDigest",
-    MissingLayerDigest: "MissingLayerDigest",
-};
-const LayerAvailability = {
-    AVAILABLE: "AVAILABLE",
-    UNAVAILABLE: "UNAVAILABLE",
-};
-const ImageFailureCode = {
-    ImageNotFound: "ImageNotFound",
-    ImageReferencedByManifestList: "ImageReferencedByManifestList",
-    ImageTagDoesNotMatchDigest: "ImageTagDoesNotMatchDigest",
-    InvalidImageDigest: "InvalidImageDigest",
-    InvalidImageTag: "InvalidImageTag",
-    KmsError: "KmsError",
-    MissingDigestAndTag: "MissingDigestAndTag",
-};
-const RegistryAliasStatus = {
-    ACTIVE: "ACTIVE",
-    PENDING: "PENDING",
-    REJECTED: "REJECTED",
-};
-
-__webpack_unused_export__ = ({
-    enumerable: true,
-    get: function () { return smithyClient.Command; }
-});
-__webpack_unused_export__ = ({
-    enumerable: true,
-    get: function () { return smithyClient.Client; }
-});
-__webpack_unused_export__ = AuthorizationData$;
-__webpack_unused_export__ = BatchCheckLayerAvailability$;
-__webpack_unused_export__ = BatchCheckLayerAvailabilityCommand;
-__webpack_unused_export__ = BatchCheckLayerAvailabilityRequest$;
-__webpack_unused_export__ = BatchCheckLayerAvailabilityResponse$;
-__webpack_unused_export__ = BatchDeleteImage$;
-__webpack_unused_export__ = BatchDeleteImageCommand;
-__webpack_unused_export__ = BatchDeleteImageRequest$;
-__webpack_unused_export__ = BatchDeleteImageResponse$;
-__webpack_unused_export__ = CompleteLayerUpload$;
-__webpack_unused_export__ = CompleteLayerUploadCommand;
-__webpack_unused_export__ = CompleteLayerUploadRequest$;
-__webpack_unused_export__ = CompleteLayerUploadResponse$;
-__webpack_unused_export__ = CreateRepository$;
-__webpack_unused_export__ = CreateRepositoryCommand;
-__webpack_unused_export__ = CreateRepositoryRequest$;
-__webpack_unused_export__ = CreateRepositoryResponse$;
-__webpack_unused_export__ = DeleteRepository$;
-__webpack_unused_export__ = DeleteRepositoryCommand;
-__webpack_unused_export__ = DeleteRepositoryPolicy$;
-__webpack_unused_export__ = DeleteRepositoryPolicyCommand;
-__webpack_unused_export__ = DeleteRepositoryPolicyRequest$;
-__webpack_unused_export__ = DeleteRepositoryPolicyResponse$;
-__webpack_unused_export__ = DeleteRepositoryRequest$;
-__webpack_unused_export__ = DeleteRepositoryResponse$;
-__webpack_unused_export__ = DescribeImageTags$;
-__webpack_unused_export__ = DescribeImageTagsCommand;
-__webpack_unused_export__ = DescribeImageTagsRequest$;
-__webpack_unused_export__ = DescribeImageTagsResponse$;
-__webpack_unused_export__ = DescribeImages$;
-__webpack_unused_export__ = DescribeImagesCommand;
-__webpack_unused_export__ = DescribeImagesRequest$;
-__webpack_unused_export__ = DescribeImagesResponse$;
-__webpack_unused_export__ = DescribeRegistries$;
-__webpack_unused_export__ = DescribeRegistriesCommand;
-__webpack_unused_export__ = DescribeRegistriesRequest$;
-__webpack_unused_export__ = DescribeRegistriesResponse$;
-__webpack_unused_export__ = DescribeRepositories$;
-__webpack_unused_export__ = DescribeRepositoriesCommand;
-__webpack_unused_export__ = DescribeRepositoriesRequest$;
-__webpack_unused_export__ = DescribeRepositoriesResponse$;
-__webpack_unused_export__ = ECRPUBLIC;
-exports.Rr = ECRPUBLICClient;
-__webpack_unused_export__ = ECRPUBLICServiceException;
-__webpack_unused_export__ = ECRPUBLICServiceException$;
-__webpack_unused_export__ = EmptyUploadException;
-__webpack_unused_export__ = EmptyUploadException$;
-__webpack_unused_export__ = GetAuthorizationToken$;
-exports.Eu = GetAuthorizationTokenCommand;
-__webpack_unused_export__ = GetAuthorizationTokenRequest$;
-__webpack_unused_export__ = GetAuthorizationTokenResponse$;
-__webpack_unused_export__ = GetRegistryCatalogData$;
-__webpack_unused_export__ = GetRegistryCatalogDataCommand;
-__webpack_unused_export__ = GetRegistryCatalogDataRequest$;
-__webpack_unused_export__ = GetRegistryCatalogDataResponse$;
-__webpack_unused_export__ = GetRepositoryCatalogData$;
-__webpack_unused_export__ = GetRepositoryCatalogDataCommand;
-__webpack_unused_export__ = GetRepositoryCatalogDataRequest$;
-__webpack_unused_export__ = GetRepositoryCatalogDataResponse$;
-__webpack_unused_export__ = GetRepositoryPolicy$;
-__webpack_unused_export__ = GetRepositoryPolicyCommand;
-__webpack_unused_export__ = GetRepositoryPolicyRequest$;
-__webpack_unused_export__ = GetRepositoryPolicyResponse$;
-__webpack_unused_export__ = Image$;
-__webpack_unused_export__ = ImageAlreadyExistsException;
-__webpack_unused_export__ = ImageAlreadyExistsException$;
-__webpack_unused_export__ = ImageDetail$;
-__webpack_unused_export__ = ImageDigestDoesNotMatchException;
-__webpack_unused_export__ = ImageDigestDoesNotMatchException$;
-__webpack_unused_export__ = ImageFailure$;
-__webpack_unused_export__ = ImageFailureCode;
-__webpack_unused_export__ = ImageIdentifier$;
-__webpack_unused_export__ = ImageNotFoundException;
-__webpack_unused_export__ = ImageNotFoundException$;
-__webpack_unused_export__ = ImageTagAlreadyExistsException;
-__webpack_unused_export__ = ImageTagAlreadyExistsException$;
-__webpack_unused_export__ = ImageTagDetail$;
-__webpack_unused_export__ = InitiateLayerUpload$;
-__webpack_unused_export__ = InitiateLayerUploadCommand;
-__webpack_unused_export__ = InitiateLayerUploadRequest$;
-__webpack_unused_export__ = InitiateLayerUploadResponse$;
-__webpack_unused_export__ = InvalidLayerException;
-__webpack_unused_export__ = InvalidLayerException$;
-__webpack_unused_export__ = InvalidLayerPartException;
-__webpack_unused_export__ = InvalidLayerPartException$;
-__webpack_unused_export__ = InvalidParameterException;
-__webpack_unused_export__ = InvalidParameterException$;
-__webpack_unused_export__ = InvalidTagParameterException;
-__webpack_unused_export__ = InvalidTagParameterException$;
-__webpack_unused_export__ = Layer$;
-__webpack_unused_export__ = LayerAlreadyExistsException;
-__webpack_unused_export__ = LayerAlreadyExistsException$;
-__webpack_unused_export__ = LayerAvailability;
-__webpack_unused_export__ = LayerFailure$;
-__webpack_unused_export__ = LayerFailureCode;
-__webpack_unused_export__ = LayerPartTooSmallException;
-__webpack_unused_export__ = LayerPartTooSmallException$;
-__webpack_unused_export__ = LayersNotFoundException;
-__webpack_unused_export__ = LayersNotFoundException$;
-__webpack_unused_export__ = LimitExceededException;
-__webpack_unused_export__ = LimitExceededException$;
-__webpack_unused_export__ = ListTagsForResource$;
-__webpack_unused_export__ = ListTagsForResourceCommand;
-__webpack_unused_export__ = ListTagsForResourceRequest$;
-__webpack_unused_export__ = ListTagsForResourceResponse$;
-__webpack_unused_export__ = PutImage$;
-__webpack_unused_export__ = PutImageCommand;
-__webpack_unused_export__ = PutImageRequest$;
-__webpack_unused_export__ = PutImageResponse$;
-__webpack_unused_export__ = PutRegistryCatalogData$;
-__webpack_unused_export__ = PutRegistryCatalogDataCommand;
-__webpack_unused_export__ = PutRegistryCatalogDataRequest$;
-__webpack_unused_export__ = PutRegistryCatalogDataResponse$;
-__webpack_unused_export__ = PutRepositoryCatalogData$;
-__webpack_unused_export__ = PutRepositoryCatalogDataCommand;
-__webpack_unused_export__ = PutRepositoryCatalogDataRequest$;
-__webpack_unused_export__ = PutRepositoryCatalogDataResponse$;
-__webpack_unused_export__ = ReferencedImageDetail$;
-__webpack_unused_export__ = ReferencedImagesNotFoundException;
-__webpack_unused_export__ = ReferencedImagesNotFoundException$;
-__webpack_unused_export__ = Registry$;
-__webpack_unused_export__ = RegistryAlias$;
-__webpack_unused_export__ = RegistryAliasStatus;
-__webpack_unused_export__ = RegistryCatalogData$;
-__webpack_unused_export__ = RegistryNotFoundException;
-__webpack_unused_export__ = RegistryNotFoundException$;
-__webpack_unused_export__ = Repository$;
-__webpack_unused_export__ = RepositoryAlreadyExistsException;
-__webpack_unused_export__ = RepositoryAlreadyExistsException$;
-__webpack_unused_export__ = RepositoryCatalogData$;
-__webpack_unused_export__ = RepositoryCatalogDataInput$;
-__webpack_unused_export__ = RepositoryCatalogDataNotFoundException;
-__webpack_unused_export__ = RepositoryCatalogDataNotFoundException$;
-__webpack_unused_export__ = RepositoryNotEmptyException;
-__webpack_unused_export__ = RepositoryNotEmptyException$;
-__webpack_unused_export__ = RepositoryNotFoundException;
-__webpack_unused_export__ = RepositoryNotFoundException$;
-__webpack_unused_export__ = RepositoryPolicyNotFoundException;
-__webpack_unused_export__ = RepositoryPolicyNotFoundException$;
-__webpack_unused_export__ = ServerException;
-__webpack_unused_export__ = ServerException$;
-__webpack_unused_export__ = SetRepositoryPolicy$;
-__webpack_unused_export__ = SetRepositoryPolicyCommand;
-__webpack_unused_export__ = SetRepositoryPolicyRequest$;
-__webpack_unused_export__ = SetRepositoryPolicyResponse$;
-__webpack_unused_export__ = Tag$;
-__webpack_unused_export__ = TagResource$;
-__webpack_unused_export__ = TagResourceCommand;
-__webpack_unused_export__ = TagResourceRequest$;
-__webpack_unused_export__ = TagResourceResponse$;
-__webpack_unused_export__ = TooManyTagsException;
-__webpack_unused_export__ = TooManyTagsException$;
-__webpack_unused_export__ = UnsupportedCommandException;
-__webpack_unused_export__ = UnsupportedCommandException$;
-__webpack_unused_export__ = UntagResource$;
-__webpack_unused_export__ = UntagResourceCommand;
-__webpack_unused_export__ = UntagResourceRequest$;
-__webpack_unused_export__ = UntagResourceResponse$;
-__webpack_unused_export__ = UploadLayerPart$;
-__webpack_unused_export__ = UploadLayerPartCommand;
-__webpack_unused_export__ = UploadLayerPartRequest$;
-__webpack_unused_export__ = UploadLayerPartResponse$;
-__webpack_unused_export__ = UploadNotFoundException;
-__webpack_unused_export__ = UploadNotFoundException$;
-__webpack_unused_export__ = paginateDescribeImageTags;
-__webpack_unused_export__ = paginateDescribeImages;
-__webpack_unused_export__ = paginateDescribeRegistries;
-__webpack_unused_export__ = paginateDescribeRepositories;
-
-
-/***/ }),
-
-/***/ 58199:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getRuntimeConfig = void 0;
-const tslib_1 = __nccwpck_require__(61860);
-const package_json_1 = tslib_1.__importDefault(__nccwpck_require__(47643));
-const core_1 = __nccwpck_require__(8704);
-const credential_provider_node_1 = __nccwpck_require__(5861);
-const util_user_agent_node_1 = __nccwpck_require__(51656);
-const config_resolver_1 = __nccwpck_require__(39316);
-const hash_node_1 = __nccwpck_require__(5092);
-const middleware_retry_1 = __nccwpck_require__(19618);
-const node_config_provider_1 = __nccwpck_require__(55704);
-const node_http_handler_1 = __nccwpck_require__(16453);
-const smithy_client_1 = __nccwpck_require__(61411);
-const util_body_length_node_1 = __nccwpck_require__(13638);
-const util_defaults_mode_node_1 = __nccwpck_require__(15435);
-const util_retry_1 = __nccwpck_require__(15518);
-const runtimeConfig_shared_1 = __nccwpck_require__(92180);
-const getRuntimeConfig = (config) => {
-    (0, smithy_client_1.emitWarningIfUnsupportedVersion)(process.version);
-    const defaultsMode = (0, util_defaults_mode_node_1.resolveDefaultsModeConfig)(config);
-    const defaultConfigProvider = () => defaultsMode().then(smithy_client_1.loadConfigsForDefaultMode);
-    const clientSharedValues = (0, runtimeConfig_shared_1.getRuntimeConfig)(config);
-    (0, core_1.emitWarningIfUnsupportedVersion)(process.version);
-    const loaderConfig = {
-        profile: config?.profile,
-        logger: clientSharedValues.logger,
-    };
-    return {
-        ...clientSharedValues,
-        ...config,
-        runtime: "node",
-        defaultsMode,
-        authSchemePreference: config?.authSchemePreference ?? (0, node_config_provider_1.loadConfig)(core_1.NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
-        bodyLengthChecker: config?.bodyLengthChecker ?? util_body_length_node_1.calculateBodyLength,
-        credentialDefaultProvider: config?.credentialDefaultProvider ?? credential_provider_node_1.defaultProvider,
-        defaultUserAgentProvider: config?.defaultUserAgentProvider ?? (0, util_user_agent_node_1.createDefaultUserAgentProvider)({ serviceId: clientSharedValues.serviceId, clientVersion: package_json_1.default.version }),
-        maxAttempts: config?.maxAttempts ?? (0, node_config_provider_1.loadConfig)(middleware_retry_1.NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config),
-        region: config?.region ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_REGION_CONFIG_OPTIONS, { ...config_resolver_1.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
-        requestHandler: node_http_handler_1.NodeHttpHandler.create(config?.requestHandler ?? defaultConfigProvider),
-        retryMode: config?.retryMode ??
-            (0, node_config_provider_1.loadConfig)({
-                ...middleware_retry_1.NODE_RETRY_MODE_CONFIG_OPTIONS,
-                default: async () => (await defaultConfigProvider()).retryMode || util_retry_1.DEFAULT_RETRY_MODE,
-            }, config),
-        sha256: config?.sha256 ?? hash_node_1.Hash.bind(null, "sha256"),
-        streamCollector: config?.streamCollector ?? node_http_handler_1.streamCollector,
-        useDualstackEndpoint: config?.useDualstackEndpoint ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
-        useFipsEndpoint: config?.useFipsEndpoint ?? (0, node_config_provider_1.loadConfig)(config_resolver_1.NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
-        userAgentAppId: config?.userAgentAppId ?? (0, node_config_provider_1.loadConfig)(util_user_agent_node_1.NODE_APP_ID_CONFIG_OPTIONS, loaderConfig),
-    };
-};
-exports.getRuntimeConfig = getRuntimeConfig;
-
-
-/***/ }),
-
-/***/ 92180:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getRuntimeConfig = void 0;
-const core_1 = __nccwpck_require__(8704);
-const protocols_1 = __nccwpck_require__(37288);
-const smithy_client_1 = __nccwpck_require__(61411);
-const url_parser_1 = __nccwpck_require__(14494);
-const util_base64_1 = __nccwpck_require__(68385);
-const util_utf8_1 = __nccwpck_require__(71577);
-const httpAuthSchemeProvider_1 = __nccwpck_require__(93182);
-const endpointResolver_1 = __nccwpck_require__(96072);
-const getRuntimeConfig = (config) => {
-    return {
-        apiVersion: "2020-10-30",
-        base64Decoder: config?.base64Decoder ?? util_base64_1.fromBase64,
-        base64Encoder: config?.base64Encoder ?? util_base64_1.toBase64,
-        disableHostPrefix: config?.disableHostPrefix ?? false,
-        endpointProvider: config?.endpointProvider ?? endpointResolver_1.defaultEndpointResolver,
-        extensions: config?.extensions ?? [],
-        httpAuthSchemeProvider: config?.httpAuthSchemeProvider ?? httpAuthSchemeProvider_1.defaultECRPUBLICHttpAuthSchemeProvider,
-        httpAuthSchemes: config?.httpAuthSchemes ?? [
-            {
-                schemeId: "aws.auth#sigv4",
-                identityProvider: (ipc) => ipc.getIdentityProvider("aws.auth#sigv4"),
-                signer: new core_1.AwsSdkSigV4Signer(),
-            },
-        ],
-        logger: config?.logger ?? new smithy_client_1.NoOpLogger(),
-        protocol: config?.protocol ?? protocols_1.AwsJson1_1Protocol,
-        protocolSettings: config?.protocolSettings ?? {
-            defaultNamespace: "com.amazonaws.ecrpublic",
-            xmlNamespace: "http://ecr-public.amazonaws.com/doc/2020-12-02/",
-            version: "2020-10-30",
-            serviceTarget: "SpencerFrontendService",
-        },
-        serviceId: config?.serviceId ?? "ECR PUBLIC",
-        urlParser: config?.urlParser ?? url_parser_1.parseUrl,
-        utf8Decoder: config?.utf8Decoder ?? util_utf8_1.fromUtf8,
-        utf8Encoder: config?.utf8Encoder ?? util_utf8_1.toUtf8,
-    };
-};
-exports.getRuntimeConfig = getRuntimeConfig;
-
-
-/***/ }),
-
-/***/ 16053:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-
-var utilEndpoints = __nccwpck_require__(79674);
-var urlParser = __nccwpck_require__(14494);
-
-const isVirtualHostableS3Bucket = (value, allowSubDomains = false) => {
-    if (allowSubDomains) {
-        for (const label of value.split(".")) {
-            if (!isVirtualHostableS3Bucket(label)) {
-                return false;
-            }
-        }
-        return true;
-    }
-    if (!utilEndpoints.isValidHostLabel(value)) {
-        return false;
-    }
-    if (value.length < 3 || value.length > 63) {
-        return false;
-    }
-    if (value !== value.toLowerCase()) {
-        return false;
-    }
-    if (utilEndpoints.isIpAddress(value)) {
-        return false;
-    }
-    return true;
-};
-
-const ARN_DELIMITER = ":";
-const RESOURCE_DELIMITER = "/";
-const parseArn = (value) => {
-    const segments = value.split(ARN_DELIMITER);
-    if (segments.length < 6)
-        return null;
-    const [arn, partition, service, region, accountId, ...resourcePath] = segments;
-    if (arn !== "arn" || partition === "" || service === "" || resourcePath.join(ARN_DELIMITER) === "")
-        return null;
-    const resourceId = resourcePath.map((resource) => resource.split(RESOURCE_DELIMITER)).flat();
-    return {
-        partition,
-        service,
-        region,
-        accountId,
-        resourceId,
-    };
-};
-
-var partitions = [
-	{
-		id: "aws",
-		outputs: {
-			dnsSuffix: "amazonaws.com",
-			dualStackDnsSuffix: "api.aws",
-			implicitGlobalRegion: "us-east-1",
-			name: "aws",
-			supportsDualStack: true,
-			supportsFIPS: true
-		},
-		regionRegex: "^(us|eu|ap|sa|ca|me|af|il|mx)\\-\\w+\\-\\d+$",
-		regions: {
-			"af-south-1": {
-				description: "Africa (Cape Town)"
-			},
-			"ap-east-1": {
-				description: "Asia Pacific (Hong Kong)"
-			},
-			"ap-east-2": {
-				description: "Asia Pacific (Taipei)"
-			},
-			"ap-northeast-1": {
-				description: "Asia Pacific (Tokyo)"
-			},
-			"ap-northeast-2": {
-				description: "Asia Pacific (Seoul)"
-			},
-			"ap-northeast-3": {
-				description: "Asia Pacific (Osaka)"
-			},
-			"ap-south-1": {
-				description: "Asia Pacific (Mumbai)"
-			},
-			"ap-south-2": {
-				description: "Asia Pacific (Hyderabad)"
-			},
-			"ap-southeast-1": {
-				description: "Asia Pacific (Singapore)"
-			},
-			"ap-southeast-2": {
-				description: "Asia Pacific (Sydney)"
-			},
-			"ap-southeast-3": {
-				description: "Asia Pacific (Jakarta)"
-			},
-			"ap-southeast-4": {
-				description: "Asia Pacific (Melbourne)"
-			},
-			"ap-southeast-5": {
-				description: "Asia Pacific (Malaysia)"
-			},
-			"ap-southeast-6": {
-				description: "Asia Pacific (New Zealand)"
-			},
-			"ap-southeast-7": {
-				description: "Asia Pacific (Thailand)"
-			},
-			"aws-global": {
-				description: "aws global region"
-			},
-			"ca-central-1": {
-				description: "Canada (Central)"
-			},
-			"ca-west-1": {
-				description: "Canada West (Calgary)"
-			},
-			"eu-central-1": {
-				description: "Europe (Frankfurt)"
-			},
-			"eu-central-2": {
-				description: "Europe (Zurich)"
-			},
-			"eu-north-1": {
-				description: "Europe (Stockholm)"
-			},
-			"eu-south-1": {
-				description: "Europe (Milan)"
-			},
-			"eu-south-2": {
-				description: "Europe (Spain)"
-			},
-			"eu-west-1": {
-				description: "Europe (Ireland)"
-			},
-			"eu-west-2": {
-				description: "Europe (London)"
-			},
-			"eu-west-3": {
-				description: "Europe (Paris)"
-			},
-			"il-central-1": {
-				description: "Israel (Tel Aviv)"
-			},
-			"me-central-1": {
-				description: "Middle East (UAE)"
-			},
-			"me-south-1": {
-				description: "Middle East (Bahrain)"
-			},
-			"mx-central-1": {
-				description: "Mexico (Central)"
-			},
-			"sa-east-1": {
-				description: "South America (Sao Paulo)"
-			},
-			"us-east-1": {
-				description: "US East (N. Virginia)"
-			},
-			"us-east-2": {
-				description: "US East (Ohio)"
-			},
-			"us-west-1": {
-				description: "US West (N. California)"
-			},
-			"us-west-2": {
-				description: "US West (Oregon)"
-			}
-		}
-	},
-	{
-		id: "aws-cn",
-		outputs: {
-			dnsSuffix: "amazonaws.com.cn",
-			dualStackDnsSuffix: "api.amazonwebservices.com.cn",
-			implicitGlobalRegion: "cn-northwest-1",
-			name: "aws-cn",
-			supportsDualStack: true,
-			supportsFIPS: true
-		},
-		regionRegex: "^cn\\-\\w+\\-\\d+$",
-		regions: {
-			"aws-cn-global": {
-				description: "aws-cn global region"
-			},
-			"cn-north-1": {
-				description: "China (Beijing)"
-			},
-			"cn-northwest-1": {
-				description: "China (Ningxia)"
-			}
-		}
-	},
-	{
-		id: "aws-eusc",
-		outputs: {
-			dnsSuffix: "amazonaws.eu",
-			dualStackDnsSuffix: "api.amazonwebservices.eu",
-			implicitGlobalRegion: "eusc-de-east-1",
-			name: "aws-eusc",
-			supportsDualStack: true,
-			supportsFIPS: true
-		},
-		regionRegex: "^eusc\\-(de)\\-\\w+\\-\\d+$",
-		regions: {
-			"eusc-de-east-1": {
-				description: "AWS European Sovereign Cloud (Germany)"
-			}
-		}
-	},
-	{
-		id: "aws-iso",
-		outputs: {
-			dnsSuffix: "c2s.ic.gov",
-			dualStackDnsSuffix: "api.aws.ic.gov",
-			implicitGlobalRegion: "us-iso-east-1",
-			name: "aws-iso",
-			supportsDualStack: true,
-			supportsFIPS: true
-		},
-		regionRegex: "^us\\-iso\\-\\w+\\-\\d+$",
-		regions: {
-			"aws-iso-global": {
-				description: "aws-iso global region"
-			},
-			"us-iso-east-1": {
-				description: "US ISO East"
-			},
-			"us-iso-west-1": {
-				description: "US ISO WEST"
-			}
-		}
-	},
-	{
-		id: "aws-iso-b",
-		outputs: {
-			dnsSuffix: "sc2s.sgov.gov",
-			dualStackDnsSuffix: "api.aws.scloud",
-			implicitGlobalRegion: "us-isob-east-1",
-			name: "aws-iso-b",
-			supportsDualStack: true,
-			supportsFIPS: true
-		},
-		regionRegex: "^us\\-isob\\-\\w+\\-\\d+$",
-		regions: {
-			"aws-iso-b-global": {
-				description: "aws-iso-b global region"
-			},
-			"us-isob-east-1": {
-				description: "US ISOB East (Ohio)"
-			},
-			"us-isob-west-1": {
-				description: "US ISOB West"
-			}
-		}
-	},
-	{
-		id: "aws-iso-e",
-		outputs: {
-			dnsSuffix: "cloud.adc-e.uk",
-			dualStackDnsSuffix: "api.cloud-aws.adc-e.uk",
-			implicitGlobalRegion: "eu-isoe-west-1",
-			name: "aws-iso-e",
-			supportsDualStack: true,
-			supportsFIPS: true
-		},
-		regionRegex: "^eu\\-isoe\\-\\w+\\-\\d+$",
-		regions: {
-			"aws-iso-e-global": {
-				description: "aws-iso-e global region"
-			},
-			"eu-isoe-west-1": {
-				description: "EU ISOE West"
-			}
-		}
-	},
-	{
-		id: "aws-iso-f",
-		outputs: {
-			dnsSuffix: "csp.hci.ic.gov",
-			dualStackDnsSuffix: "api.aws.hci.ic.gov",
-			implicitGlobalRegion: "us-isof-south-1",
-			name: "aws-iso-f",
-			supportsDualStack: true,
-			supportsFIPS: true
-		},
-		regionRegex: "^us\\-isof\\-\\w+\\-\\d+$",
-		regions: {
-			"aws-iso-f-global": {
-				description: "aws-iso-f global region"
-			},
-			"us-isof-east-1": {
-				description: "US ISOF EAST"
-			},
-			"us-isof-south-1": {
-				description: "US ISOF SOUTH"
-			}
-		}
-	},
-	{
-		id: "aws-us-gov",
-		outputs: {
-			dnsSuffix: "amazonaws.com",
-			dualStackDnsSuffix: "api.aws",
-			implicitGlobalRegion: "us-gov-west-1",
-			name: "aws-us-gov",
-			supportsDualStack: true,
-			supportsFIPS: true
-		},
-		regionRegex: "^us\\-gov\\-\\w+\\-\\d+$",
-		regions: {
-			"aws-us-gov-global": {
-				description: "aws-us-gov global region"
-			},
-			"us-gov-east-1": {
-				description: "AWS GovCloud (US-East)"
-			},
-			"us-gov-west-1": {
-				description: "AWS GovCloud (US-West)"
-			}
-		}
-	}
-];
-var version = "1.1";
-var partitionsInfo = {
-	partitions: partitions,
-	version: version
-};
-
-let selectedPartitionsInfo = partitionsInfo;
-let selectedUserAgentPrefix = "";
-const partition = (value) => {
-    const { partitions } = selectedPartitionsInfo;
-    for (const partition of partitions) {
-        const { regions, outputs } = partition;
-        for (const [region, regionData] of Object.entries(regions)) {
-            if (region === value) {
-                return {
-                    ...outputs,
-                    ...regionData,
-                };
-            }
-        }
-    }
-    for (const partition of partitions) {
-        const { regionRegex, outputs } = partition;
-        if (new RegExp(regionRegex).test(value)) {
-            return {
-                ...outputs,
-            };
-        }
-    }
-    const DEFAULT_PARTITION = partitions.find((partition) => partition.id === "aws");
-    if (!DEFAULT_PARTITION) {
-        throw new Error("Provided region was not found in the partition array or regex," +
-            " and default partition with id 'aws' doesn't exist.");
-    }
-    return {
-        ...DEFAULT_PARTITION.outputs,
-    };
-};
-const setPartitionInfo = (partitionsInfo, userAgentPrefix = "") => {
-    selectedPartitionsInfo = partitionsInfo;
-    selectedUserAgentPrefix = userAgentPrefix;
-};
-const useDefaultPartitionInfo = () => {
-    setPartitionInfo(partitionsInfo, "");
-};
-const getUserAgentPrefix = () => selectedUserAgentPrefix;
-
-const awsEndpointFunctions = {
-    isVirtualHostableS3Bucket: isVirtualHostableS3Bucket,
-    parseArn: parseArn,
-    partition: partition,
-};
-utilEndpoints.customEndpointFunctions.aws = awsEndpointFunctions;
-
-const resolveDefaultAwsRegionalEndpointsConfig = (input) => {
-    if (typeof input.endpointProvider !== "function") {
-        throw new Error("@aws-sdk/util-endpoint - endpointProvider and endpoint missing in config for this client.");
-    }
-    const { endpoint } = input;
-    if (endpoint === undefined) {
-        input.endpoint = async () => {
-            return toEndpointV1(input.endpointProvider({
-                Region: typeof input.region === "function" ? await input.region() : input.region,
-                UseDualStack: typeof input.useDualstackEndpoint === "function"
-                    ? await input.useDualstackEndpoint()
-                    : input.useDualstackEndpoint,
-                UseFIPS: typeof input.useFipsEndpoint === "function" ? await input.useFipsEndpoint() : input.useFipsEndpoint,
-                Endpoint: undefined,
-            }, { logger: input.logger }));
-        };
-    }
-    return input;
-};
-const toEndpointV1 = (endpoint) => urlParser.parseUrl(endpoint.url);
-
-Object.defineProperty(exports, "EndpointError", ({
-    enumerable: true,
-    get: function () { return utilEndpoints.EndpointError; }
-}));
-Object.defineProperty(exports, "isIpAddress", ({
-    enumerable: true,
-    get: function () { return utilEndpoints.isIpAddress; }
-}));
-Object.defineProperty(exports, "resolveEndpoint", ({
-    enumerable: true,
-    get: function () { return utilEndpoints.resolveEndpoint; }
-}));
-exports.awsEndpointFunctions = awsEndpointFunctions;
-exports.getUserAgentPrefix = getUserAgentPrefix;
-exports.partition = partition;
-exports.resolveDefaultAwsRegionalEndpointsConfig = resolveDefaultAwsRegionalEndpointsConfig;
-exports.setPartitionInfo = setPartitionInfo;
-exports.toEndpointV1 = toEndpointV1;
-exports.useDefaultPartitionInfo = useDefaultPartitionInfo;
 
 
 /***/ }),
@@ -13901,10 +13436,29 @@ exports.useDefaultPartitionInfo = useDefaultPartitionInfo;
 
 var protocolHttp = __nccwpck_require__(40389);
 var querystringBuilder = __nccwpck_require__(8081);
-var http = __nccwpck_require__(58611);
-var https = __nccwpck_require__(65692);
-var stream = __nccwpck_require__(2203);
-var http2 = __nccwpck_require__(85675);
+var node_https = __nccwpck_require__(44708);
+var node_stream = __nccwpck_require__(57075);
+var http2 = __nccwpck_require__(32467);
+
+function buildAbortError(abortSignal) {
+    const reason = abortSignal && typeof abortSignal === "object" && "reason" in abortSignal
+        ? abortSignal.reason
+        : undefined;
+    if (reason) {
+        if (reason instanceof Error) {
+            const abortError = new Error("Request aborted");
+            abortError.name = "AbortError";
+            abortError.cause = reason;
+            return abortError;
+        }
+        const abortError = new Error(String(reason));
+        abortError.name = "AbortError";
+        return abortError;
+    }
+    const abortError = new Error("Request aborted");
+    abortError.name = "AbortError";
+    return abortError;
+}
 
 const NODEJS_TIMEOUT_ERROR_CODES = ["ECONNRESET", "EPIPE", "ETIMEDOUT"];
 
@@ -14056,13 +13610,20 @@ async function writeRequestBody(httpRequest, request, maxContinueTimeoutMs = MIN
     }
 }
 function writeBody(httpRequest, body) {
-    if (body instanceof stream.Readable) {
+    if (body instanceof node_stream.Readable) {
         body.pipe(httpRequest);
         return;
     }
     if (body) {
-        if (Buffer.isBuffer(body) || typeof body === "string") {
-            httpRequest.end(body);
+        const isBuffer = Buffer.isBuffer(body);
+        const isString = typeof body === "string";
+        if (isBuffer || isString) {
+            if (isBuffer && body.byteLength === 0) {
+                httpRequest.end();
+            }
+            else {
+                httpRequest.end(body);
+            }
             return;
         }
         const uint8 = body;
@@ -14080,6 +13641,8 @@ function writeBody(httpRequest, body) {
 }
 
 const DEFAULT_REQUEST_TIMEOUT = 0;
+let hAgent = undefined;
+let hRequest = undefined;
 class NodeHttpHandler {
     config;
     configProvider;
@@ -14129,33 +13692,6 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             }
         });
     }
-    resolveDefaultConfig(options) {
-        const { requestTimeout, connectionTimeout, socketTimeout, socketAcquisitionWarningTimeout, httpAgent, httpsAgent, throwOnRequestTimeout, logger, } = options || {};
-        const keepAlive = true;
-        const maxSockets = 50;
-        return {
-            connectionTimeout,
-            requestTimeout,
-            socketTimeout,
-            socketAcquisitionWarningTimeout,
-            throwOnRequestTimeout,
-            httpAgent: (() => {
-                if (httpAgent instanceof http.Agent || typeof httpAgent?.destroy === "function") {
-                    this.externalAgent = true;
-                    return httpAgent;
-                }
-                return new http.Agent({ keepAlive, maxSockets, ...httpAgent });
-            })(),
-            httpsAgent: (() => {
-                if (httpsAgent instanceof https.Agent || typeof httpsAgent?.destroy === "function") {
-                    this.externalAgent = true;
-                    return httpsAgent;
-                }
-                return new https.Agent({ keepAlive, maxSockets, ...httpsAgent });
-            })(),
-            logger,
-        };
-    }
     destroy() {
         this.config?.httpAgent?.destroy();
         this.config?.httpsAgent?.destroy();
@@ -14164,8 +13700,12 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
         if (!this.config) {
             this.config = await this.configProvider;
         }
+        const config = this.config;
+        const isSSL = request.protocol === "https:";
+        if (!isSSL && !this.config.httpAgent) {
+            this.config.httpAgent = await this.config.httpAgentProvider();
+        }
         return new Promise((_resolve, _reject) => {
-            const config = this.config;
             let writeRequestBodyPromise = undefined;
             const timeouts = [];
             const resolve = async (arg) => {
@@ -14179,17 +13719,15 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
                 _reject(arg);
             };
             if (abortSignal?.aborted) {
-                const abortError = new Error("Request aborted");
-                abortError.name = "AbortError";
+                const abortError = buildAbortError(abortSignal);
                 reject(abortError);
                 return;
             }
-            const isSSL = request.protocol === "https:";
             const headers = request.headers ?? {};
             const expectContinue = (headers.Expect ?? headers.expect) === "100-continue";
             let agent = isSSL ? config.httpsAgent : config.httpAgent;
             if (expectContinue && !this.externalAgent) {
-                agent = new (isSSL ? https.Agent : http.Agent)({
+                agent = new (isSSL ? node_https.Agent : hAgent)({
                     keepAlive: false,
                     maxSockets: Infinity,
                 });
@@ -14227,7 +13765,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
                 agent,
                 auth,
             };
-            const requestFunc = isSSL ? https.request : http.request;
+            const requestFunc = isSSL ? node_https.request : hRequest;
             const req = requestFunc(nodeHttpsOptions, (res) => {
                 const httpResponse = new protocolHttp.HttpResponse({
                     statusCode: res.statusCode || -1,
@@ -14248,8 +13786,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             if (abortSignal) {
                 const onAbort = () => {
                     req.destroy();
-                    const abortError = new Error("Request aborted");
-                    abortError.name = "AbortError";
+                    const abortError = buildAbortError(abortSignal);
                     reject(abortError);
                 };
                 if (typeof abortSignal.addEventListener === "function") {
@@ -14289,6 +13826,36 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
     }
     httpHandlerConfigs() {
         return this.config ?? {};
+    }
+    resolveDefaultConfig(options) {
+        const { requestTimeout, connectionTimeout, socketTimeout, socketAcquisitionWarningTimeout, httpAgent, httpsAgent, throwOnRequestTimeout, logger, } = options || {};
+        const keepAlive = true;
+        const maxSockets = 50;
+        return {
+            connectionTimeout,
+            requestTimeout,
+            socketTimeout,
+            socketAcquisitionWarningTimeout,
+            throwOnRequestTimeout,
+            httpAgentProvider: async () => {
+                const { Agent, request } = await Promise.resolve(/* import() */).then(__nccwpck_require__.t.bind(__nccwpck_require__, 37067, 23));
+                hRequest = request;
+                hAgent = Agent;
+                if (httpAgent instanceof hAgent || typeof httpAgent?.destroy === "function") {
+                    this.externalAgent = true;
+                    return httpAgent;
+                }
+                return new hAgent({ keepAlive, maxSockets, ...httpAgent });
+            },
+            httpsAgent: (() => {
+                if (httpsAgent instanceof node_https.Agent || typeof httpsAgent?.destroy === "function") {
+                    this.externalAgent = true;
+                    return httpsAgent;
+                }
+                return new node_https.Agent({ keepAlive, maxSockets, ...httpsAgent });
+            })(),
+            logger,
+        };
     }
 }
 
@@ -14462,8 +14029,7 @@ class NodeHttp2Handler {
             };
             if (abortSignal?.aborted) {
                 fulfilled = true;
-                const abortError = new Error("Request aborted");
-                abortError.name = "AbortError";
+                const abortError = buildAbortError(abortSignal);
                 reject(abortError);
                 return;
             }
@@ -14525,8 +14091,7 @@ class NodeHttp2Handler {
             if (abortSignal) {
                 const onAbort = () => {
                     req.close();
-                    const abortError = new Error("Request aborted");
-                    abortError.name = "AbortError";
+                    const abortError = buildAbortError(abortSignal);
                     rejectWithDestroy(abortError);
                 };
                 if (typeof abortSignal.addEventListener === "function") {
@@ -14576,7 +14141,7 @@ class NodeHttp2Handler {
     }
 }
 
-class Collector extends stream.Writable {
+class Collector extends node_stream.Writable {
     bufferedBytes = [];
     _write(chunk, encoding, callback) {
         this.bufferedBytes.push(chunk);
@@ -36965,6 +36530,7 @@ exports.useDefaultPartitionInfo = useDefaultPartitionInfo;
 
 var node_os = __nccwpck_require__(48161);
 var node_process = __nccwpck_require__(1708);
+var utilConfigProvider = __nccwpck_require__(56716);
 var promises = __nccwpck_require__(51455);
 var node_path = __nccwpck_require__(76760);
 var middlewareUserAgent = __nccwpck_require__(32959);
@@ -36979,6 +36545,21 @@ const getRuntimeUserAgentPair = () => {
     return ["md/nodejs", node_process.versions.node];
 };
 
+const getNodeModulesParentDirs = (dirname) => {
+    const cwd = process.cwd();
+    if (!dirname) {
+        return [cwd];
+    }
+    const normalizedPath = node_path.normalize(dirname);
+    const parts = normalizedPath.split(node_path.sep);
+    const nodeModulesIndex = parts.indexOf("node_modules");
+    const parentDir = nodeModulesIndex !== -1 ? parts.slice(0, nodeModulesIndex).join(node_path.sep) : normalizedPath;
+    if (cwd === parentDir) {
+        return [cwd];
+    }
+    return [parentDir, cwd];
+};
+
 const SEMVER_REGEX = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*)?$/;
 const getSanitizedTypeScriptVersion = (version = "") => {
     const match = version.match(SEMVER_REGEX);
@@ -36989,24 +36570,22 @@ const getSanitizedTypeScriptVersion = (version = "") => {
     return prerelease ? `${major}.${minor}.${patch}-${prerelease}` : `${major}.${minor}.${patch}`;
 };
 
-const typescriptPackageJsonPath = node_path.join("node_modules", "typescript", "package.json");
-const getTypeScriptPackageJsonPaths = (dirname) => {
-    const cwdPath = node_path.join(process.cwd(), typescriptPackageJsonPath);
-    if (!dirname) {
-        return [cwdPath];
+const ALLOWED_PREFIXES = ["^", "~", ">=", "<=", ">", "<"];
+const ALLOWED_DIST_TAGS = ["latest", "beta", "dev", "rc", "insiders", "next"];
+const getSanitizedDevTypeScriptVersion = (version = "") => {
+    if (ALLOWED_DIST_TAGS.includes(version)) {
+        return version;
     }
-    const normalizedPath = node_path.normalize(dirname);
-    const parts = normalizedPath.split(node_path.sep);
-    const nodeModulesIndex = parts.indexOf("node_modules");
-    const parentDir = nodeModulesIndex !== -1 ? parts.slice(0, nodeModulesIndex).join(node_path.sep) : dirname;
-    const parentDirPath = node_path.join(parentDir, typescriptPackageJsonPath);
-    if (cwdPath === parentDirPath) {
-        return [cwdPath];
+    const prefix = ALLOWED_PREFIXES.find((p) => version.startsWith(p)) ?? "";
+    const sanitizedTypeScriptVersion = getSanitizedTypeScriptVersion(version.slice(prefix.length));
+    if (!sanitizedTypeScriptVersion) {
+        return undefined;
     }
-    return [parentDirPath, cwdPath];
+    return `${prefix}${sanitizedTypeScriptVersion}`;
 };
 
 let tscVersion;
+const TS_PACKAGE_JSON = node_path.join("node_modules", "typescript", "package.json");
 const getTypeScriptUserAgentPair = async () => {
     if (tscVersion === null) {
         return undefined;
@@ -37014,23 +36593,65 @@ const getTypeScriptUserAgentPair = async () => {
     else if (typeof tscVersion === "string") {
         return ["md/tsc", tscVersion];
     }
+    let isTypeScriptDetectionDisabled = false;
+    try {
+        isTypeScriptDetectionDisabled =
+            utilConfigProvider.booleanSelector(process.env, "AWS_SDK_JS_TYPESCRIPT_DETECTION_DISABLED", utilConfigProvider.SelectorType.ENV) || false;
+    }
+    catch { }
+    if (isTypeScriptDetectionDisabled) {
+        tscVersion = null;
+        return undefined;
+    }
     const dirname = typeof __dirname !== "undefined" ? __dirname : undefined;
-    for (const typescriptPackageJsonPath of getTypeScriptPackageJsonPaths(dirname)) {
+    const nodeModulesParentDirs = getNodeModulesParentDirs(dirname);
+    let versionFromApp;
+    for (const nodeModulesParentDir of nodeModulesParentDirs) {
         try {
-            const packageJson = await promises.readFile(typescriptPackageJsonPath, "utf-8");
+            const appPackageJsonPath = node_path.join(nodeModulesParentDir, "package.json");
+            const packageJson = await promises.readFile(appPackageJsonPath, "utf-8");
+            const { dependencies, devDependencies } = JSON.parse(packageJson);
+            const version = devDependencies?.typescript ?? dependencies?.typescript;
+            if (typeof version !== "string") {
+                continue;
+            }
+            versionFromApp = version;
+            break;
+        }
+        catch {
+        }
+    }
+    if (!versionFromApp) {
+        tscVersion = null;
+        return undefined;
+    }
+    let versionFromNodeModules;
+    for (const nodeModulesParentDir of nodeModulesParentDirs) {
+        try {
+            const tsPackageJsonPath = node_path.join(nodeModulesParentDir, TS_PACKAGE_JSON);
+            const packageJson = await promises.readFile(tsPackageJsonPath, "utf-8");
             const { version } = JSON.parse(packageJson);
             const sanitizedVersion = getSanitizedTypeScriptVersion(version);
             if (typeof sanitizedVersion !== "string") {
                 continue;
             }
-            tscVersion = sanitizedVersion;
-            return ["md/tsc", tscVersion];
+            versionFromNodeModules = sanitizedVersion;
+            break;
         }
         catch {
         }
     }
-    tscVersion = null;
-    return undefined;
+    if (versionFromNodeModules) {
+        tscVersion = versionFromNodeModules;
+        return ["md/tsc", tscVersion];
+    }
+    const sanitizedVersion = getSanitizedDevTypeScriptVersion(versionFromApp);
+    if (typeof sanitizedVersion !== "string") {
+        tscVersion = null;
+        return undefined;
+    }
+    tscVersion = `dev_${sanitizedVersion}`;
+    return ["md/tsc", tscVersion];
 };
 
 const crtAvailability = {
@@ -37574,7 +37195,6 @@ exports.resolveRegionConfig = resolveRegionConfig;
 
 var types = __nccwpck_require__(82526);
 var utilMiddleware = __nccwpck_require__(76324);
-var middlewareSerde = __nccwpck_require__(83255);
 var protocolHttp = __nccwpck_require__(9376);
 var protocols = __nccwpck_require__(93422);
 
@@ -37665,7 +37285,7 @@ const httpAuthSchemeMiddlewareOptions = {
     name: "httpAuthSchemeMiddleware",
     override: true,
     relation: "before",
-    toMiddleware: middlewareSerde.serializerMiddlewareOption.name,
+    toMiddleware: "serializerMiddleware",
 };
 const getHttpAuthSchemePlugin = (config, { httpAuthSchemeParametersProvider, identityProviderConfigProvider, }) => ({
     applyToStack: (clientStack) => {
@@ -38681,7 +38301,8 @@ const checkCborResponse = (response) => {
     }
 };
 const buildHttpRpcRequest = async (context, headers, path, resolvedHostname, body) => {
-    const { hostname, protocol = "https", port, path: basePath } = await context.endpoint();
+    const endpoint = await context.endpoint();
+    const { hostname, protocol = "https", port, path: basePath } = endpoint;
     const contents = {
         protocol,
         hostname,
@@ -38694,6 +38315,11 @@ const buildHttpRpcRequest = async (context, headers, path, resolvedHostname, bod
     };
     if (resolvedHostname !== undefined) {
         contents.hostname = resolvedHostname;
+    }
+    if (endpoint.headers) {
+        for (const [name, value] of Object.entries(endpoint.headers)) {
+            contents.headers[name] = value;
+        }
     }
     if (body !== undefined) {
         contents.body = body;
@@ -39017,6 +38643,35 @@ exports.tagSymbol = tagSymbol;
 
 /***/ }),
 
+/***/ 62085:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+
+
+var urlParser = __nccwpck_require__(14494);
+
+const toEndpointV1 = (endpoint) => {
+    if (typeof endpoint === "object") {
+        if ("url" in endpoint) {
+            const v1Endpoint = urlParser.parseUrl(endpoint.url);
+            if (endpoint.headers) {
+                v1Endpoint.headers = {};
+                for (const [name, values] of Object.entries(endpoint.headers)) {
+                    v1Endpoint.headers[name.toLowerCase()] = values.join(", ");
+                }
+            }
+            return v1Endpoint;
+        }
+        return endpoint;
+    }
+    return urlParser.parseUrl(endpoint);
+};
+
+exports.toEndpointV1 = toEndpointV1;
+
+
+/***/ }),
+
 /***/ 93422:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -39093,6 +38748,11 @@ class HttpProtocol extends SerdeContext {
             for (const [k, v] of endpoint.url.searchParams.entries()) {
                 request.query[k] = v;
             }
+            if (endpoint.headers) {
+                for (const [name, values] of Object.entries(endpoint.headers)) {
+                    request.headers[name] = values.join(", ");
+                }
+            }
             return request;
         }
         else {
@@ -39103,6 +38763,11 @@ class HttpProtocol extends SerdeContext {
             request.query = {
                 ...endpoint.query,
             };
+            if (endpoint.headers) {
+                for (const [name, value] of Object.entries(endpoint.headers)) {
+                    request.headers[name] = value;
+                }
+            }
             return request;
         }
     }
@@ -39512,7 +39177,7 @@ class RpcProtocol extends HttpProtocol {
                 payload = serializer.flush();
             }
         }
-        request.headers = headers;
+        request.headers = Object.assign(request.headers, headers);
         request.query = query;
         request.body = payload;
         request.method = "POST";
@@ -39905,6 +39570,7 @@ exports.resolvedPath = resolvedPath;
 
 var protocolHttp = __nccwpck_require__(9376);
 var utilMiddleware = __nccwpck_require__(76324);
+var endpoints = __nccwpck_require__(62085);
 
 const deref = (schemaRef) => {
     if (typeof schemaRef === "function") {
@@ -39987,8 +39653,8 @@ const findHeader = (pattern, headers) => {
 const schemaSerializationMiddleware = (config) => (next, context) => async (args) => {
     const { operationSchema } = utilMiddleware.getSmithyContext(context);
     const [, ns, n, t, i, o] = operationSchema ?? [];
-    const endpoint = context.endpointV2?.url && config.urlParser
-        ? async () => config.urlParser(context.endpointV2.url)
+    const endpoint = context.endpointV2
+        ? async () => endpoints.toEndpointV1(context.endpointV2)
         : config.endpoint;
     const request = await config.protocol.serializeRequest(operation(ns, n, t, i, o), args.input, {
         ...config,
@@ -40120,11 +39786,15 @@ const error = (namespace, name, traits, memberNames, memberList, ctor) => Schema
     ctor: null,
 });
 
+const traitsCache = [];
 function translateTraits(indicator) {
     if (typeof indicator === "object") {
         return indicator;
     }
     indicator = indicator | 0;
+    if (traitsCache[indicator]) {
+        return traitsCache[indicator];
+    }
     const traits = {};
     let i = 0;
     for (const trait of [
@@ -40140,12 +39810,15 @@ function translateTraits(indicator) {
             traits[trait] = 1;
         }
     }
-    return traits;
+    return (traitsCache[indicator] = traits);
 }
 
 const anno = {
     it: Symbol.for("@smithy/nor-struct-it"),
+    ns: Symbol.for("@smithy/ns"),
 };
+const simpleSchemaCacheN = [];
+const simpleSchemaCacheS = {};
 class NormalizedSchema {
     ref;
     memberName;
@@ -40210,6 +39883,22 @@ class NormalizedSchema {
         return isPrototype;
     }
     static of(ref) {
+        const keyAble = typeof ref === "function" || (typeof ref === "object" && ref !== null);
+        if (typeof ref === "number") {
+            if (simpleSchemaCacheN[ref]) {
+                return simpleSchemaCacheN[ref];
+            }
+        }
+        else if (typeof ref === "string") {
+            if (simpleSchemaCacheS[ref]) {
+                return simpleSchemaCacheS[ref];
+            }
+        }
+        else if (keyAble) {
+            if (ref[anno.ns]) {
+                return ref[anno.ns];
+            }
+        }
         const sc = deref(ref);
         if (sc instanceof NormalizedSchema) {
             return sc;
@@ -40222,7 +39911,17 @@ class NormalizedSchema {
             }
             throw new Error(`@smithy/core/schema - may not init unwrapped member schema=${JSON.stringify(ref, null, 2)}.`);
         }
-        return new NormalizedSchema(sc);
+        const ns = new NormalizedSchema(sc);
+        if (keyAble) {
+            return (ref[anno.ns] = ns);
+        }
+        if (typeof sc === "string") {
+            return (simpleSchemaCacheS[sc] = ns);
+        }
+        if (typeof sc === "number") {
+            return (simpleSchemaCacheN[sc] = ns);
+        }
+        return ns;
     }
     getSchema() {
         const sc = this.schema;
@@ -40560,7 +40259,10 @@ exports.operation = operation;
 exports.serializerMiddlewareOption = serializerMiddlewareOption;
 exports.sim = sim;
 exports.simAdapter = simAdapter;
+exports.simpleSchemaCacheN = simpleSchemaCacheN;
+exports.simpleSchemaCacheS = simpleSchemaCacheS;
 exports.struct = struct;
+exports.traitsCache = traitsCache;
 exports.translateTraits = translateTraits;
 
 
@@ -42086,7 +41788,10 @@ function buildAbortError(abortSignal) {
         : undefined;
     if (reason) {
         if (reason instanceof Error) {
-            return reason;
+            const abortError = new Error("Request aborted");
+            abortError.name = "AbortError";
+            abortError.cause = reason;
+            return abortError;
         }
         const abortError = new Error(String(reason));
         abortError.name = "AbortError";
@@ -43026,7 +42731,14 @@ const createConfigValueProvider = (configKey, canonicalEndpointParamKey, config,
 const toEndpointV1 = (endpoint) => {
     if (typeof endpoint === "object") {
         if ("url" in endpoint) {
-            return urlParser.parseUrl(endpoint.url);
+            const v1Endpoint = urlParser.parseUrl(endpoint.url);
+            if (endpoint.headers) {
+                v1Endpoint.headers = {};
+                for (const [name, values] of Object.entries(endpoint.headers)) {
+                    v1Endpoint.headers[name.toLowerCase()] = values.join(", ");
+                }
+            }
+            return v1Endpoint;
         }
         return endpoint;
     }
@@ -43052,6 +42764,15 @@ const getEndpointFromInstructions = async (commandInput, instructionsSupplier, c
         throw new Error("config.endpointProvider is not set.");
     }
     const endpoint = clientConfig.endpointProvider(endpointParams, context);
+    if (clientConfig.isCustomEndpoint && clientConfig.endpoint) {
+        const customEndpoint = await clientConfig.endpoint();
+        if (customEndpoint?.headers) {
+            endpoint.headers ??= {};
+            for (const [name, value] of Object.entries(customEndpoint.headers)) {
+                endpoint.headers[name] = Array.isArray(value) ? value : [value];
+            }
+        }
+    }
     return endpoint;
 };
 const resolveParams = async (commandInput, instructionsSupplier, clientConfig) => {
@@ -43372,20 +43093,17 @@ const NODE_MAX_ATTEMPT_CONFIG_OPTIONS = {
     default: utilRetry.DEFAULT_MAX_ATTEMPTS,
 };
 const resolveRetryConfig = (input) => {
-    const { retryStrategy, retryMode: _retryMode, maxAttempts: _maxAttempts } = input;
-    const maxAttempts = utilMiddleware.normalizeProvider(_maxAttempts ?? utilRetry.DEFAULT_MAX_ATTEMPTS);
+    const { retryStrategy, retryMode } = input;
+    const maxAttempts = utilMiddleware.normalizeProvider(input.maxAttempts ?? utilRetry.DEFAULT_MAX_ATTEMPTS);
+    let controller = retryStrategy
+        ? Promise.resolve(retryStrategy)
+        : undefined;
+    const getDefault = async () => (await utilMiddleware.normalizeProvider(retryMode)()) === utilRetry.RETRY_MODES.ADAPTIVE
+        ? new utilRetry.AdaptiveRetryStrategy(maxAttempts)
+        : new utilRetry.StandardRetryStrategy(maxAttempts);
     return Object.assign(input, {
         maxAttempts,
-        retryStrategy: async () => {
-            if (retryStrategy) {
-                return retryStrategy;
-            }
-            const retryMode = await utilMiddleware.normalizeProvider(_retryMode)();
-            if (retryMode === utilRetry.RETRY_MODES.ADAPTIVE) {
-                return new utilRetry.AdaptiveRetryStrategy(maxAttempts);
-            }
-            return new utilRetry.StandardRetryStrategy(maxAttempts);
-        },
+        retryStrategy: () => (controller ??= getDefault()),
     });
 };
 const ENV_RETRY_MODE = "AWS_RETRY_MODE";
@@ -43839,6 +43557,7 @@ exports.resolveDefaultRuntimeConfig = resolveDefaultRuntimeConfig;
 
 
 var protocolHttp = __nccwpck_require__(82499);
+var endpoints = __nccwpck_require__(62085);
 
 const deserializerMiddleware = (options, deserializer) => (next, context) => async (args) => {
     const { response } = await next(args);
@@ -43900,8 +43619,8 @@ const findHeader = (pattern, headers) => {
 
 const serializerMiddleware = (options, serializer) => (next, context) => async (args) => {
     const endpointConfig = options;
-    const endpoint = context.endpointV2?.url && endpointConfig.urlParser
-        ? async () => endpointConfig.urlParser(context.endpointV2.url)
+    const endpoint = context.endpointV2
+        ? async () => endpoints.toEndpointV1(context.endpointV2)
         : endpointConfig.endpoint;
     if (!endpoint) {
         throw new Error("No valid endpoint provider available.");
@@ -50317,10 +50036,9 @@ exports.isBlob = isBlob;
 
 var protocolHttp = __nccwpck_require__(5246);
 var querystringBuilder = __nccwpck_require__(91546);
-var http = __nccwpck_require__(58611);
-var https = __nccwpck_require__(65692);
-var stream = __nccwpck_require__(2203);
-var http2 = __nccwpck_require__(85675);
+var node_https = __nccwpck_require__(44708);
+var node_stream = __nccwpck_require__(57075);
+var http2 = __nccwpck_require__(32467);
 
 function buildAbortError(abortSignal) {
     const reason = abortSignal && typeof abortSignal === "object" && "reason" in abortSignal
@@ -50328,7 +50046,10 @@ function buildAbortError(abortSignal) {
         : undefined;
     if (reason) {
         if (reason instanceof Error) {
-            return reason;
+            const abortError = new Error("Request aborted");
+            abortError.name = "AbortError";
+            abortError.cause = reason;
+            return abortError;
         }
         const abortError = new Error(String(reason));
         abortError.name = "AbortError";
@@ -50489,7 +50210,7 @@ async function writeRequestBody(httpRequest, request, maxContinueTimeoutMs = MIN
     }
 }
 function writeBody(httpRequest, body) {
-    if (body instanceof stream.Readable) {
+    if (body instanceof node_stream.Readable) {
         body.pipe(httpRequest);
         return;
     }
@@ -50520,6 +50241,8 @@ function writeBody(httpRequest, body) {
 }
 
 const DEFAULT_REQUEST_TIMEOUT = 0;
+let hAgent = undefined;
+let hRequest = undefined;
 class NodeHttpHandler {
     config;
     configProvider;
@@ -50569,33 +50292,6 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             }
         });
     }
-    resolveDefaultConfig(options) {
-        const { requestTimeout, connectionTimeout, socketTimeout, socketAcquisitionWarningTimeout, httpAgent, httpsAgent, throwOnRequestTimeout, logger, } = options || {};
-        const keepAlive = true;
-        const maxSockets = 50;
-        return {
-            connectionTimeout,
-            requestTimeout,
-            socketTimeout,
-            socketAcquisitionWarningTimeout,
-            throwOnRequestTimeout,
-            httpAgent: (() => {
-                if (httpAgent instanceof http.Agent || typeof httpAgent?.destroy === "function") {
-                    this.externalAgent = true;
-                    return httpAgent;
-                }
-                return new http.Agent({ keepAlive, maxSockets, ...httpAgent });
-            })(),
-            httpsAgent: (() => {
-                if (httpsAgent instanceof https.Agent || typeof httpsAgent?.destroy === "function") {
-                    this.externalAgent = true;
-                    return httpsAgent;
-                }
-                return new https.Agent({ keepAlive, maxSockets, ...httpsAgent });
-            })(),
-            logger,
-        };
-    }
     destroy() {
         this.config?.httpAgent?.destroy();
         this.config?.httpsAgent?.destroy();
@@ -50604,8 +50300,12 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
         if (!this.config) {
             this.config = await this.configProvider;
         }
+        const config = this.config;
+        const isSSL = request.protocol === "https:";
+        if (!isSSL && !this.config.httpAgent) {
+            this.config.httpAgent = await this.config.httpAgentProvider();
+        }
         return new Promise((_resolve, _reject) => {
-            const config = this.config;
             let writeRequestBodyPromise = undefined;
             const timeouts = [];
             const resolve = async (arg) => {
@@ -50623,12 +50323,11 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
                 reject(abortError);
                 return;
             }
-            const isSSL = request.protocol === "https:";
             const headers = request.headers ?? {};
             const expectContinue = (headers.Expect ?? headers.expect) === "100-continue";
             let agent = isSSL ? config.httpsAgent : config.httpAgent;
             if (expectContinue && !this.externalAgent) {
-                agent = new (isSSL ? https.Agent : http.Agent)({
+                agent = new (isSSL ? node_https.Agent : hAgent)({
                     keepAlive: false,
                     maxSockets: Infinity,
                 });
@@ -50666,7 +50365,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
                 agent,
                 auth,
             };
-            const requestFunc = isSSL ? https.request : http.request;
+            const requestFunc = isSSL ? node_https.request : hRequest;
             const req = requestFunc(nodeHttpsOptions, (res) => {
                 const httpResponse = new protocolHttp.HttpResponse({
                     statusCode: res.statusCode || -1,
@@ -50727,6 +50426,36 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
     }
     httpHandlerConfigs() {
         return this.config ?? {};
+    }
+    resolveDefaultConfig(options) {
+        const { requestTimeout, connectionTimeout, socketTimeout, socketAcquisitionWarningTimeout, httpAgent, httpsAgent, throwOnRequestTimeout, logger, } = options || {};
+        const keepAlive = true;
+        const maxSockets = 50;
+        return {
+            connectionTimeout,
+            requestTimeout,
+            socketTimeout,
+            socketAcquisitionWarningTimeout,
+            throwOnRequestTimeout,
+            httpAgentProvider: async () => {
+                const { Agent, request } = await Promise.resolve(/* import() */).then(__nccwpck_require__.t.bind(__nccwpck_require__, 37067, 23));
+                hRequest = request;
+                hAgent = Agent;
+                if (httpAgent instanceof hAgent || typeof httpAgent?.destroy === "function") {
+                    this.externalAgent = true;
+                    return httpAgent;
+                }
+                return new hAgent({ keepAlive, maxSockets, ...httpAgent });
+            },
+            httpsAgent: (() => {
+                if (httpsAgent instanceof node_https.Agent || typeof httpsAgent?.destroy === "function") {
+                    this.externalAgent = true;
+                    return httpsAgent;
+                }
+                return new node_https.Agent({ keepAlive, maxSockets, ...httpsAgent });
+            })(),
+            logger,
+        };
     }
 }
 
@@ -51012,7 +50741,7 @@ class NodeHttp2Handler {
     }
 }
 
-class Collector extends stream.Writable {
+class Collector extends node_stream.Writable {
     bufferedBytes = [];
     _write(chunk, encoding, callback) {
         this.bufferedBytes.push(chunk);
@@ -51708,264 +51437,6 @@ const tslib_1 = __nccwpck_require__(61860);
 const crypto_1 = tslib_1.__importDefault(__nccwpck_require__(76982));
 exports.randomUUID = crypto_1.default.randomUUID.bind(crypto_1.default);
 
-
-/***/ }),
-
-/***/ 15183:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.req = exports.json = exports.toBuffer = void 0;
-const http = __importStar(__nccwpck_require__(58611));
-const https = __importStar(__nccwpck_require__(65692));
-async function toBuffer(stream) {
-    let length = 0;
-    const chunks = [];
-    for await (const chunk of stream) {
-        length += chunk.length;
-        chunks.push(chunk);
-    }
-    return Buffer.concat(chunks, length);
-}
-exports.toBuffer = toBuffer;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function json(stream) {
-    const buf = await toBuffer(stream);
-    const str = buf.toString('utf8');
-    try {
-        return JSON.parse(str);
-    }
-    catch (_err) {
-        const err = _err;
-        err.message += ` (input: ${str})`;
-        throw err;
-    }
-}
-exports.json = json;
-function req(url, opts = {}) {
-    const href = typeof url === 'string' ? url : url.href;
-    const req = (href.startsWith('https:') ? https : http).request(url, opts);
-    const promise = new Promise((resolve, reject) => {
-        req
-            .once('response', resolve)
-            .once('error', reject)
-            .end();
-    });
-    req.then = promise.then.bind(promise);
-    return req;
-}
-exports.req = req;
-//# sourceMappingURL=helpers.js.map
-
-/***/ }),
-
-/***/ 98894:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.Agent = void 0;
-const net = __importStar(__nccwpck_require__(69278));
-const http = __importStar(__nccwpck_require__(58611));
-const https_1 = __nccwpck_require__(65692);
-__exportStar(__nccwpck_require__(15183), exports);
-const INTERNAL = Symbol('AgentBaseInternalState');
-class Agent extends http.Agent {
-    constructor(opts) {
-        super(opts);
-        this[INTERNAL] = {};
-    }
-    /**
-     * Determine whether this is an `http` or `https` request.
-     */
-    isSecureEndpoint(options) {
-        if (options) {
-            // First check the `secureEndpoint` property explicitly, since this
-            // means that a parent `Agent` is "passing through" to this instance.
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if (typeof options.secureEndpoint === 'boolean') {
-                return options.secureEndpoint;
-            }
-            // If no explicit `secure` endpoint, check if `protocol` property is
-            // set. This will usually be the case since using a full string URL
-            // or `URL` instance should be the most common usage.
-            if (typeof options.protocol === 'string') {
-                return options.protocol === 'https:';
-            }
-        }
-        // Finally, if no `protocol` property was set, then fall back to
-        // checking the stack trace of the current call stack, and try to
-        // detect the "https" module.
-        const { stack } = new Error();
-        if (typeof stack !== 'string')
-            return false;
-        return stack
-            .split('\n')
-            .some((l) => l.indexOf('(https.js:') !== -1 ||
-            l.indexOf('node:https:') !== -1);
-    }
-    // In order to support async signatures in `connect()` and Node's native
-    // connection pooling in `http.Agent`, the array of sockets for each origin
-    // has to be updated synchronously. This is so the length of the array is
-    // accurate when `addRequest()` is next called. We achieve this by creating a
-    // fake socket and adding it to `sockets[origin]` and incrementing
-    // `totalSocketCount`.
-    incrementSockets(name) {
-        // If `maxSockets` and `maxTotalSockets` are both Infinity then there is no
-        // need to create a fake socket because Node.js native connection pooling
-        // will never be invoked.
-        if (this.maxSockets === Infinity && this.maxTotalSockets === Infinity) {
-            return null;
-        }
-        // All instances of `sockets` are expected TypeScript errors. The
-        // alternative is to add it as a private property of this class but that
-        // will break TypeScript subclassing.
-        if (!this.sockets[name]) {
-            // @ts-expect-error `sockets` is readonly in `@types/node`
-            this.sockets[name] = [];
-        }
-        const fakeSocket = new net.Socket({ writable: false });
-        this.sockets[name].push(fakeSocket);
-        // @ts-expect-error `totalSocketCount` isn't defined in `@types/node`
-        this.totalSocketCount++;
-        return fakeSocket;
-    }
-    decrementSockets(name, socket) {
-        if (!this.sockets[name] || socket === null) {
-            return;
-        }
-        const sockets = this.sockets[name];
-        const index = sockets.indexOf(socket);
-        if (index !== -1) {
-            sockets.splice(index, 1);
-            // @ts-expect-error  `totalSocketCount` isn't defined in `@types/node`
-            this.totalSocketCount--;
-            if (sockets.length === 0) {
-                // @ts-expect-error `sockets` is readonly in `@types/node`
-                delete this.sockets[name];
-            }
-        }
-    }
-    // In order to properly update the socket pool, we need to call `getName()` on
-    // the core `https.Agent` if it is a secureEndpoint.
-    getName(options) {
-        const secureEndpoint = typeof options.secureEndpoint === 'boolean'
-            ? options.secureEndpoint
-            : this.isSecureEndpoint(options);
-        if (secureEndpoint) {
-            // @ts-expect-error `getName()` isn't defined in `@types/node`
-            return https_1.Agent.prototype.getName.call(this, options);
-        }
-        // @ts-expect-error `getName()` isn't defined in `@types/node`
-        return super.getName(options);
-    }
-    createSocket(req, options, cb) {
-        const connectOpts = {
-            ...options,
-            secureEndpoint: this.isSecureEndpoint(options),
-        };
-        const name = this.getName(connectOpts);
-        const fakeSocket = this.incrementSockets(name);
-        Promise.resolve()
-            .then(() => this.connect(req, connectOpts))
-            .then((socket) => {
-            this.decrementSockets(name, fakeSocket);
-            if (socket instanceof http.Agent) {
-                try {
-                    // @ts-expect-error `addRequest()` isn't defined in `@types/node`
-                    return socket.addRequest(req, connectOpts);
-                }
-                catch (err) {
-                    return cb(err);
-                }
-            }
-            this[INTERNAL].currentSocket = socket;
-            // @ts-expect-error `createSocket()` isn't defined in `@types/node`
-            super.createSocket(req, options, cb);
-        }, (err) => {
-            this.decrementSockets(name, fakeSocket);
-            cb(err);
-        });
-    }
-    createConnection() {
-        const socket = this[INTERNAL].currentSocket;
-        this[INTERNAL].currentSocket = undefined;
-        if (!socket) {
-            throw new Error('No socket was returned in the `connect()` function');
-        }
-        return socket;
-    }
-    get defaultPort() {
-        return (this[INTERNAL].defaultPort ??
-            (this.protocol === 'https:' ? 443 : 80));
-    }
-    set defaultPort(v) {
-        if (this[INTERNAL]) {
-            this[INTERNAL].defaultPort = v;
-        }
-    }
-    get protocol() {
-        return (this[INTERNAL].protocol ??
-            (this.isSecureEndpoint() ? 'https:' : 'http:'));
-    }
-    set protocol(v) {
-        if (this[INTERNAL]) {
-            this[INTERNAL].protocol = v;
-        }
-    }
-}
-exports.Agent = Agent;
-//# sourceMappingURL=index.js.map
 
 /***/ }),
 
@@ -52825,299 +52296,6 @@ module.exports = (flag, argv = process.argv) => {
 	return position !== -1 && (terminatorPosition === -1 || position < terminatorPosition);
 };
 
-
-/***/ }),
-
-/***/ 3669:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.HttpsProxyAgent = void 0;
-const net = __importStar(__nccwpck_require__(69278));
-const tls = __importStar(__nccwpck_require__(64756));
-const assert_1 = __importDefault(__nccwpck_require__(42613));
-const debug_1 = __importDefault(__nccwpck_require__(2830));
-const agent_base_1 = __nccwpck_require__(98894);
-const url_1 = __nccwpck_require__(87016);
-const parse_proxy_response_1 = __nccwpck_require__(37943);
-const debug = (0, debug_1.default)('https-proxy-agent');
-const setServernameFromNonIpHost = (options) => {
-    if (options.servername === undefined &&
-        options.host &&
-        !net.isIP(options.host)) {
-        return {
-            ...options,
-            servername: options.host,
-        };
-    }
-    return options;
-};
-/**
- * The `HttpsProxyAgent` implements an HTTP Agent subclass that connects to
- * the specified "HTTP(s) proxy server" in order to proxy HTTPS requests.
- *
- * Outgoing HTTP requests are first tunneled through the proxy server using the
- * `CONNECT` HTTP request method to establish a connection to the proxy server,
- * and then the proxy server connects to the destination target and issues the
- * HTTP request from the proxy server.
- *
- * `https:` requests have their socket connection upgraded to TLS once
- * the connection to the proxy server has been established.
- */
-class HttpsProxyAgent extends agent_base_1.Agent {
-    constructor(proxy, opts) {
-        super(opts);
-        this.options = { path: undefined };
-        this.proxy = typeof proxy === 'string' ? new url_1.URL(proxy) : proxy;
-        this.proxyHeaders = opts?.headers ?? {};
-        debug('Creating new HttpsProxyAgent instance: %o', this.proxy.href);
-        // Trim off the brackets from IPv6 addresses
-        const host = (this.proxy.hostname || this.proxy.host).replace(/^\[|\]$/g, '');
-        const port = this.proxy.port
-            ? parseInt(this.proxy.port, 10)
-            : this.proxy.protocol === 'https:'
-                ? 443
-                : 80;
-        this.connectOpts = {
-            // Attempt to negotiate http/1.1 for proxy servers that support http/2
-            ALPNProtocols: ['http/1.1'],
-            ...(opts ? omit(opts, 'headers') : null),
-            host,
-            port,
-        };
-    }
-    /**
-     * Called when the node-core HTTP client library is creating a
-     * new HTTP request.
-     */
-    async connect(req, opts) {
-        const { proxy } = this;
-        if (!opts.host) {
-            throw new TypeError('No "host" provided');
-        }
-        // Create a socket connection to the proxy server.
-        let socket;
-        if (proxy.protocol === 'https:') {
-            debug('Creating `tls.Socket`: %o', this.connectOpts);
-            socket = tls.connect(setServernameFromNonIpHost(this.connectOpts));
-        }
-        else {
-            debug('Creating `net.Socket`: %o', this.connectOpts);
-            socket = net.connect(this.connectOpts);
-        }
-        const headers = typeof this.proxyHeaders === 'function'
-            ? this.proxyHeaders()
-            : { ...this.proxyHeaders };
-        const host = net.isIPv6(opts.host) ? `[${opts.host}]` : opts.host;
-        let payload = `CONNECT ${host}:${opts.port} HTTP/1.1\r\n`;
-        // Inject the `Proxy-Authorization` header if necessary.
-        if (proxy.username || proxy.password) {
-            const auth = `${decodeURIComponent(proxy.username)}:${decodeURIComponent(proxy.password)}`;
-            headers['Proxy-Authorization'] = `Basic ${Buffer.from(auth).toString('base64')}`;
-        }
-        headers.Host = `${host}:${opts.port}`;
-        if (!headers['Proxy-Connection']) {
-            headers['Proxy-Connection'] = this.keepAlive
-                ? 'Keep-Alive'
-                : 'close';
-        }
-        for (const name of Object.keys(headers)) {
-            payload += `${name}: ${headers[name]}\r\n`;
-        }
-        const proxyResponsePromise = (0, parse_proxy_response_1.parseProxyResponse)(socket);
-        socket.write(`${payload}\r\n`);
-        const { connect, buffered } = await proxyResponsePromise;
-        req.emit('proxyConnect', connect);
-        this.emit('proxyConnect', connect, req);
-        if (connect.statusCode === 200) {
-            req.once('socket', resume);
-            if (opts.secureEndpoint) {
-                // The proxy is connecting to a TLS server, so upgrade
-                // this socket connection to a TLS connection.
-                debug('Upgrading socket connection to TLS');
-                return tls.connect({
-                    ...omit(setServernameFromNonIpHost(opts), 'host', 'path', 'port'),
-                    socket,
-                });
-            }
-            return socket;
-        }
-        // Some other status code that's not 200... need to re-play the HTTP
-        // header "data" events onto the socket once the HTTP machinery is
-        // attached so that the node core `http` can parse and handle the
-        // error status code.
-        // Close the original socket, and a new "fake" socket is returned
-        // instead, so that the proxy doesn't get the HTTP request
-        // written to it (which may contain `Authorization` headers or other
-        // sensitive data).
-        //
-        // See: https://hackerone.com/reports/541502
-        socket.destroy();
-        const fakeSocket = new net.Socket({ writable: false });
-        fakeSocket.readable = true;
-        // Need to wait for the "socket" event to re-play the "data" events.
-        req.once('socket', (s) => {
-            debug('Replaying proxy buffer for failed request');
-            (0, assert_1.default)(s.listenerCount('data') > 0);
-            // Replay the "buffered" Buffer onto the fake `socket`, since at
-            // this point the HTTP module machinery has been hooked up for
-            // the user.
-            s.push(buffered);
-            s.push(null);
-        });
-        return fakeSocket;
-    }
-}
-HttpsProxyAgent.protocols = ['http', 'https'];
-exports.HttpsProxyAgent = HttpsProxyAgent;
-function resume(socket) {
-    socket.resume();
-}
-function omit(obj, ...keys) {
-    const ret = {};
-    let key;
-    for (key in obj) {
-        if (!keys.includes(key)) {
-            ret[key] = obj[key];
-        }
-    }
-    return ret;
-}
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-
-/***/ 37943:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.parseProxyResponse = void 0;
-const debug_1 = __importDefault(__nccwpck_require__(2830));
-const debug = (0, debug_1.default)('https-proxy-agent:parse-proxy-response');
-function parseProxyResponse(socket) {
-    return new Promise((resolve, reject) => {
-        // we need to buffer any HTTP traffic that happens with the proxy before we get
-        // the CONNECT response, so that if the response is anything other than an "200"
-        // response code, then we can re-play the "data" events on the socket once the
-        // HTTP parser is hooked up...
-        let buffersLength = 0;
-        const buffers = [];
-        function read() {
-            const b = socket.read();
-            if (b)
-                ondata(b);
-            else
-                socket.once('readable', read);
-        }
-        function cleanup() {
-            socket.removeListener('end', onend);
-            socket.removeListener('error', onerror);
-            socket.removeListener('readable', read);
-        }
-        function onend() {
-            cleanup();
-            debug('onend');
-            reject(new Error('Proxy connection ended before receiving CONNECT response'));
-        }
-        function onerror(err) {
-            cleanup();
-            debug('onerror %o', err);
-            reject(err);
-        }
-        function ondata(b) {
-            buffers.push(b);
-            buffersLength += b.length;
-            const buffered = Buffer.concat(buffers, buffersLength);
-            const endOfHeaders = buffered.indexOf('\r\n\r\n');
-            if (endOfHeaders === -1) {
-                // keep buffering
-                debug('have not received end of HTTP headers yet...');
-                read();
-                return;
-            }
-            const headerParts = buffered
-                .slice(0, endOfHeaders)
-                .toString('ascii')
-                .split('\r\n');
-            const firstLine = headerParts.shift();
-            if (!firstLine) {
-                socket.destroy();
-                return reject(new Error('No header received from proxy CONNECT response'));
-            }
-            const firstLineParts = firstLine.split(' ');
-            const statusCode = +firstLineParts[1];
-            const statusText = firstLineParts.slice(2).join(' ');
-            const headers = {};
-            for (const header of headerParts) {
-                if (!header)
-                    continue;
-                const firstColon = header.indexOf(':');
-                if (firstColon === -1) {
-                    socket.destroy();
-                    return reject(new Error(`Invalid header from proxy CONNECT response: "${header}"`));
-                }
-                const key = header.slice(0, firstColon).toLowerCase();
-                const value = header.slice(firstColon + 1).trimStart();
-                const current = headers[key];
-                if (typeof current === 'string') {
-                    headers[key] = [current, value];
-                }
-                else if (Array.isArray(current)) {
-                    current.push(value);
-                }
-                else {
-                    headers[key] = value;
-                }
-            }
-            debug('got proxy server response: %o %o', firstLine, headers);
-            cleanup();
-            resolve({
-                connect: {
-                    statusCode,
-                    statusText,
-                    headers,
-                },
-                buffered,
-            });
-        }
-        socket.on('error', onerror);
-        socket.on('end', onend);
-        read();
-    });
-}
-exports.parseProxyResponse = parseProxyResponse;
-//# sourceMappingURL=parse-proxy-response.js.map
 
 /***/ }),
 
@@ -81739,6 +80917,13 @@ module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:http2")
 
 /***/ }),
 
+/***/ 44708:
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:https");
+
+/***/ }),
+
 /***/ 77030:
 /***/ ((module) => {
 
@@ -81924,7 +81109,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/client-cognito-ident
 /***/ 47643:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/client-ecr-public","description":"AWS SDK for JavaScript Ecr Public Client for Node.js, Browser and React Native","version":"3.982.0","scripts":{"build":"concurrently \'yarn:build:types\' \'yarn:build:es\' && yarn build:cjs","build:cjs":"node ../../scripts/compilation/inline client-ecr-public","build:es":"tsc -p tsconfig.es.json","build:include:deps":"yarn g:turbo run build -F=\\"$npm_package_name\\"","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"premove dist-cjs dist-es dist-types tsconfig.cjs.tsbuildinfo tsconfig.es.tsbuildinfo tsconfig.types.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo ecr-public","test:index":"tsc --noEmit ./test/index-types.ts && node ./test/index-objects.spec.mjs"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"5.2.0","@aws-crypto/sha256-js":"5.2.0","@aws-sdk/core":"^3.973.6","@aws-sdk/credential-provider-node":"^3.972.5","@aws-sdk/middleware-host-header":"^3.972.3","@aws-sdk/middleware-logger":"^3.972.3","@aws-sdk/middleware-recursion-detection":"^3.972.3","@aws-sdk/middleware-user-agent":"^3.972.6","@aws-sdk/region-config-resolver":"^3.972.3","@aws-sdk/types":"^3.973.1","@aws-sdk/util-endpoints":"3.982.0","@aws-sdk/util-user-agent-browser":"^3.972.3","@aws-sdk/util-user-agent-node":"^3.972.4","@smithy/config-resolver":"^4.4.6","@smithy/core":"^3.22.0","@smithy/fetch-http-handler":"^5.3.9","@smithy/hash-node":"^4.2.8","@smithy/invalid-dependency":"^4.2.8","@smithy/middleware-content-length":"^4.2.8","@smithy/middleware-endpoint":"^4.4.12","@smithy/middleware-retry":"^4.4.29","@smithy/middleware-serde":"^4.2.9","@smithy/middleware-stack":"^4.2.8","@smithy/node-config-provider":"^4.3.8","@smithy/node-http-handler":"^4.4.8","@smithy/protocol-http":"^5.3.8","@smithy/smithy-client":"^4.11.1","@smithy/types":"^4.12.0","@smithy/url-parser":"^4.2.8","@smithy/util-base64":"^4.3.0","@smithy/util-body-length-browser":"^4.2.0","@smithy/util-body-length-node":"^4.2.1","@smithy/util-defaults-mode-browser":"^4.3.28","@smithy/util-defaults-mode-node":"^4.2.31","@smithy/util-endpoints":"^3.2.8","@smithy/util-middleware":"^4.2.8","@smithy/util-retry":"^4.2.8","@smithy/util-utf8":"^4.2.0","tslib":"^2.6.2"},"devDependencies":{"@tsconfig/node20":"20.1.8","@types/node":"^20.14.8","concurrently":"7.0.0","downlevel-dts":"0.10.1","premove":"4.0.0","typescript":"~5.8.3"},"engines":{"node":">=20.0.0"},"typesVersions":{"<4.0":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-ecr-public","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-ecr-public"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/client-ecr-public","description":"AWS SDK for JavaScript Ecr Public Client for Node.js, Browser and React Native","version":"3.1011.0","scripts":{"build":"concurrently \'yarn:build:types\' \'yarn:build:es\' && yarn build:cjs","build:cjs":"node ../../scripts/compilation/inline client-ecr-public","build:es":"tsc -p tsconfig.es.json","build:include:deps":"yarn g:turbo run build -F=\\"$npm_package_name\\"","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"premove dist-cjs dist-es dist-types tsconfig.cjs.tsbuildinfo tsconfig.es.tsbuildinfo tsconfig.types.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo ecr-public","test:index":"tsc --noEmit ./test/index-types.ts && node ./test/index-objects.spec.mjs"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"5.2.0","@aws-crypto/sha256-js":"5.2.0","@aws-sdk/core":"^3.973.20","@aws-sdk/credential-provider-node":"^3.972.21","@aws-sdk/middleware-host-header":"^3.972.8","@aws-sdk/middleware-logger":"^3.972.8","@aws-sdk/middleware-recursion-detection":"^3.972.8","@aws-sdk/middleware-user-agent":"^3.972.21","@aws-sdk/region-config-resolver":"^3.972.8","@aws-sdk/types":"^3.973.6","@aws-sdk/util-endpoints":"^3.996.5","@aws-sdk/util-user-agent-browser":"^3.972.8","@aws-sdk/util-user-agent-node":"^3.973.7","@smithy/config-resolver":"^4.4.11","@smithy/core":"^3.23.11","@smithy/fetch-http-handler":"^5.3.15","@smithy/hash-node":"^4.2.12","@smithy/invalid-dependency":"^4.2.12","@smithy/middleware-content-length":"^4.2.12","@smithy/middleware-endpoint":"^4.4.25","@smithy/middleware-retry":"^4.4.42","@smithy/middleware-serde":"^4.2.14","@smithy/middleware-stack":"^4.2.12","@smithy/node-config-provider":"^4.3.12","@smithy/node-http-handler":"^4.4.16","@smithy/protocol-http":"^5.3.12","@smithy/smithy-client":"^4.12.5","@smithy/types":"^4.13.1","@smithy/url-parser":"^4.2.12","@smithy/util-base64":"^4.3.2","@smithy/util-body-length-browser":"^4.2.2","@smithy/util-body-length-node":"^4.2.3","@smithy/util-defaults-mode-browser":"^4.3.41","@smithy/util-defaults-mode-node":"^4.2.44","@smithy/util-endpoints":"^3.3.3","@smithy/util-middleware":"^4.2.12","@smithy/util-retry":"^4.2.12","@smithy/util-utf8":"^4.2.2","tslib":"^2.6.2"},"devDependencies":{"@tsconfig/node20":"20.1.8","@types/node":"^20.14.8","concurrently":"7.0.0","downlevel-dts":"0.10.1","premove":"4.0.0","typescript":"~5.8.3"},"engines":{"node":">=20.0.0"},"typesVersions":{"<4.5":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-ecr-public","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-ecr-public"}}');
 
 /***/ }),
 
@@ -85088,8 +84273,445 @@ function getIDToken(aud) {
  */
 
 //# sourceMappingURL=core.js.map
-// EXTERNAL MODULE: ./node_modules/https-proxy-agent/dist/index.js
-var dist = __nccwpck_require__(3669);
+// EXTERNAL MODULE: external "net"
+var external_net_ = __nccwpck_require__(69278);
+// EXTERNAL MODULE: external "tls"
+var external_tls_ = __nccwpck_require__(64756);
+// EXTERNAL MODULE: ./node_modules/debug/src/index.js
+var src = __nccwpck_require__(2830);
+;// CONCATENATED MODULE: ./node_modules/agent-base/dist/helpers.js
+
+
+async function toBuffer(stream) {
+    let length = 0;
+    const chunks = [];
+    for await (const chunk of stream) {
+        length += chunk.length;
+        chunks.push(chunk);
+    }
+    return Buffer.concat(chunks, length);
+}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function json(stream) {
+    const buf = await toBuffer(stream);
+    const str = buf.toString('utf8');
+    try {
+        return JSON.parse(str);
+    }
+    catch (_err) {
+        const err = _err;
+        err.message += ` (input: ${str})`;
+        throw err;
+    }
+}
+function req(url, opts = {}) {
+    const href = typeof url === 'string' ? url : url.href;
+    const req = (href.startsWith('https:') ? https : http).request(url, opts);
+    const promise = new Promise((resolve, reject) => {
+        req
+            .once('response', resolve)
+            .once('error', reject)
+            .end();
+    });
+    req.then = promise.then.bind(promise);
+    return req;
+}
+//# sourceMappingURL=helpers.js.map
+;// CONCATENATED MODULE: ./node_modules/agent-base/dist/index.js
+
+
+
+
+const INTERNAL = Symbol('AgentBaseInternalState');
+class Agent extends external_http_.Agent {
+    constructor(opts) {
+        super(opts);
+        this[INTERNAL] = {};
+    }
+    /**
+     * Determine whether this is an `http` or `https` request.
+     */
+    isSecureEndpoint(options) {
+        if (options) {
+            // First check the `secureEndpoint` property explicitly, since this
+            // means that a parent `Agent` is "passing through" to this instance.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (typeof options.secureEndpoint === 'boolean') {
+                return options.secureEndpoint;
+            }
+            // If no explicit `secure` endpoint, check if `protocol` property is
+            // set. This will usually be the case since using a full string URL
+            // or `URL` instance should be the most common usage.
+            if (typeof options.protocol === 'string') {
+                return options.protocol === 'https:';
+            }
+        }
+        // Finally, if no `protocol` property was set, then fall back to
+        // checking the stack trace of the current call stack, and try to
+        // detect the "https" module.
+        const { stack } = new Error();
+        if (typeof stack !== 'string')
+            return false;
+        return stack
+            .split('\n')
+            .some((l) => l.indexOf('(https.js:') !== -1 ||
+            l.indexOf('node:https:') !== -1);
+    }
+    // In order to support async signatures in `connect()` and Node's native
+    // connection pooling in `http.Agent`, the array of sockets for each origin
+    // has to be updated synchronously. This is so the length of the array is
+    // accurate when `addRequest()` is next called. We achieve this by creating a
+    // fake socket and adding it to `sockets[origin]` and incrementing
+    // `totalSocketCount`.
+    incrementSockets(name) {
+        // If `maxSockets` and `maxTotalSockets` are both Infinity then there is no
+        // need to create a fake socket because Node.js native connection pooling
+        // will never be invoked.
+        if (this.maxSockets === Infinity && this.maxTotalSockets === Infinity) {
+            return null;
+        }
+        // All instances of `sockets` are expected TypeScript errors. The
+        // alternative is to add it as a private property of this class but that
+        // will break TypeScript subclassing.
+        if (!this.sockets[name]) {
+            // @ts-expect-error `sockets` is readonly in `@types/node`
+            this.sockets[name] = [];
+        }
+        const fakeSocket = new external_net_.Socket({ writable: false });
+        this.sockets[name].push(fakeSocket);
+        // @ts-expect-error `totalSocketCount` isn't defined in `@types/node`
+        this.totalSocketCount++;
+        return fakeSocket;
+    }
+    decrementSockets(name, socket) {
+        if (!this.sockets[name] || socket === null) {
+            return;
+        }
+        const sockets = this.sockets[name];
+        const index = sockets.indexOf(socket);
+        if (index !== -1) {
+            sockets.splice(index, 1);
+            // @ts-expect-error  `totalSocketCount` isn't defined in `@types/node`
+            this.totalSocketCount--;
+            if (sockets.length === 0) {
+                // @ts-expect-error `sockets` is readonly in `@types/node`
+                delete this.sockets[name];
+            }
+        }
+    }
+    // In order to properly update the socket pool, we need to call `getName()` on
+    // the core `https.Agent` if it is a secureEndpoint.
+    getName(options) {
+        const secureEndpoint = this.isSecureEndpoint(options);
+        if (secureEndpoint) {
+            return external_https_.Agent.prototype.getName.call(this, options);
+        }
+        return super.getName(options);
+    }
+    createSocket(req, options, cb) {
+        const connectOpts = {
+            ...options,
+            secureEndpoint: this.isSecureEndpoint(options),
+        };
+        const name = this.getName(connectOpts);
+        const fakeSocket = this.incrementSockets(name);
+        Promise.resolve()
+            .then(() => this.connect(req, connectOpts))
+            .then((socket) => {
+            this.decrementSockets(name, fakeSocket);
+            if (socket instanceof external_http_.Agent) {
+                try {
+                    // @ts-expect-error `addRequest()` isn't defined in `@types/node`
+                    return socket.addRequest(req, connectOpts);
+                }
+                catch (err) {
+                    return cb(err);
+                }
+            }
+            this[INTERNAL].currentSocket = socket;
+            // @ts-expect-error `createSocket()` isn't defined in `@types/node`
+            super.createSocket(req, options, cb);
+        }, (err) => {
+            this.decrementSockets(name, fakeSocket);
+            cb(err);
+        });
+    }
+    createConnection() {
+        const socket = this[INTERNAL].currentSocket;
+        this[INTERNAL].currentSocket = undefined;
+        if (!socket) {
+            throw new Error('No socket was returned in the `connect()` function');
+        }
+        return socket;
+    }
+    get defaultPort() {
+        return (this[INTERNAL].defaultPort ??
+            (this.protocol === 'https:' ? 443 : 80));
+    }
+    set defaultPort(v) {
+        if (this[INTERNAL]) {
+            this[INTERNAL].defaultPort = v;
+        }
+    }
+    get protocol() {
+        return (this[INTERNAL].protocol ??
+            (this.isSecureEndpoint() ? 'https:' : 'http:'));
+    }
+    set protocol(v) {
+        if (this[INTERNAL]) {
+            this[INTERNAL].protocol = v;
+        }
+    }
+}
+//# sourceMappingURL=index.js.map
+// EXTERNAL MODULE: external "url"
+var external_url_ = __nccwpck_require__(87016);
+;// CONCATENATED MODULE: ./node_modules/https-proxy-agent/dist/parse-proxy-response.js
+
+const parse_proxy_response_debug = src('https-proxy-agent:parse-proxy-response');
+function parseProxyResponse(socket) {
+    return new Promise((resolve, reject) => {
+        // we need to buffer any HTTP traffic that happens with the proxy before we get
+        // the CONNECT response, so that if the response is anything other than an "200"
+        // response code, then we can re-play the "data" events on the socket once the
+        // HTTP parser is hooked up...
+        let buffersLength = 0;
+        const buffers = [];
+        function read() {
+            const b = socket.read();
+            if (b)
+                ondata(b);
+            else
+                socket.once('readable', read);
+        }
+        function cleanup() {
+            socket.removeListener('end', onend);
+            socket.removeListener('error', onerror);
+            socket.removeListener('readable', read);
+        }
+        function onend() {
+            cleanup();
+            parse_proxy_response_debug('onend');
+            reject(new Error('Proxy connection ended before receiving CONNECT response'));
+        }
+        function onerror(err) {
+            cleanup();
+            parse_proxy_response_debug('onerror %o', err);
+            reject(err);
+        }
+        function ondata(b) {
+            buffers.push(b);
+            buffersLength += b.length;
+            const buffered = Buffer.concat(buffers, buffersLength);
+            const endOfHeaders = buffered.indexOf('\r\n\r\n');
+            if (endOfHeaders === -1) {
+                // keep buffering
+                parse_proxy_response_debug('have not received end of HTTP headers yet...');
+                read();
+                return;
+            }
+            const headerParts = buffered
+                .slice(0, endOfHeaders)
+                .toString('ascii')
+                .split('\r\n');
+            const firstLine = headerParts.shift();
+            if (!firstLine) {
+                socket.destroy();
+                return reject(new Error('No header received from proxy CONNECT response'));
+            }
+            const firstLineParts = firstLine.split(' ');
+            const statusCode = +firstLineParts[1];
+            const statusText = firstLineParts.slice(2).join(' ');
+            const headers = {};
+            for (const header of headerParts) {
+                if (!header)
+                    continue;
+                const firstColon = header.indexOf(':');
+                if (firstColon === -1) {
+                    socket.destroy();
+                    return reject(new Error(`Invalid header from proxy CONNECT response: "${header}"`));
+                }
+                const key = header.slice(0, firstColon).toLowerCase();
+                const value = header.slice(firstColon + 1).trimStart();
+                const current = headers[key];
+                if (typeof current === 'string') {
+                    headers[key] = [current, value];
+                }
+                else if (Array.isArray(current)) {
+                    current.push(value);
+                }
+                else {
+                    headers[key] = value;
+                }
+            }
+            parse_proxy_response_debug('got proxy server response: %o %o', firstLine, headers);
+            cleanup();
+            resolve({
+                connect: {
+                    statusCode,
+                    statusText,
+                    headers,
+                },
+                buffered,
+            });
+        }
+        socket.on('error', onerror);
+        socket.on('end', onend);
+        read();
+    });
+}
+//# sourceMappingURL=parse-proxy-response.js.map
+;// CONCATENATED MODULE: ./node_modules/https-proxy-agent/dist/index.js
+
+
+
+
+
+
+
+const dist_debug = src('https-proxy-agent');
+const setServernameFromNonIpHost = (options) => {
+    if (options.servername === undefined &&
+        options.host &&
+        !external_net_.isIP(options.host)) {
+        return {
+            ...options,
+            servername: options.host,
+        };
+    }
+    return options;
+};
+/**
+ * The `HttpsProxyAgent` implements an HTTP Agent subclass that connects to
+ * the specified "HTTP(s) proxy server" in order to proxy HTTPS requests.
+ *
+ * Outgoing HTTP requests are first tunneled through the proxy server using the
+ * `CONNECT` HTTP request method to establish a connection to the proxy server,
+ * and then the proxy server connects to the destination target and issues the
+ * HTTP request from the proxy server.
+ *
+ * `https:` requests have their socket connection upgraded to TLS once
+ * the connection to the proxy server has been established.
+ */
+class HttpsProxyAgent extends Agent {
+    constructor(proxy, opts) {
+        super(opts);
+        this.options = { path: undefined };
+        this.proxy = typeof proxy === 'string' ? new external_url_.URL(proxy) : proxy;
+        this.proxyHeaders = opts?.headers ?? {};
+        dist_debug('Creating new HttpsProxyAgent instance: %o', this.proxy.href);
+        // Trim off the brackets from IPv6 addresses
+        const host = (this.proxy.hostname || this.proxy.host).replace(/^\[|\]$/g, '');
+        const port = this.proxy.port
+            ? parseInt(this.proxy.port, 10)
+            : this.proxy.protocol === 'https:'
+                ? 443
+                : 80;
+        this.connectOpts = {
+            // Attempt to negotiate http/1.1 for proxy servers that support http/2
+            ALPNProtocols: ['http/1.1'],
+            ...(opts ? omit(opts, 'headers') : null),
+            host,
+            port,
+        };
+    }
+    /**
+     * Called when the node-core HTTP client library is creating a
+     * new HTTP request.
+     */
+    async connect(req, opts) {
+        const { proxy } = this;
+        if (!opts.host) {
+            throw new TypeError('No "host" provided');
+        }
+        // Create a socket connection to the proxy server.
+        let socket;
+        if (proxy.protocol === 'https:') {
+            dist_debug('Creating `tls.Socket`: %o', this.connectOpts);
+            socket = external_tls_.connect(setServernameFromNonIpHost(this.connectOpts));
+        }
+        else {
+            dist_debug('Creating `net.Socket`: %o', this.connectOpts);
+            socket = external_net_.connect(this.connectOpts);
+        }
+        const headers = typeof this.proxyHeaders === 'function'
+            ? this.proxyHeaders()
+            : { ...this.proxyHeaders };
+        const host = external_net_.isIPv6(opts.host) ? `[${opts.host}]` : opts.host;
+        let payload = `CONNECT ${host}:${opts.port} HTTP/1.1\r\n`;
+        // Inject the `Proxy-Authorization` header if necessary.
+        if (proxy.username || proxy.password) {
+            const auth = `${decodeURIComponent(proxy.username)}:${decodeURIComponent(proxy.password)}`;
+            headers['Proxy-Authorization'] = `Basic ${Buffer.from(auth).toString('base64')}`;
+        }
+        headers.Host = `${host}:${opts.port}`;
+        if (!headers['Proxy-Connection']) {
+            headers['Proxy-Connection'] = this.keepAlive
+                ? 'Keep-Alive'
+                : 'close';
+        }
+        for (const name of Object.keys(headers)) {
+            payload += `${name}: ${headers[name]}\r\n`;
+        }
+        const proxyResponsePromise = parseProxyResponse(socket);
+        socket.write(`${payload}\r\n`);
+        const { connect, buffered } = await proxyResponsePromise;
+        req.emit('proxyConnect', connect);
+        this.emit('proxyConnect', connect, req);
+        if (connect.statusCode === 200) {
+            req.once('socket', resume);
+            if (opts.secureEndpoint) {
+                // The proxy is connecting to a TLS server, so upgrade
+                // this socket connection to a TLS connection.
+                dist_debug('Upgrading socket connection to TLS');
+                return external_tls_.connect({
+                    ...omit(setServernameFromNonIpHost(opts), 'host', 'path', 'port'),
+                    socket,
+                });
+            }
+            return socket;
+        }
+        // Some other status code that's not 200... need to re-play the HTTP
+        // header "data" events onto the socket once the HTTP machinery is
+        // attached so that the node core `http` can parse and handle the
+        // error status code.
+        // Close the original socket, and a new "fake" socket is returned
+        // instead, so that the proxy doesn't get the HTTP request
+        // written to it (which may contain `Authorization` headers or other
+        // sensitive data).
+        //
+        // See: https://hackerone.com/reports/541502
+        socket.destroy();
+        const fakeSocket = new external_net_.Socket({ writable: false });
+        fakeSocket.readable = true;
+        // Need to wait for the "socket" event to re-play the "data" events.
+        req.once('socket', (s) => {
+            dist_debug('Replaying proxy buffer for failed request');
+            external_assert_(s.listenerCount('data') > 0);
+            // Replay the "buffered" Buffer onto the fake `socket`, since at
+            // this point the HTTP module machinery has been hooked up for
+            // the user.
+            s.push(buffered);
+            s.push(null);
+        });
+        return fakeSocket;
+    }
+}
+HttpsProxyAgent.protocols = ['http', 'https'];
+function resume(socket) {
+    socket.resume();
+}
+function omit(obj, ...keys) {
+    const ret = {};
+    let key;
+    for (key in obj) {
+        if (!keys.includes(key)) {
+            ret[key] = obj[key];
+        }
+    }
+    return ret;
+}
+//# sourceMappingURL=index.js.map
 // EXTERNAL MODULE: ./node_modules/@aws-sdk/node-http-handler/dist-cjs/index.js
 var dist_cjs = __nccwpck_require__(49613);
 // EXTERNAL MODULE: ./node_modules/@aws-sdk/credential-providers/dist-cjs/index.js
@@ -85150,7 +84772,7 @@ function configureProxy(httpProxy) {
       proxyToSet = proxyFromEnv;
     }
 
-    return new dist.HttpsProxyAgent(proxyToSet);
+    return new HttpsProxyAgent(proxyToSet);
   }
   return null;
 }
@@ -85190,7 +84812,7 @@ async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
 }
 
 async function getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
-  const ecrPublicClient = new client_ecr_public_dist_cjs/* ECRPUBLICClient */.Rr({
+  const ecrPublicClient = new client_ecr_public_dist_cjs.ECRPUBLICClient({
     customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
     // Authenticating to ECR Public auth only works in us-east-1
     region: "us-east-1",
@@ -85200,7 +84822,7 @@ async function getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
       httpsAgent: httpsProxyAgent
     }),
   });
-  const command = new client_ecr_public_dist_cjs/* GetAuthorizationTokenCommand */.Eu(authTokenRequest);
+  const command = new client_ecr_public_dist_cjs.GetAuthorizationTokenCommand(authTokenRequest);
   const authTokenResponse = await ecrPublicClient.send(command);
   if (!authTokenResponse) {
     throw new Error('Amazon ECR Public authorization token returned no data');
