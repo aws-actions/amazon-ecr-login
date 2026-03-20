@@ -669,6 +669,28 @@ describe('Pod Identity Support', () => {
     );
   });
 
+  test('prefers explicit env var credentials over Pod Identity', async () => {
+    process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI = TEST_CONSTANTS.POD_IDENTITY_URI;
+    process.env.AWS_ACCESS_KEY_ID = 'mock-access-key-id';
+    process.env.AWS_SECRET_ACCESS_KEY = 'mock-secret-access-key';
+    process.env.AWS_SESSION_TOKEN = 'mock-session-token';
+    ecrMock.on(GetAuthorizationTokenCommand).resolves({
+      authorizationData: [{
+        authorizationToken: Buffer.from('AWS:token').toString('base64'),
+        proxyEndpoint: TEST_CONSTANTS.REGISTRY_ENDPOINT
+      }]
+    });
+
+    await run();
+
+    expect(process.env.AWS_SDK_LOAD_CONFIG).toBeUndefined();
+    expect(exec.exec).toHaveBeenCalledWith(
+      'docker',
+      ['login', '-u', 'AWS', '-p', 'token', TEST_CONSTANTS.REGISTRY_ENDPOINT],
+      expect.anything()
+    );
+  });
+
   test('handles error when Pod Identity credentials are invalid', async () => {
     process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI = TEST_CONSTANTS.POD_IDENTITY_URI;
     ecrMock.on(GetAuthorizationTokenCommand).rejects(new Error('Invalid credentials'));
