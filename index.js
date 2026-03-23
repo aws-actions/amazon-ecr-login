@@ -53,6 +53,12 @@ function configureProxy(httpProxy) {
 }
 
 function getCredentials() {
+  // If explicit credentials are set (e.g. by configure-aws-credentials), let the default chain use them
+  if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+    core.info("Using environment variable credentials.");
+    return undefined;
+  }
+
   // If running in a Pod Identity environment (EKS Pod Identity)
   if (process.env.AWS_CONTAINER_CREDENTIALS_FULL_URI) {
     core.info("Using Pod Identity credentials via fromHttp()");
