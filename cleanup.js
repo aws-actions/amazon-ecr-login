@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
+import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 /**
@@ -57,6 +58,6 @@ async function cleanup() {
 export default cleanup;
 
 /* istanbul ignore next */
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))) {
   cleanup();
 }
