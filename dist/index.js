@@ -8454,6 +8454,7 @@ function bindCallerConfig(config, credentialsProvider) {
 
 class ProtocolLib {
     queryCompat;
+    errorRegistry;
     constructor(queryCompat = false) {
         this.queryCompat = queryCompat;
     }
@@ -8489,30 +8490,47 @@ class ProtocolLib {
         }
     }
     async getErrorSchemaOrThrowBaseException(errorIdentifier, defaultNamespace, response, dataObject, metadata, getErrorSchema) {
-        let namespace = defaultNamespace;
         let errorName = errorIdentifier;
         if (errorIdentifier.includes("#")) {
-            [namespace, errorName] = errorIdentifier.split("#");
+            [, errorName] = errorIdentifier.split("#");
         }
         const errorMetadata = {
             $metadata: metadata,
             $fault: response.statusCode < 500 ? "client" : "server",
         };
-        const registry = schema.TypeRegistry.for(namespace);
+        if (!this.errorRegistry) {
+            throw new Error("@aws-sdk/core/protocols - error handler not initialized.");
+        }
         try {
-            const errorSchema = getErrorSchema?.(registry, errorName) ?? registry.getSchema(errorIdentifier);
+            const errorSchema = getErrorSchema?.(this.errorRegistry, errorName) ??
+                this.errorRegistry.getSchema(errorIdentifier);
             return { errorSchema, errorMetadata };
         }
         catch (e) {
             dataObject.message = dataObject.message ?? dataObject.Message ?? "UnknownError";
-            const synthetic = schema.TypeRegistry.for("smithy.ts.sdk.synthetic." + namespace);
+            const synthetic = this.errorRegistry;
             const baseExceptionSchema = synthetic.getBaseException();
             if (baseExceptionSchema) {
                 const ErrorCtor = synthetic.getErrorCtor(baseExceptionSchema) ?? Error;
                 throw this.decorateServiceException(Object.assign(new ErrorCtor({ name: errorName }), errorMetadata), dataObject);
             }
-            throw this.decorateServiceException(Object.assign(new Error(errorName), errorMetadata), dataObject);
+            const d = dataObject;
+            const message = d?.message ?? d?.Message ?? d?.Error?.Message ?? d?.Error?.message;
+            throw this.decorateServiceException(Object.assign(new Error(message), {
+                name: errorName,
+            }, errorMetadata), dataObject);
         }
+    }
+    compose(composite, errorIdentifier, defaultNamespace) {
+        let namespace = defaultNamespace;
+        if (errorIdentifier.includes("#")) {
+            [namespace] = errorIdentifier.split("#");
+        }
+        const staticRegistry = schema.TypeRegistry.for(namespace);
+        const defaultSyntheticRegistry = schema.TypeRegistry.for("smithy.ts.sdk.synthetic." + defaultNamespace);
+        composite.copyFrom(staticRegistry);
+        composite.copyFrom(defaultSyntheticRegistry);
+        this.errorRegistry = composite;
     }
     decorateServiceException(exception, additions = {}) {
         if (this.queryCompat) {
@@ -8576,8 +8594,8 @@ class ProtocolLib {
 class AwsSmithyRpcV2CborProtocol extends cbor.SmithyRpcV2CborProtocol {
     awsQueryCompatible;
     mixin;
-    constructor({ defaultNamespace, awsQueryCompatible, }) {
-        super({ defaultNamespace });
+    constructor({ defaultNamespace, errorTypeRegistries, awsQueryCompatible, }) {
+        super({ defaultNamespace, errorTypeRegistries });
         this.awsQueryCompatible = !!awsQueryCompatible;
         this.mixin = new ProtocolLib(this.awsQueryCompatible);
     }
@@ -8599,10 +8617,11 @@ class AwsSmithyRpcV2CborProtocol extends cbor.SmithyRpcV2CborProtocol {
             }
             return cbor.loadSmithyRpcV2CborErrorCode(response, dataObject) ?? "Unknown";
         })();
+        this.mixin.compose(this.compositeErrorRegistry, errorName, this.options.defaultNamespace);
         const { errorSchema, errorMetadata } = await this.mixin.getErrorSchemaOrThrowBaseException(errorName, this.options.defaultNamespace, response, dataObject, metadata, this.awsQueryCompatible ? this.mixin.findQueryCompatibleError : undefined);
         const ns = schema.NormalizedSchema.of(errorSchema);
-        const message = dataObject.message ?? dataObject.Message ?? "Unknown";
-        const ErrorCtor = schema.TypeRegistry.for(errorSchema[1]).getErrorCtor(errorSchema) ?? Error;
+        const message = dataObject.message ?? dataObject.Message ?? "UnknownError";
+        const ErrorCtor = this.compositeErrorRegistry.getErrorCtor(errorSchema) ?? Error;
         const exception = new ErrorCtor(message);
         const output = {};
         for (const [name, member] of ns.structIterator()) {
@@ -9159,9 +9178,10 @@ class AwsJsonRpcProtocol extends protocols.RpcProtocol {
     codec;
     mixin;
     awsQueryCompatible;
-    constructor({ defaultNamespace, serviceTarget, awsQueryCompatible, jsonCodec, }) {
+    constructor({ defaultNamespace, errorTypeRegistries, serviceTarget, awsQueryCompatible, jsonCodec, }) {
         super({
             defaultNamespace,
+            errorTypeRegistries,
         });
         this.serviceTarget = serviceTarget;
         this.codec =
@@ -9203,10 +9223,11 @@ class AwsJsonRpcProtocol extends protocols.RpcProtocol {
             this.mixin.setQueryCompatError(dataObject, response);
         }
         const errorIdentifier = loadRestJsonErrorCode(response, dataObject) ?? "Unknown";
+        this.mixin.compose(this.compositeErrorRegistry, errorIdentifier, this.options.defaultNamespace);
         const { errorSchema, errorMetadata } = await this.mixin.getErrorSchemaOrThrowBaseException(errorIdentifier, this.options.defaultNamespace, response, dataObject, metadata, this.awsQueryCompatible ? this.mixin.findQueryCompatibleError : undefined);
         const ns = schema.NormalizedSchema.of(errorSchema);
-        const message = dataObject.message ?? dataObject.Message ?? "Unknown";
-        const ErrorCtor = schema.TypeRegistry.for(errorSchema[1]).getErrorCtor(errorSchema) ?? Error;
+        const message = dataObject.message ?? dataObject.Message ?? "UnknownError";
+        const ErrorCtor = this.compositeErrorRegistry.getErrorCtor(errorSchema) ?? Error;
         const exception = new ErrorCtor(message);
         const output = {};
         for (const [name, member] of ns.structIterator()) {
@@ -9225,9 +9246,10 @@ class AwsJsonRpcProtocol extends protocols.RpcProtocol {
 }
 
 class AwsJson1_0Protocol extends AwsJsonRpcProtocol {
-    constructor({ defaultNamespace, serviceTarget, awsQueryCompatible, jsonCodec, }) {
+    constructor({ defaultNamespace, errorTypeRegistries, serviceTarget, awsQueryCompatible, jsonCodec, }) {
         super({
             defaultNamespace,
+            errorTypeRegistries,
             serviceTarget,
             awsQueryCompatible,
             jsonCodec,
@@ -9245,9 +9267,10 @@ class AwsJson1_0Protocol extends AwsJsonRpcProtocol {
 }
 
 class AwsJson1_1Protocol extends AwsJsonRpcProtocol {
-    constructor({ defaultNamespace, serviceTarget, awsQueryCompatible, jsonCodec, }) {
+    constructor({ defaultNamespace, errorTypeRegistries, serviceTarget, awsQueryCompatible, jsonCodec, }) {
         super({
             defaultNamespace,
+            errorTypeRegistries,
             serviceTarget,
             awsQueryCompatible,
             jsonCodec,
@@ -9269,9 +9292,10 @@ class AwsRestJsonProtocol extends protocols.HttpBindingProtocol {
     deserializer;
     codec;
     mixin = new ProtocolLib();
-    constructor({ defaultNamespace }) {
+    constructor({ defaultNamespace, errorTypeRegistries, }) {
         super({
             defaultNamespace,
+            errorTypeRegistries,
         });
         const settings = {
             timestampFormat: {
@@ -9321,10 +9345,11 @@ class AwsRestJsonProtocol extends protocols.HttpBindingProtocol {
     }
     async handleError(operationSchema, context, response, dataObject, metadata) {
         const errorIdentifier = loadRestJsonErrorCode(response, dataObject) ?? "Unknown";
+        this.mixin.compose(this.compositeErrorRegistry, errorIdentifier, this.options.defaultNamespace);
         const { errorSchema, errorMetadata } = await this.mixin.getErrorSchemaOrThrowBaseException(errorIdentifier, this.options.defaultNamespace, response, dataObject, metadata);
         const ns = schema.NormalizedSchema.of(errorSchema);
-        const message = dataObject.message ?? dataObject.Message ?? "Unknown";
-        const ErrorCtor = schema.TypeRegistry.for(errorSchema[1]).getErrorCtor(errorSchema) ?? Error;
+        const message = dataObject.message ?? dataObject.Message ?? "UnknownError";
+        const ErrorCtor = this.compositeErrorRegistry.getErrorCtor(errorSchema) ?? Error;
         const exception = new ErrorCtor(message);
         await this.deserializeHttpMessage(errorSchema, context, response, dataObject);
         const output = {};
@@ -9690,6 +9715,7 @@ class AwsQueryProtocol extends protocols.RpcProtocol {
     constructor(options) {
         super({
             defaultNamespace: options.defaultNamespace,
+            errorTypeRegistries: options.errorTypeRegistries,
         });
         this.options = options;
         const settings = {
@@ -9766,6 +9792,7 @@ class AwsQueryProtocol extends protocols.RpcProtocol {
     }
     async handleError(operationSchema, context, response, dataObject, metadata) {
         const errorIdentifier = this.loadQueryErrorCode(response, dataObject) ?? "Unknown";
+        this.mixin.compose(this.compositeErrorRegistry, errorIdentifier, this.options.defaultNamespace);
         const errorData = this.loadQueryError(dataObject) ?? {};
         const message = this.loadQueryErrorMessage(dataObject);
         errorData.message = message;
@@ -9776,7 +9803,7 @@ class AwsQueryProtocol extends protocols.RpcProtocol {
         };
         const { errorSchema, errorMetadata } = await this.mixin.getErrorSchemaOrThrowBaseException(errorIdentifier, this.options.defaultNamespace, response, errorData, metadata, this.mixin.findQueryCompatibleError);
         const ns = schema.NormalizedSchema.of(errorSchema);
-        const ErrorCtor = schema.TypeRegistry.for(errorSchema[1]).getErrorCtor(errorSchema) ?? Error;
+        const ErrorCtor = this.compositeErrorRegistry.getErrorCtor(errorSchema) ?? Error;
         const exception = new ErrorCtor(message);
         const output = {
             Type: errorData.Error.Type,
@@ -10205,6 +10232,7 @@ class AwsRestXmlProtocol extends protocols.HttpBindingProtocol {
         this.codec = new XmlCodec(settings);
         this.serializer = new protocols.HttpInterceptingShapeSerializer(this.codec.createSerializer(), settings);
         this.deserializer = new protocols.HttpInterceptingShapeDeserializer(this.codec.createDeserializer(), settings);
+        this.compositeErrorRegistry;
     }
     getPayloadCodec() {
         return this.codec;
@@ -10234,6 +10262,7 @@ class AwsRestXmlProtocol extends protocols.HttpBindingProtocol {
     }
     async handleError(operationSchema, context, response, dataObject, metadata) {
         const errorIdentifier = loadRestXmlErrorCode(response, dataObject) ?? "Unknown";
+        this.mixin.compose(this.compositeErrorRegistry, errorIdentifier, this.options.defaultNamespace);
         if (dataObject.Error && typeof dataObject.Error === "object") {
             for (const key of Object.keys(dataObject.Error)) {
                 dataObject[key] = dataObject.Error[key];
@@ -10247,8 +10276,12 @@ class AwsRestXmlProtocol extends protocols.HttpBindingProtocol {
         }
         const { errorSchema, errorMetadata } = await this.mixin.getErrorSchemaOrThrowBaseException(errorIdentifier, this.options.defaultNamespace, response, dataObject, metadata);
         const ns = schema.NormalizedSchema.of(errorSchema);
-        const message = dataObject.Error?.message ?? dataObject.Error?.Message ?? dataObject.message ?? dataObject.Message ?? "Unknown";
-        const ErrorCtor = schema.TypeRegistry.for(errorSchema[1]).getErrorCtor(errorSchema) ?? Error;
+        const message = dataObject.Error?.message ??
+            dataObject.Error?.Message ??
+            dataObject.message ??
+            dataObject.Message ??
+            "UnknownError";
+        const ErrorCtor = this.compositeErrorRegistry.getErrorCtor(errorSchema) ?? Error;
         const exception = new ErrorCtor(message);
         await this.deserializeHttpMessage(errorSchema, context, response, dataObject);
         const output = {};
@@ -10707,6 +10740,7 @@ var xmlBuilder = __nccwpck_require__(4274);
 
 class ProtocolLib {
     queryCompat;
+    errorRegistry;
     constructor(queryCompat = false) {
         this.queryCompat = queryCompat;
     }
@@ -10742,30 +10776,47 @@ class ProtocolLib {
         }
     }
     async getErrorSchemaOrThrowBaseException(errorIdentifier, defaultNamespace, response, dataObject, metadata, getErrorSchema) {
-        let namespace = defaultNamespace;
         let errorName = errorIdentifier;
         if (errorIdentifier.includes("#")) {
-            [namespace, errorName] = errorIdentifier.split("#");
+            [, errorName] = errorIdentifier.split("#");
         }
         const errorMetadata = {
             $metadata: metadata,
             $fault: response.statusCode < 500 ? "client" : "server",
         };
-        const registry = schema.TypeRegistry.for(namespace);
+        if (!this.errorRegistry) {
+            throw new Error("@aws-sdk/core/protocols - error handler not initialized.");
+        }
         try {
-            const errorSchema = getErrorSchema?.(registry, errorName) ?? registry.getSchema(errorIdentifier);
+            const errorSchema = getErrorSchema?.(this.errorRegistry, errorName) ??
+                this.errorRegistry.getSchema(errorIdentifier);
             return { errorSchema, errorMetadata };
         }
         catch (e) {
             dataObject.message = dataObject.message ?? dataObject.Message ?? "UnknownError";
-            const synthetic = schema.TypeRegistry.for("smithy.ts.sdk.synthetic." + namespace);
+            const synthetic = this.errorRegistry;
             const baseExceptionSchema = synthetic.getBaseException();
             if (baseExceptionSchema) {
                 const ErrorCtor = synthetic.getErrorCtor(baseExceptionSchema) ?? Error;
                 throw this.decorateServiceException(Object.assign(new ErrorCtor({ name: errorName }), errorMetadata), dataObject);
             }
-            throw this.decorateServiceException(Object.assign(new Error(errorName), errorMetadata), dataObject);
+            const d = dataObject;
+            const message = d?.message ?? d?.Message ?? d?.Error?.Message ?? d?.Error?.message;
+            throw this.decorateServiceException(Object.assign(new Error(message), {
+                name: errorName,
+            }, errorMetadata), dataObject);
         }
+    }
+    compose(composite, errorIdentifier, defaultNamespace) {
+        let namespace = defaultNamespace;
+        if (errorIdentifier.includes("#")) {
+            [namespace] = errorIdentifier.split("#");
+        }
+        const staticRegistry = schema.TypeRegistry.for(namespace);
+        const defaultSyntheticRegistry = schema.TypeRegistry.for("smithy.ts.sdk.synthetic." + defaultNamespace);
+        composite.copyFrom(staticRegistry);
+        composite.copyFrom(defaultSyntheticRegistry);
+        this.errorRegistry = composite;
     }
     decorateServiceException(exception, additions = {}) {
         if (this.queryCompat) {
@@ -10829,8 +10880,8 @@ class ProtocolLib {
 class AwsSmithyRpcV2CborProtocol extends cbor.SmithyRpcV2CborProtocol {
     awsQueryCompatible;
     mixin;
-    constructor({ defaultNamespace, awsQueryCompatible, }) {
-        super({ defaultNamespace });
+    constructor({ defaultNamespace, errorTypeRegistries, awsQueryCompatible, }) {
+        super({ defaultNamespace, errorTypeRegistries });
         this.awsQueryCompatible = !!awsQueryCompatible;
         this.mixin = new ProtocolLib(this.awsQueryCompatible);
     }
@@ -10852,10 +10903,11 @@ class AwsSmithyRpcV2CborProtocol extends cbor.SmithyRpcV2CborProtocol {
             }
             return cbor.loadSmithyRpcV2CborErrorCode(response, dataObject) ?? "Unknown";
         })();
+        this.mixin.compose(this.compositeErrorRegistry, errorName, this.options.defaultNamespace);
         const { errorSchema, errorMetadata } = await this.mixin.getErrorSchemaOrThrowBaseException(errorName, this.options.defaultNamespace, response, dataObject, metadata, this.awsQueryCompatible ? this.mixin.findQueryCompatibleError : undefined);
         const ns = schema.NormalizedSchema.of(errorSchema);
-        const message = dataObject.message ?? dataObject.Message ?? "Unknown";
-        const ErrorCtor = schema.TypeRegistry.for(errorSchema[1]).getErrorCtor(errorSchema) ?? Error;
+        const message = dataObject.message ?? dataObject.Message ?? "UnknownError";
+        const ErrorCtor = this.compositeErrorRegistry.getErrorCtor(errorSchema) ?? Error;
         const exception = new ErrorCtor(message);
         const output = {};
         for (const [name, member] of ns.structIterator()) {
@@ -11412,9 +11464,10 @@ class AwsJsonRpcProtocol extends protocols.RpcProtocol {
     codec;
     mixin;
     awsQueryCompatible;
-    constructor({ defaultNamespace, serviceTarget, awsQueryCompatible, jsonCodec, }) {
+    constructor({ defaultNamespace, errorTypeRegistries, serviceTarget, awsQueryCompatible, jsonCodec, }) {
         super({
             defaultNamespace,
+            errorTypeRegistries,
         });
         this.serviceTarget = serviceTarget;
         this.codec =
@@ -11456,10 +11509,11 @@ class AwsJsonRpcProtocol extends protocols.RpcProtocol {
             this.mixin.setQueryCompatError(dataObject, response);
         }
         const errorIdentifier = loadRestJsonErrorCode(response, dataObject) ?? "Unknown";
+        this.mixin.compose(this.compositeErrorRegistry, errorIdentifier, this.options.defaultNamespace);
         const { errorSchema, errorMetadata } = await this.mixin.getErrorSchemaOrThrowBaseException(errorIdentifier, this.options.defaultNamespace, response, dataObject, metadata, this.awsQueryCompatible ? this.mixin.findQueryCompatibleError : undefined);
         const ns = schema.NormalizedSchema.of(errorSchema);
-        const message = dataObject.message ?? dataObject.Message ?? "Unknown";
-        const ErrorCtor = schema.TypeRegistry.for(errorSchema[1]).getErrorCtor(errorSchema) ?? Error;
+        const message = dataObject.message ?? dataObject.Message ?? "UnknownError";
+        const ErrorCtor = this.compositeErrorRegistry.getErrorCtor(errorSchema) ?? Error;
         const exception = new ErrorCtor(message);
         const output = {};
         for (const [name, member] of ns.structIterator()) {
@@ -11478,9 +11532,10 @@ class AwsJsonRpcProtocol extends protocols.RpcProtocol {
 }
 
 class AwsJson1_0Protocol extends AwsJsonRpcProtocol {
-    constructor({ defaultNamespace, serviceTarget, awsQueryCompatible, jsonCodec, }) {
+    constructor({ defaultNamespace, errorTypeRegistries, serviceTarget, awsQueryCompatible, jsonCodec, }) {
         super({
             defaultNamespace,
+            errorTypeRegistries,
             serviceTarget,
             awsQueryCompatible,
             jsonCodec,
@@ -11498,9 +11553,10 @@ class AwsJson1_0Protocol extends AwsJsonRpcProtocol {
 }
 
 class AwsJson1_1Protocol extends AwsJsonRpcProtocol {
-    constructor({ defaultNamespace, serviceTarget, awsQueryCompatible, jsonCodec, }) {
+    constructor({ defaultNamespace, errorTypeRegistries, serviceTarget, awsQueryCompatible, jsonCodec, }) {
         super({
             defaultNamespace,
+            errorTypeRegistries,
             serviceTarget,
             awsQueryCompatible,
             jsonCodec,
@@ -11522,9 +11578,10 @@ class AwsRestJsonProtocol extends protocols.HttpBindingProtocol {
     deserializer;
     codec;
     mixin = new ProtocolLib();
-    constructor({ defaultNamespace }) {
+    constructor({ defaultNamespace, errorTypeRegistries, }) {
         super({
             defaultNamespace,
+            errorTypeRegistries,
         });
         const settings = {
             timestampFormat: {
@@ -11574,10 +11631,11 @@ class AwsRestJsonProtocol extends protocols.HttpBindingProtocol {
     }
     async handleError(operationSchema, context, response, dataObject, metadata) {
         const errorIdentifier = loadRestJsonErrorCode(response, dataObject) ?? "Unknown";
+        this.mixin.compose(this.compositeErrorRegistry, errorIdentifier, this.options.defaultNamespace);
         const { errorSchema, errorMetadata } = await this.mixin.getErrorSchemaOrThrowBaseException(errorIdentifier, this.options.defaultNamespace, response, dataObject, metadata);
         const ns = schema.NormalizedSchema.of(errorSchema);
-        const message = dataObject.message ?? dataObject.Message ?? "Unknown";
-        const ErrorCtor = schema.TypeRegistry.for(errorSchema[1]).getErrorCtor(errorSchema) ?? Error;
+        const message = dataObject.message ?? dataObject.Message ?? "UnknownError";
+        const ErrorCtor = this.compositeErrorRegistry.getErrorCtor(errorSchema) ?? Error;
         const exception = new ErrorCtor(message);
         await this.deserializeHttpMessage(errorSchema, context, response, dataObject);
         const output = {};
@@ -11943,6 +12001,7 @@ class AwsQueryProtocol extends protocols.RpcProtocol {
     constructor(options) {
         super({
             defaultNamespace: options.defaultNamespace,
+            errorTypeRegistries: options.errorTypeRegistries,
         });
         this.options = options;
         const settings = {
@@ -12019,6 +12078,7 @@ class AwsQueryProtocol extends protocols.RpcProtocol {
     }
     async handleError(operationSchema, context, response, dataObject, metadata) {
         const errorIdentifier = this.loadQueryErrorCode(response, dataObject) ?? "Unknown";
+        this.mixin.compose(this.compositeErrorRegistry, errorIdentifier, this.options.defaultNamespace);
         const errorData = this.loadQueryError(dataObject) ?? {};
         const message = this.loadQueryErrorMessage(dataObject);
         errorData.message = message;
@@ -12029,7 +12089,7 @@ class AwsQueryProtocol extends protocols.RpcProtocol {
         };
         const { errorSchema, errorMetadata } = await this.mixin.getErrorSchemaOrThrowBaseException(errorIdentifier, this.options.defaultNamespace, response, errorData, metadata, this.mixin.findQueryCompatibleError);
         const ns = schema.NormalizedSchema.of(errorSchema);
-        const ErrorCtor = schema.TypeRegistry.for(errorSchema[1]).getErrorCtor(errorSchema) ?? Error;
+        const ErrorCtor = this.compositeErrorRegistry.getErrorCtor(errorSchema) ?? Error;
         const exception = new ErrorCtor(message);
         const output = {
             Type: errorData.Error.Type,
@@ -12458,6 +12518,7 @@ class AwsRestXmlProtocol extends protocols.HttpBindingProtocol {
         this.codec = new XmlCodec(settings);
         this.serializer = new protocols.HttpInterceptingShapeSerializer(this.codec.createSerializer(), settings);
         this.deserializer = new protocols.HttpInterceptingShapeDeserializer(this.codec.createDeserializer(), settings);
+        this.compositeErrorRegistry;
     }
     getPayloadCodec() {
         return this.codec;
@@ -12487,6 +12548,7 @@ class AwsRestXmlProtocol extends protocols.HttpBindingProtocol {
     }
     async handleError(operationSchema, context, response, dataObject, metadata) {
         const errorIdentifier = loadRestXmlErrorCode(response, dataObject) ?? "Unknown";
+        this.mixin.compose(this.compositeErrorRegistry, errorIdentifier, this.options.defaultNamespace);
         if (dataObject.Error && typeof dataObject.Error === "object") {
             for (const key of Object.keys(dataObject.Error)) {
                 dataObject[key] = dataObject.Error[key];
@@ -12500,8 +12562,12 @@ class AwsRestXmlProtocol extends protocols.HttpBindingProtocol {
         }
         const { errorSchema, errorMetadata } = await this.mixin.getErrorSchemaOrThrowBaseException(errorIdentifier, this.options.defaultNamespace, response, dataObject, metadata);
         const ns = schema.NormalizedSchema.of(errorSchema);
-        const message = dataObject.Error?.message ?? dataObject.Error?.Message ?? dataObject.message ?? dataObject.Message ?? "Unknown";
-        const ErrorCtor = schema.TypeRegistry.for(errorSchema[1]).getErrorCtor(errorSchema) ?? Error;
+        const message = dataObject.Error?.message ??
+            dataObject.Error?.Message ??
+            dataObject.message ??
+            dataObject.Message ??
+            "UnknownError";
+        const ErrorCtor = this.compositeErrorRegistry.getErrorCtor(errorSchema) ?? Error;
         const exception = new ErrorCtor(message);
         await this.deserializeHttpMessage(errorSchema, context, response, dataObject);
         const output = {};
@@ -22279,6 +22345,11 @@ const NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS = {
     configFileSelector: (profile) => utilConfigProvider.booleanSelector(profile, CONFIG_USE_DUALSTACK_ENDPOINT, utilConfigProvider.SelectorType.CONFIG),
     default: false,
 };
+const nodeDualstackConfigSelectors = {
+    environmentVariableSelector: (env) => utilConfigProvider.booleanSelector(env, ENV_USE_DUALSTACK_ENDPOINT, utilConfigProvider.SelectorType.ENV),
+    configFileSelector: (profile) => utilConfigProvider.booleanSelector(profile, CONFIG_USE_DUALSTACK_ENDPOINT, utilConfigProvider.SelectorType.CONFIG),
+    default: undefined,
+};
 
 const ENV_USE_FIPS_ENDPOINT = "AWS_USE_FIPS_ENDPOINT";
 const CONFIG_USE_FIPS_ENDPOINT = "use_fips_endpoint";
@@ -22287,6 +22358,11 @@ const NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS = {
     environmentVariableSelector: (env) => utilConfigProvider.booleanSelector(env, ENV_USE_FIPS_ENDPOINT, utilConfigProvider.SelectorType.ENV),
     configFileSelector: (profile) => utilConfigProvider.booleanSelector(profile, CONFIG_USE_FIPS_ENDPOINT, utilConfigProvider.SelectorType.CONFIG),
     default: false,
+};
+const nodeFipsConfigSelectors = {
+    environmentVariableSelector: (env) => utilConfigProvider.booleanSelector(env, ENV_USE_FIPS_ENDPOINT, utilConfigProvider.SelectorType.ENV),
+    configFileSelector: (profile) => utilConfigProvider.booleanSelector(profile, CONFIG_USE_FIPS_ENDPOINT, utilConfigProvider.SelectorType.CONFIG),
+    default: undefined,
 };
 
 const resolveCustomEndpointsConfig = (input) => {
@@ -22448,6 +22524,8 @@ exports.NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS = NODE_USE_FIPS_ENDPOINT_CONFIG_OP
 exports.REGION_ENV_NAME = REGION_ENV_NAME;
 exports.REGION_INI_NAME = REGION_INI_NAME;
 exports.getRegionInfo = getRegionInfo;
+exports.nodeDualstackConfigSelectors = nodeDualstackConfigSelectors;
+exports.nodeFipsConfigSelectors = nodeFipsConfigSelectors;
 exports.resolveCustomEndpointsConfig = resolveCustomEndpointsConfig;
 exports.resolveEndpointsConfig = resolveEndpointsConfig;
 exports.resolveRegionConfig = resolveRegionConfig;
@@ -66334,7 +66412,7 @@ module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("util");
 /***/ 7643:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/client-ecr-public","description":"AWS SDK for JavaScript Ecr Public Client for Node.js, Browser and React Native","version":"3.1011.0","scripts":{"build":"concurrently \'yarn:build:types\' \'yarn:build:es\' && yarn build:cjs","build:cjs":"node ../../scripts/compilation/inline client-ecr-public","build:es":"tsc -p tsconfig.es.json","build:include:deps":"yarn g:turbo run build -F=\\"$npm_package_name\\"","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"premove dist-cjs dist-es dist-types tsconfig.cjs.tsbuildinfo tsconfig.es.tsbuildinfo tsconfig.types.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo ecr-public","test:index":"tsc --noEmit ./test/index-types.ts && node ./test/index-objects.spec.mjs"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"5.2.0","@aws-crypto/sha256-js":"5.2.0","@aws-sdk/core":"^3.973.20","@aws-sdk/credential-provider-node":"^3.972.21","@aws-sdk/middleware-host-header":"^3.972.8","@aws-sdk/middleware-logger":"^3.972.8","@aws-sdk/middleware-recursion-detection":"^3.972.8","@aws-sdk/middleware-user-agent":"^3.972.21","@aws-sdk/region-config-resolver":"^3.972.8","@aws-sdk/types":"^3.973.6","@aws-sdk/util-endpoints":"^3.996.5","@aws-sdk/util-user-agent-browser":"^3.972.8","@aws-sdk/util-user-agent-node":"^3.973.7","@smithy/config-resolver":"^4.4.11","@smithy/core":"^3.23.11","@smithy/fetch-http-handler":"^5.3.15","@smithy/hash-node":"^4.2.12","@smithy/invalid-dependency":"^4.2.12","@smithy/middleware-content-length":"^4.2.12","@smithy/middleware-endpoint":"^4.4.25","@smithy/middleware-retry":"^4.4.42","@smithy/middleware-serde":"^4.2.14","@smithy/middleware-stack":"^4.2.12","@smithy/node-config-provider":"^4.3.12","@smithy/node-http-handler":"^4.4.16","@smithy/protocol-http":"^5.3.12","@smithy/smithy-client":"^4.12.5","@smithy/types":"^4.13.1","@smithy/url-parser":"^4.2.12","@smithy/util-base64":"^4.3.2","@smithy/util-body-length-browser":"^4.2.2","@smithy/util-body-length-node":"^4.2.3","@smithy/util-defaults-mode-browser":"^4.3.41","@smithy/util-defaults-mode-node":"^4.2.44","@smithy/util-endpoints":"^3.3.3","@smithy/util-middleware":"^4.2.12","@smithy/util-retry":"^4.2.12","@smithy/util-utf8":"^4.2.2","tslib":"^2.6.2"},"devDependencies":{"@tsconfig/node20":"20.1.8","@types/node":"^20.14.8","concurrently":"7.0.0","downlevel-dts":"0.10.1","premove":"4.0.0","typescript":"~5.8.3"},"engines":{"node":">=20.0.0"},"typesVersions":{"<4.5":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-ecr-public","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-ecr-public"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/client-ecr-public","description":"AWS SDK for JavaScript Ecr Public Client for Node.js, Browser and React Native","version":"3.1016.0","scripts":{"build":"concurrently \'yarn:build:types\' \'yarn:build:es\' && yarn build:cjs","build:cjs":"node ../../scripts/compilation/inline client-ecr-public","build:es":"tsc -p tsconfig.es.json","build:include:deps":"yarn g:turbo run build -F=\\"$npm_package_name\\"","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"premove dist-cjs dist-es dist-types tsconfig.cjs.tsbuildinfo tsconfig.es.tsbuildinfo tsconfig.types.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo ecr-public","test:index":"tsc --noEmit ./test/index-types.ts && node ./test/index-objects.spec.mjs"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"5.2.0","@aws-crypto/sha256-js":"5.2.0","@aws-sdk/core":"^3.973.24","@aws-sdk/credential-provider-node":"^3.972.25","@aws-sdk/middleware-host-header":"^3.972.8","@aws-sdk/middleware-logger":"^3.972.8","@aws-sdk/middleware-recursion-detection":"^3.972.8","@aws-sdk/middleware-user-agent":"^3.972.25","@aws-sdk/region-config-resolver":"^3.972.9","@aws-sdk/types":"^3.973.6","@aws-sdk/util-endpoints":"^3.996.5","@aws-sdk/util-user-agent-browser":"^3.972.8","@aws-sdk/util-user-agent-node":"^3.973.11","@smithy/config-resolver":"^4.4.13","@smithy/core":"^3.23.12","@smithy/fetch-http-handler":"^5.3.15","@smithy/hash-node":"^4.2.12","@smithy/invalid-dependency":"^4.2.12","@smithy/middleware-content-length":"^4.2.12","@smithy/middleware-endpoint":"^4.4.27","@smithy/middleware-retry":"^4.4.44","@smithy/middleware-serde":"^4.2.15","@smithy/middleware-stack":"^4.2.12","@smithy/node-config-provider":"^4.3.12","@smithy/node-http-handler":"^4.5.0","@smithy/protocol-http":"^5.3.12","@smithy/smithy-client":"^4.12.7","@smithy/types":"^4.13.1","@smithy/url-parser":"^4.2.12","@smithy/util-base64":"^4.3.2","@smithy/util-body-length-browser":"^4.2.2","@smithy/util-body-length-node":"^4.2.3","@smithy/util-defaults-mode-browser":"^4.3.43","@smithy/util-defaults-mode-node":"^4.2.47","@smithy/util-endpoints":"^3.3.3","@smithy/util-middleware":"^4.2.12","@smithy/util-retry":"^4.2.12","@smithy/util-utf8":"^4.2.2","tslib":"^2.6.2"},"devDependencies":{"@tsconfig/node20":"20.1.8","@types/node":"^20.14.8","concurrently":"7.0.0","downlevel-dts":"0.10.1","premove":"4.0.0","typescript":"~5.8.3"},"engines":{"node":">=20.0.0"},"typesVersions":{"<4.5":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-ecr-public","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-ecr-public"}}');
 
 /***/ }),
 
@@ -66348,7 +66426,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/client-ecr","descrip
 /***/ 9955:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/nested-clients","version":"3.996.10","description":"Nested clients for AWS SDK packages.","main":"./dist-cjs/index.js","module":"./dist-es/index.js","types":"./dist-types/index.d.ts","scripts":{"build":"yarn lint && concurrently \'yarn:build:types\' \'yarn:build:es\' && yarn build:cjs","build:cjs":"node ../../scripts/compilation/inline nested-clients","build:es":"tsc -p tsconfig.es.json","build:include:deps":"yarn g:turbo run build -F=\\"$npm_package_name\\"","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"premove dist-cjs dist-es dist-types tsconfig.cjs.tsbuildinfo tsconfig.es.tsbuildinfo tsconfig.types.tsbuildinfo","lint":"node ../../scripts/validation/submodules-linter.js --pkg nested-clients","test":"yarn g:vitest run","test:watch":"yarn g:vitest watch"},"engines":{"node":">=20.0.0"},"sideEffects":false,"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","dependencies":{"@aws-crypto/sha256-browser":"5.2.0","@aws-crypto/sha256-js":"5.2.0","@aws-sdk/core":"^3.973.20","@aws-sdk/middleware-host-header":"^3.972.8","@aws-sdk/middleware-logger":"^3.972.8","@aws-sdk/middleware-recursion-detection":"^3.972.8","@aws-sdk/middleware-user-agent":"^3.972.21","@aws-sdk/region-config-resolver":"^3.972.8","@aws-sdk/types":"^3.973.6","@aws-sdk/util-endpoints":"^3.996.5","@aws-sdk/util-user-agent-browser":"^3.972.8","@aws-sdk/util-user-agent-node":"^3.973.7","@smithy/config-resolver":"^4.4.11","@smithy/core":"^3.23.11","@smithy/fetch-http-handler":"^5.3.15","@smithy/hash-node":"^4.2.12","@smithy/invalid-dependency":"^4.2.12","@smithy/middleware-content-length":"^4.2.12","@smithy/middleware-endpoint":"^4.4.25","@smithy/middleware-retry":"^4.4.42","@smithy/middleware-serde":"^4.2.14","@smithy/middleware-stack":"^4.2.12","@smithy/node-config-provider":"^4.3.12","@smithy/node-http-handler":"^4.4.16","@smithy/protocol-http":"^5.3.12","@smithy/smithy-client":"^4.12.5","@smithy/types":"^4.13.1","@smithy/url-parser":"^4.2.12","@smithy/util-base64":"^4.3.2","@smithy/util-body-length-browser":"^4.2.2","@smithy/util-body-length-node":"^4.2.3","@smithy/util-defaults-mode-browser":"^4.3.41","@smithy/util-defaults-mode-node":"^4.2.44","@smithy/util-endpoints":"^3.3.3","@smithy/util-middleware":"^4.2.12","@smithy/util-retry":"^4.2.12","@smithy/util-utf8":"^4.2.2","tslib":"^2.6.2"},"devDependencies":{"concurrently":"7.0.0","downlevel-dts":"0.10.1","premove":"4.0.0","typescript":"~5.8.3"},"typesVersions":{"<4.5":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["./cognito-identity.d.ts","./cognito-identity.js","./signin.d.ts","./signin.js","./sso-oidc.d.ts","./sso-oidc.js","./sso.d.ts","./sso.js","./sts.d.ts","./sts.js","dist-*/**"],"browser":{"./dist-es/submodules/cognito-identity/runtimeConfig":"./dist-es/submodules/cognito-identity/runtimeConfig.browser","./dist-es/submodules/signin/runtimeConfig":"./dist-es/submodules/signin/runtimeConfig.browser","./dist-es/submodules/sso-oidc/runtimeConfig":"./dist-es/submodules/sso-oidc/runtimeConfig.browser","./dist-es/submodules/sso/runtimeConfig":"./dist-es/submodules/sso/runtimeConfig.browser","./dist-es/submodules/sts/runtimeConfig":"./dist-es/submodules/sts/runtimeConfig.browser"},"react-native":{},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/packages/nested-clients","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"packages/nested-clients"},"exports":{"./package.json":"./package.json","./sso-oidc":{"types":"./dist-types/submodules/sso-oidc/index.d.ts","module":"./dist-es/submodules/sso-oidc/index.js","node":"./dist-cjs/submodules/sso-oidc/index.js","import":"./dist-es/submodules/sso-oidc/index.js","require":"./dist-cjs/submodules/sso-oidc/index.js"},"./sts":{"types":"./dist-types/submodules/sts/index.d.ts","module":"./dist-es/submodules/sts/index.js","node":"./dist-cjs/submodules/sts/index.js","import":"./dist-es/submodules/sts/index.js","require":"./dist-cjs/submodules/sts/index.js"},"./signin":{"types":"./dist-types/submodules/signin/index.d.ts","module":"./dist-es/submodules/signin/index.js","node":"./dist-cjs/submodules/signin/index.js","import":"./dist-es/submodules/signin/index.js","require":"./dist-cjs/submodules/signin/index.js"},"./cognito-identity":{"types":"./dist-types/submodules/cognito-identity/index.d.ts","module":"./dist-es/submodules/cognito-identity/index.js","node":"./dist-cjs/submodules/cognito-identity/index.js","import":"./dist-es/submodules/cognito-identity/index.js","require":"./dist-cjs/submodules/cognito-identity/index.js"},"./sso":{"types":"./dist-types/submodules/sso/index.d.ts","module":"./dist-es/submodules/sso/index.js","node":"./dist-cjs/submodules/sso/index.js","import":"./dist-es/submodules/sso/index.js","require":"./dist-cjs/submodules/sso/index.js"}}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/nested-clients","version":"3.996.14","description":"Nested clients for AWS SDK packages.","main":"./dist-cjs/index.js","module":"./dist-es/index.js","types":"./dist-types/index.d.ts","scripts":{"build":"yarn lint && concurrently \'yarn:build:types\' \'yarn:build:es\' && yarn build:cjs","build:cjs":"node ../../scripts/compilation/inline nested-clients","build:es":"tsc -p tsconfig.es.json","build:include:deps":"yarn g:turbo run build -F=\\"$npm_package_name\\"","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"premove dist-cjs dist-es dist-types tsconfig.cjs.tsbuildinfo tsconfig.es.tsbuildinfo tsconfig.types.tsbuildinfo","lint":"node ../../scripts/validation/submodules-linter.js --pkg nested-clients","test":"yarn g:vitest run","test:watch":"yarn g:vitest watch"},"engines":{"node":">=20.0.0"},"sideEffects":false,"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","dependencies":{"@aws-crypto/sha256-browser":"5.2.0","@aws-crypto/sha256-js":"5.2.0","@aws-sdk/core":"^3.973.24","@aws-sdk/middleware-host-header":"^3.972.8","@aws-sdk/middleware-logger":"^3.972.8","@aws-sdk/middleware-recursion-detection":"^3.972.8","@aws-sdk/middleware-user-agent":"^3.972.25","@aws-sdk/region-config-resolver":"^3.972.9","@aws-sdk/types":"^3.973.6","@aws-sdk/util-endpoints":"^3.996.5","@aws-sdk/util-user-agent-browser":"^3.972.8","@aws-sdk/util-user-agent-node":"^3.973.11","@smithy/config-resolver":"^4.4.13","@smithy/core":"^3.23.12","@smithy/fetch-http-handler":"^5.3.15","@smithy/hash-node":"^4.2.12","@smithy/invalid-dependency":"^4.2.12","@smithy/middleware-content-length":"^4.2.12","@smithy/middleware-endpoint":"^4.4.27","@smithy/middleware-retry":"^4.4.44","@smithy/middleware-serde":"^4.2.15","@smithy/middleware-stack":"^4.2.12","@smithy/node-config-provider":"^4.3.12","@smithy/node-http-handler":"^4.5.0","@smithy/protocol-http":"^5.3.12","@smithy/smithy-client":"^4.12.7","@smithy/types":"^4.13.1","@smithy/url-parser":"^4.2.12","@smithy/util-base64":"^4.3.2","@smithy/util-body-length-browser":"^4.2.2","@smithy/util-body-length-node":"^4.2.3","@smithy/util-defaults-mode-browser":"^4.3.43","@smithy/util-defaults-mode-node":"^4.2.47","@smithy/util-endpoints":"^3.3.3","@smithy/util-middleware":"^4.2.12","@smithy/util-retry":"^4.2.12","@smithy/util-utf8":"^4.2.2","tslib":"^2.6.2"},"devDependencies":{"concurrently":"7.0.0","downlevel-dts":"0.10.1","premove":"4.0.0","typescript":"~5.8.3"},"typesVersions":{"<4.5":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["./cognito-identity.d.ts","./cognito-identity.js","./signin.d.ts","./signin.js","./sso-oidc.d.ts","./sso-oidc.js","./sso.d.ts","./sso.js","./sts.d.ts","./sts.js","dist-*/**"],"browser":{"./dist-es/submodules/cognito-identity/runtimeConfig":"./dist-es/submodules/cognito-identity/runtimeConfig.browser","./dist-es/submodules/signin/runtimeConfig":"./dist-es/submodules/signin/runtimeConfig.browser","./dist-es/submodules/sso-oidc/runtimeConfig":"./dist-es/submodules/sso-oidc/runtimeConfig.browser","./dist-es/submodules/sso/runtimeConfig":"./dist-es/submodules/sso/runtimeConfig.browser","./dist-es/submodules/sts/runtimeConfig":"./dist-es/submodules/sts/runtimeConfig.browser"},"react-native":{},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/packages/nested-clients","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"packages/nested-clients"},"exports":{"./package.json":"./package.json","./sso-oidc":{"types":"./dist-types/submodules/sso-oidc/index.d.ts","module":"./dist-es/submodules/sso-oidc/index.js","node":"./dist-cjs/submodules/sso-oidc/index.js","import":"./dist-es/submodules/sso-oidc/index.js","require":"./dist-cjs/submodules/sso-oidc/index.js"},"./sts":{"types":"./dist-types/submodules/sts/index.d.ts","module":"./dist-es/submodules/sts/index.js","node":"./dist-cjs/submodules/sts/index.js","import":"./dist-es/submodules/sts/index.js","require":"./dist-cjs/submodules/sts/index.js"},"./signin":{"types":"./dist-types/submodules/signin/index.d.ts","module":"./dist-es/submodules/signin/index.js","node":"./dist-cjs/submodules/signin/index.js","import":"./dist-es/submodules/signin/index.js","require":"./dist-cjs/submodules/signin/index.js"},"./cognito-identity":{"types":"./dist-types/submodules/cognito-identity/index.d.ts","module":"./dist-es/submodules/cognito-identity/index.js","node":"./dist-cjs/submodules/cognito-identity/index.js","import":"./dist-es/submodules/cognito-identity/index.js","require":"./dist-cjs/submodules/cognito-identity/index.js"},"./sso":{"types":"./dist-types/submodules/sso/index.d.ts","module":"./dist-es/submodules/sso/index.js","node":"./dist-cjs/submodules/sso/index.js","import":"./dist-es/submodules/sso/index.js","require":"./dist-cjs/submodules/sso/index.js"}}}');
 
 /***/ })
 
