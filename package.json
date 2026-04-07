@@ -38,7 +38,7 @@
     "@eslint/js": "^10.0.1",
     "@vercel/ncc": "^0.38.4",
     "aws-sdk-client-mock": "^4.1.0",
-    "eslint": "^10.1.0",
+    "eslint": "^10.2.0",
     "globals": "^17.4.0",
     "jest": "^30.3.0"
   }
