@@ -8123,6 +8123,22 @@ More information can be found at: https://a.co/c895JFp`);
     }
 };
 
+const longPollMiddleware = () => (next, context) => async (args) => {
+    context.__retryLongPoll = true;
+    return next(args);
+};
+const longPollMiddlewareOptions = {
+    name: "longPollMiddleware",
+    tags: ["RETRY"],
+    step: "initialize",
+    override: true,
+};
+const getLongPollPlugin = (options) => ({
+    applyToStack: (clientStack) => {
+        clientStack.add(longPollMiddleware(), longPollMiddlewareOptions);
+    },
+});
+
 function setCredentialFeature(credentials, feature, value) {
     if (!credentials.$source) {
         credentials.$source = {};
@@ -8152,6 +8168,7 @@ function setTokenFeature(token, feature, value) {
 }
 
 exports.emitWarningIfUnsupportedVersion = emitWarningIfUnsupportedVersion;
+exports.getLongPollPlugin = getLongPollPlugin;
 exports.setCredentialFeature = setCredentialFeature;
 exports.setFeature = setFeature;
 exports.setTokenFeature = setTokenFeature;
@@ -20292,8 +20309,8 @@ exports.resolveRegionConfig = resolveRegionConfig;
 
 
 var types = __nccwpck_require__(2526);
-var utilMiddleware = __nccwpck_require__(6324);
 var protocolHttp = __nccwpck_require__(9376);
+var utilMiddleware = __nccwpck_require__(6324);
 var protocols = __nccwpck_require__(3422);
 
 const getSmithyContext = (context) => context[types.SMITHY_CONTEXT_KEY] || (context[types.SMITHY_CONTEXT_KEY] = {});
@@ -25724,10 +25741,10 @@ exports.getEndpointUrlConfig = getEndpointUrlConfig;
 
 
 
-var getEndpointFromConfig = __nccwpck_require__(6041);
-var urlParser = __nccwpck_require__(4494);
 var core = __nccwpck_require__(402);
 var utilMiddleware = __nccwpck_require__(6324);
+var getEndpointFromConfig = __nccwpck_require__(6041);
+var urlParser = __nccwpck_require__(4494);
 var middlewareSerde = __nccwpck_require__(3255);
 
 const resolveParamsForS3 = async (endpointParams) => {
@@ -26002,6 +26019,17 @@ var uuid = __nccwpck_require__(266);
 var utilMiddleware = __nccwpck_require__(6324);
 var smithyClient = __nccwpck_require__(1411);
 var isStreamingPayload = __nccwpck_require__(9831);
+var serde = __nccwpck_require__(2430);
+
+const asSdkError = (error) => {
+    if (error instanceof Error)
+        return error;
+    if (error instanceof Object)
+        return Object.assign(new Error(), error);
+    if (typeof error === "string")
+        return new Error(error);
+    return new Error(`AWS SDK error wrapper for ${error}`);
+};
 
 const getDefaultRetryQuota = (initialRetryTokens, options) => {
     const MAX_CAPACITY = initialRetryTokens;
@@ -26037,16 +26065,6 @@ const defaultRetryDecider = (error) => {
         return false;
     }
     return serviceErrorClassification.isRetryableByTrait(error) || serviceErrorClassification.isClockSkewError(error) || serviceErrorClassification.isThrottlingError(error) || serviceErrorClassification.isTransientError(error);
-};
-
-const asSdkError = (error) => {
-    if (error instanceof Error)
-        return error;
-    if (error instanceof Object)
-        return Object.assign(new Error(), error);
-    if (typeof error === "string")
-        return new Error(error);
-    return new Error(`AWS SDK error wrapper for ${error}`);
 };
 
 class StandardRetryStrategy {
@@ -26224,12 +26242,60 @@ const getOmitRetryHeadersPlugin = (options) => ({
     },
 });
 
+function parseRetryAfterHeader(response, logger) {
+    if (!protocolHttp.HttpResponse.isInstance(response)) {
+        return;
+    }
+    for (const header of Object.keys(response.headers)) {
+        const h = header.toLowerCase();
+        if (h === "retry-after") {
+            const retryAfter = response.headers[header];
+            let retryAfterSeconds = NaN;
+            if (retryAfter.endsWith("GMT")) {
+                try {
+                    const date = serde.parseRfc7231DateTime(retryAfter);
+                    retryAfterSeconds = (date.getTime() - Date.now()) / 1000;
+                }
+                catch (e) {
+                    logger?.trace?.("Failed to parse retry-after header");
+                    logger?.trace?.(e);
+                }
+            }
+            else if (retryAfter.match(/ GMT, ((\d+)|(\d+\.\d+))$/)) {
+                retryAfterSeconds = Number(retryAfter.match(/ GMT, ([\d.]+)$/)?.[1]);
+            }
+            else if (retryAfter.match(/^((\d+)|(\d+\.\d+))$/)) {
+                retryAfterSeconds = Number(retryAfter);
+            }
+            else if (Date.parse(retryAfter) >= Date.now()) {
+                retryAfterSeconds = (Date.parse(retryAfter) - Date.now()) / 1000;
+            }
+            if (isNaN(retryAfterSeconds)) {
+                return;
+            }
+            return new Date(Date.now() + retryAfterSeconds * 1000);
+        }
+        else if (h === "x-amz-retry-after") {
+            const v = response.headers[header];
+            const backoffMilliseconds = Number(v);
+            if (isNaN(backoffMilliseconds)) {
+                logger?.trace?.(`Failed to parse x-amz-retry-after=${v}`);
+                return;
+            }
+            return new Date(Date.now() + backoffMilliseconds);
+        }
+    }
+}
+function getRetryAfterHint(response, logger) {
+    return parseRetryAfterHeader(response, logger);
+}
+
 const retryMiddleware = (options) => (next, context) => async (args) => {
     let retryStrategy = await options.retryStrategy();
     const maxAttempts = await options.maxAttempts();
     if (isRetryStrategyV2(retryStrategy)) {
         retryStrategy = retryStrategy;
-        let retryToken = await retryStrategy.acquireInitialRetryToken(context["partition_id"]);
+        let retryToken = await retryStrategy.acquireInitialRetryToken((context["partition_id"] ?? "") + (context.__retryLongPoll ? ":longpoll" : ""));
         let lastError = new Error();
         let attempts = 0;
         let totalRetryDelay = 0;
@@ -26250,7 +26316,7 @@ const retryMiddleware = (options) => (next, context) => async (args) => {
                 return { response, output };
             }
             catch (e) {
-                const retryErrorInfo = getRetryErrorInfo(e);
+                const retryErrorInfo = getRetryErrorInfo(e, options.logger);
                 lastError = asSdkError(e);
                 if (isRequest && isStreamingPayload.isStreamingPayload(request)) {
                     (context.logger instanceof smithyClient.NoOpLogger ? console : context.logger)?.warn("An error was encountered in a non-retryable streaming request.");
@@ -26260,6 +26326,9 @@ const retryMiddleware = (options) => (next, context) => async (args) => {
                     retryToken = await retryStrategy.refreshRetryTokenForRetry(retryToken, retryErrorInfo);
                 }
                 catch (refreshError) {
+                    if (typeof refreshError.$backoff === "number") {
+                        await cooldown(refreshError.$backoff);
+                    }
                     if (!lastError.$metadata) {
                         lastError.$metadata = {};
                     }
@@ -26270,26 +26339,28 @@ const retryMiddleware = (options) => (next, context) => async (args) => {
                 attempts = retryToken.getRetryCount();
                 const delay = retryToken.getRetryDelay();
                 totalRetryDelay += delay;
-                await new Promise((resolve) => setTimeout(resolve, delay));
+                await cooldown(delay);
             }
         }
     }
     else {
         retryStrategy = retryStrategy;
-        if (retryStrategy?.mode)
+        if (retryStrategy?.mode) {
             context.userAgent = [...(context.userAgent || []), ["cfg/retry-mode", retryStrategy.mode]];
+        }
         return retryStrategy.retry(next, args);
     }
 };
+const cooldown = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const isRetryStrategyV2 = (retryStrategy) => typeof retryStrategy.acquireInitialRetryToken !== "undefined" &&
     typeof retryStrategy.refreshRetryTokenForRetry !== "undefined" &&
     typeof retryStrategy.recordSuccess !== "undefined";
-const getRetryErrorInfo = (error) => {
+const getRetryErrorInfo = (error, logger) => {
     const errorInfo = {
         error,
         errorType: getRetryErrorType(error),
     };
-    const retryAfterHint = getRetryAfterHint(error.$response);
+    const retryAfterHint = parseRetryAfterHeader(error.$response, logger);
     if (retryAfterHint) {
         errorInfo.retryAfterHint = retryAfterHint;
     }
@@ -26316,19 +26387,6 @@ const getRetryPlugin = (options) => ({
         clientStack.add(retryMiddleware(options), retryMiddlewareOptions);
     },
 });
-const getRetryAfterHint = (response) => {
-    if (!protocolHttp.HttpResponse.isInstance(response))
-        return;
-    const retryAfterHeaderName = Object.keys(response.headers).find((key) => key.toLowerCase() === "retry-after");
-    if (!retryAfterHeaderName)
-        return;
-    const retryAfter = response.headers[retryAfterHeaderName];
-    const retryAfterSeconds = Number(retryAfter);
-    if (!Number.isNaN(retryAfterSeconds))
-        return new Date(retryAfterSeconds * 1000);
-    const retryAfterDate = new Date(retryAfter);
-    return retryAfterDate;
-};
 
 exports.AdaptiveRetryStrategy = AdaptiveRetryStrategy;
 exports.CONFIG_MAX_ATTEMPTS = CONFIG_MAX_ATTEMPTS;
@@ -29093,6 +29151,19 @@ class HeaderFormatter {
         }
     }
 }
+var HEADER_VALUE_TYPE;
+(function (HEADER_VALUE_TYPE) {
+    HEADER_VALUE_TYPE[HEADER_VALUE_TYPE["boolTrue"] = 0] = "boolTrue";
+    HEADER_VALUE_TYPE[HEADER_VALUE_TYPE["boolFalse"] = 1] = "boolFalse";
+    HEADER_VALUE_TYPE[HEADER_VALUE_TYPE["byte"] = 2] = "byte";
+    HEADER_VALUE_TYPE[HEADER_VALUE_TYPE["short"] = 3] = "short";
+    HEADER_VALUE_TYPE[HEADER_VALUE_TYPE["integer"] = 4] = "integer";
+    HEADER_VALUE_TYPE[HEADER_VALUE_TYPE["long"] = 5] = "long";
+    HEADER_VALUE_TYPE[HEADER_VALUE_TYPE["byteArray"] = 6] = "byteArray";
+    HEADER_VALUE_TYPE[HEADER_VALUE_TYPE["string"] = 7] = "string";
+    HEADER_VALUE_TYPE[HEADER_VALUE_TYPE["timestamp"] = 8] = "timestamp";
+    HEADER_VALUE_TYPE[HEADER_VALUE_TYPE["uuid"] = 9] = "uuid";
+})(HEADER_VALUE_TYPE || (HEADER_VALUE_TYPE = {}));
 const UUID_PATTERN = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 class Int64 {
     bytes;
@@ -29761,10 +29832,10 @@ exports.escapeUriPath = escapeUriPath;
 
 
 var middlewareStack = __nccwpck_require__(9208);
-var protocols = __nccwpck_require__(3422);
 var types = __nccwpck_require__(809);
 var schema = __nccwpck_require__(6890);
 var serde = __nccwpck_require__(2430);
+var protocols = __nccwpck_require__(3422);
 
 class Client {
     config;
@@ -32018,17 +32089,36 @@ class DefaultRateLimiter {
         this.minFillRate = options?.minFillRate ?? 0.5;
         this.scaleConstant = options?.scaleConstant ?? 0.4;
         this.smooth = options?.smooth ?? 0.8;
-        const currentTimeInSeconds = this.getCurrentTimeInSeconds();
-        this.lastThrottleTime = currentTimeInSeconds;
+        this.lastThrottleTime = this.getCurrentTimeInSeconds();
         this.lastTxRateBucket = Math.floor(this.getCurrentTimeInSeconds());
         this.fillRate = this.minFillRate;
         this.maxCapacity = this.minCapacity;
     }
-    getCurrentTimeInSeconds() {
-        return Date.now() / 1000;
-    }
     async getSendToken() {
         return this.acquireTokenBucket(1);
+    }
+    updateClientSendingRate(response) {
+        let calculatedRate;
+        this.updateMeasuredRate();
+        const retryErrorInfo = response;
+        const isThrottling = retryErrorInfo?.errorType === "THROTTLING" || serviceErrorClassification.isThrottlingError(retryErrorInfo?.error ?? response);
+        if (isThrottling) {
+            const rateToUse = !this.enabled ? this.measuredTxRate : Math.min(this.measuredTxRate, this.fillRate);
+            this.lastMaxRate = rateToUse;
+            this.calculateTimeWindow();
+            this.lastThrottleTime = this.getCurrentTimeInSeconds();
+            calculatedRate = this.cubicThrottle(rateToUse);
+            this.enableTokenBucket();
+        }
+        else {
+            this.calculateTimeWindow();
+            calculatedRate = this.cubicSuccess(this.getCurrentTimeInSeconds());
+        }
+        const newRate = Math.min(calculatedRate, 2 * this.measuredTxRate);
+        this.updateTokenBucketRate(newRate);
+    }
+    getCurrentTimeInSeconds() {
+        return Date.now() / 1000;
     }
     async acquireTokenBucket(amount) {
         if (!this.enabled) {
@@ -32050,26 +32140,6 @@ class DefaultRateLimiter {
         const fillAmount = (timestamp - this.lastTimestamp) * this.fillRate;
         this.availableTokens = Math.min(this.maxCapacity, this.availableTokens + fillAmount);
         this.lastTimestamp = timestamp;
-    }
-    updateClientSendingRate(response) {
-        let calculatedRate;
-        this.updateMeasuredRate();
-        const retryErrorInfo = response;
-        const isThrottling = retryErrorInfo?.errorType === "THROTTLING" || serviceErrorClassification.isThrottlingError(retryErrorInfo?.error ?? response);
-        if (isThrottling) {
-            const rateToUse = !this.enabled ? this.measuredTxRate : Math.min(this.measuredTxRate, this.fillRate);
-            this.lastMaxRate = rateToUse;
-            this.calculateTimeWindow();
-            this.lastThrottleTime = this.getCurrentTimeInSeconds();
-            calculatedRate = this.cubicThrottle(rateToUse);
-            this.enableTokenBucket();
-        }
-        else {
-            this.calculateTimeWindow();
-            calculatedRate = this.cubicSuccess(this.getCurrentTimeInSeconds());
-        }
-        const newRate = Math.min(calculatedRate, 2 * this.measuredTxRate);
-        this.updateTokenBucketRate(newRate);
     }
     calculateTimeWindow() {
         this.timeWindow = this.getPrecise(Math.pow((this.lastMaxRate * (1 - this.beta)) / this.scaleConstant, 1 / 3));
@@ -32115,68 +32185,112 @@ const NO_RETRY_INCREMENT = 1;
 const INVOCATION_ID_HEADER = "amz-sdk-invocation-id";
 const REQUEST_HEADER = "amz-sdk-request";
 
-const getDefaultRetryBackoffStrategy = () => {
-    let delayBase = DEFAULT_RETRY_DELAY_BASE;
-    const computeNextBackoffDelay = (attempts) => {
-        return Math.floor(Math.min(MAXIMUM_RETRY_DELAY, Math.random() * 2 ** attempts * delayBase));
-    };
-    const setDelayBase = (delay) => {
-        delayBase = delay;
-    };
-    return {
-        computeNextBackoffDelay,
-        setDelayBase,
-    };
-};
+class Retry {
+    static v2026 = typeof process !== "undefined" && process.env?.SMITHY_NEW_RETRIES_2026 === "true";
+    static delay() {
+        return Retry.v2026 ? 50 : 100;
+    }
+    static throttlingDelay() {
+        return Retry.v2026 ? 1_000 : 500;
+    }
+    static cost() {
+        return Retry.v2026 ? 14 : 5;
+    }
+    static throttlingCost() {
+        return Retry.v2026 ? 5 : 10;
+    }
+    static modifiedCostType() {
+        return Retry.v2026 ? "THROTTLING" : "TRANSIENT";
+    }
+}
 
-const createDefaultRetryToken = ({ retryDelay, retryCount, retryCost, }) => {
-    const getRetryCount = () => retryCount;
-    const getRetryDelay = () => Math.min(MAXIMUM_RETRY_DELAY, retryDelay);
-    const getRetryCost = () => retryCost;
-    return {
-        getRetryCount,
-        getRetryDelay,
-        getRetryCost,
-    };
-};
+class DefaultRetryBackoffStrategy {
+    x = Retry.delay();
+    computeNextBackoffDelay(i) {
+        const b = Math.random();
+        const r = 2;
+        const t_i = b * Math.min(this.x * r ** i, MAXIMUM_RETRY_DELAY);
+        return Math.floor(t_i);
+    }
+    setDelayBase(delay) {
+        this.x = delay;
+    }
+}
+
+class DefaultRetryToken {
+    delay;
+    count;
+    cost;
+    longPoll;
+    constructor(delay, count, cost, longPoll) {
+        this.delay = delay;
+        this.count = count;
+        this.cost = cost;
+        this.longPoll = longPoll;
+    }
+    getRetryCount() {
+        return this.count;
+    }
+    getRetryDelay() {
+        return Math.min(MAXIMUM_RETRY_DELAY, this.delay);
+    }
+    getRetryCost() {
+        return this.cost;
+    }
+    isLongPoll() {
+        return this.longPoll;
+    }
+}
 
 class StandardRetryStrategy {
-    maxAttempts;
     mode = exports.RETRY_MODES.STANDARD;
     capacity = INITIAL_RETRY_TOKENS;
-    retryBackoffStrategy = getDefaultRetryBackoffStrategy();
+    retryBackoffStrategy;
     maxAttemptsProvider;
-    constructor(maxAttempts) {
-        this.maxAttempts = maxAttempts;
-        this.maxAttemptsProvider = typeof maxAttempts === "function" ? maxAttempts : async () => maxAttempts;
+    baseDelay;
+    constructor(arg1) {
+        if (typeof arg1 === "number") {
+            this.maxAttemptsProvider = async () => arg1;
+        }
+        else if (typeof arg1 === "function") {
+            this.maxAttemptsProvider = arg1;
+        }
+        else if (arg1 && typeof arg1 === "object") {
+            this.maxAttemptsProvider = async () => arg1.maxAttempts;
+            this.baseDelay = arg1.baseDelay;
+            this.retryBackoffStrategy = arg1.backoff;
+        }
+        this.maxAttemptsProvider ??= async () => DEFAULT_MAX_ATTEMPTS;
+        this.baseDelay ??= Retry.delay();
+        this.retryBackoffStrategy ??= new DefaultRetryBackoffStrategy();
     }
     async acquireInitialRetryToken(retryTokenScope) {
-        return createDefaultRetryToken({
-            retryDelay: DEFAULT_RETRY_DELAY_BASE,
-            retryCount: 0,
-        });
+        return new DefaultRetryToken(Retry.delay(), 0, undefined, Retry.v2026 && retryTokenScope.includes(":longpoll"));
     }
     async refreshRetryTokenForRetry(token, errorInfo) {
         const maxAttempts = await this.getMaxAttempts();
-        if (this.shouldRetry(token, errorInfo, maxAttempts)) {
+        const shouldRetry = this.shouldRetry(token, errorInfo, maxAttempts);
+        if (shouldRetry || token.isLongPoll?.()) {
             const errorType = errorInfo.errorType;
-            this.retryBackoffStrategy.setDelayBase(errorType === "THROTTLING" ? THROTTLING_RETRY_DELAY_BASE : DEFAULT_RETRY_DELAY_BASE);
+            this.retryBackoffStrategy.setDelayBase(errorType === "THROTTLING" ? Retry.throttlingDelay() : this.baseDelay);
             const delayFromErrorType = this.retryBackoffStrategy.computeNextBackoffDelay(token.getRetryCount());
-            const retryDelay = errorInfo.retryAfterHint
-                ? Math.max(errorInfo.retryAfterHint.getTime() - Date.now() || 0, delayFromErrorType)
-                : delayFromErrorType;
-            const capacityCost = this.getCapacityCost(errorType);
-            this.capacity -= capacityCost;
-            return createDefaultRetryToken({
-                retryDelay,
-                retryCount: token.getRetryCount() + 1,
-                retryCost: capacityCost,
-            });
+            let retryDelay = delayFromErrorType;
+            if (errorInfo.retryAfterHint instanceof Date) {
+                retryDelay = Math.max(delayFromErrorType, Math.min(errorInfo.retryAfterHint.getTime() - Date.now(), delayFromErrorType + 5_000));
+            }
+            if (!shouldRetry) {
+                throw Object.assign(new Error("No retry token available"), { $backoff: Retry.v2026 ? retryDelay : 0 });
+            }
+            else {
+                const capacityCost = this.getCapacityCost(errorType);
+                this.capacity -= capacityCost;
+                return new DefaultRetryToken(retryDelay, token.getRetryCount() + 1, capacityCost, token.isLongPoll?.() ?? false);
+            }
         }
         throw new Error("No retry token available");
     }
     recordSuccess(token) {
-        this.capacity = Math.max(INITIAL_RETRY_TOKENS, this.capacity + (token.getRetryCost() ?? NO_RETRY_INCREMENT));
+        this.capacity = Math.min(INITIAL_RETRY_TOKENS, this.capacity + (token.getRetryCost() ?? NO_RETRY_INCREMENT));
     }
     getCapacity() {
         return this.capacity;
@@ -32197,7 +32311,7 @@ class StandardRetryStrategy {
             this.isRetryableError(errorInfo.errorType));
     }
     getCapacityCost(errorType) {
-        return errorType === "TRANSIENT" ? TIMEOUT_RETRY_COST : RETRY_COST;
+        return errorType === Retry.modifiedCostType() ? Retry.throttlingCost() : Retry.cost();
     }
     isRetryableError(errorType) {
         return errorType === "THROTTLING" || errorType === "TRANSIENT";
@@ -32205,15 +32319,18 @@ class StandardRetryStrategy {
 }
 
 class AdaptiveRetryStrategy {
-    maxAttemptsProvider;
+    mode = exports.RETRY_MODES.ADAPTIVE;
     rateLimiter;
     standardRetryStrategy;
-    mode = exports.RETRY_MODES.ADAPTIVE;
     constructor(maxAttemptsProvider, options) {
-        this.maxAttemptsProvider = maxAttemptsProvider;
         const { rateLimiter } = options ?? {};
         this.rateLimiter = rateLimiter ?? new DefaultRateLimiter();
-        this.standardRetryStrategy = new StandardRetryStrategy(maxAttemptsProvider);
+        this.standardRetryStrategy = options
+            ? new StandardRetryStrategy({
+                maxAttempts: typeof maxAttemptsProvider === "number" ? maxAttemptsProvider : 3,
+                ...options,
+            })
+            : new StandardRetryStrategy(maxAttemptsProvider);
     }
     async acquireInitialRetryToken(retryTokenScope) {
         await this.rateLimiter.getSendToken();
@@ -32231,7 +32348,7 @@ class AdaptiveRetryStrategy {
 
 class ConfiguredRetryStrategy extends StandardRetryStrategy {
     computeNextBackoffDelay;
-    constructor(maxAttempts, computeNextBackoffDelay = DEFAULT_RETRY_DELAY_BASE) {
+    constructor(maxAttempts, computeNextBackoffDelay = Retry.delay()) {
         super(typeof maxAttempts === "function" ? maxAttempts : async () => maxAttempts);
         if (typeof computeNextBackoffDelay === "number") {
             this.computeNextBackoffDelay = () => computeNextBackoffDelay;
@@ -32259,6 +32376,7 @@ exports.MAXIMUM_RETRY_DELAY = MAXIMUM_RETRY_DELAY;
 exports.NO_RETRY_INCREMENT = NO_RETRY_INCREMENT;
 exports.REQUEST_HEADER = REQUEST_HEADER;
 exports.RETRY_COST = RETRY_COST;
+exports.Retry = Retry;
 exports.StandardRetryStrategy = StandardRetryStrategy;
 exports.THROTTLING_RETRY_DELAY_BASE = THROTTLING_RETRY_DELAY_BASE;
 exports.TIMEOUT_RETRY_COST = TIMEOUT_RETRY_COST;
@@ -64158,21 +64276,21 @@ module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("util");
 /***/ 7643:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/client-ecr-public","description":"AWS SDK for JavaScript Ecr Public Client for Node.js, Browser and React Native","version":"3.1021.0","scripts":{"build":"concurrently \'yarn:build:types\' \'yarn:build:es\' && yarn build:cjs","build:cjs":"node ../../scripts/compilation/inline client-ecr-public","build:es":"tsc -p tsconfig.es.json","build:include:deps":"yarn g:turbo run build -F=\\"$npm_package_name\\"","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"premove dist-cjs dist-es dist-types tsconfig.cjs.tsbuildinfo tsconfig.es.tsbuildinfo tsconfig.types.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo ecr-public","test:index":"tsc --noEmit ./test/index-types.ts && node ./test/index-objects.spec.mjs"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"5.2.0","@aws-crypto/sha256-js":"5.2.0","@aws-sdk/core":"^3.973.26","@aws-sdk/credential-provider-node":"^3.972.29","@aws-sdk/middleware-host-header":"^3.972.8","@aws-sdk/middleware-logger":"^3.972.8","@aws-sdk/middleware-recursion-detection":"^3.972.9","@aws-sdk/middleware-user-agent":"^3.972.28","@aws-sdk/region-config-resolver":"^3.972.10","@aws-sdk/types":"^3.973.6","@aws-sdk/util-endpoints":"^3.996.5","@aws-sdk/util-user-agent-browser":"^3.972.8","@aws-sdk/util-user-agent-node":"^3.973.14","@smithy/config-resolver":"^4.4.13","@smithy/core":"^3.23.13","@smithy/fetch-http-handler":"^5.3.15","@smithy/hash-node":"^4.2.12","@smithy/invalid-dependency":"^4.2.12","@smithy/middleware-content-length":"^4.2.12","@smithy/middleware-endpoint":"^4.4.28","@smithy/middleware-retry":"^4.4.46","@smithy/middleware-serde":"^4.2.16","@smithy/middleware-stack":"^4.2.12","@smithy/node-config-provider":"^4.3.12","@smithy/node-http-handler":"^4.5.1","@smithy/protocol-http":"^5.3.12","@smithy/smithy-client":"^4.12.8","@smithy/types":"^4.13.1","@smithy/url-parser":"^4.2.12","@smithy/util-base64":"^4.3.2","@smithy/util-body-length-browser":"^4.2.2","@smithy/util-body-length-node":"^4.2.3","@smithy/util-defaults-mode-browser":"^4.3.44","@smithy/util-defaults-mode-node":"^4.2.48","@smithy/util-endpoints":"^3.3.3","@smithy/util-middleware":"^4.2.12","@smithy/util-retry":"^4.2.13","@smithy/util-utf8":"^4.2.2","tslib":"^2.6.2"},"devDependencies":{"@tsconfig/node20":"20.1.8","@types/node":"^20.14.8","concurrently":"7.0.0","downlevel-dts":"0.10.1","premove":"4.0.0","typescript":"~5.8.3"},"engines":{"node":">=20.0.0"},"typesVersions":{"<4.5":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-ecr-public","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-ecr-public"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/client-ecr-public","description":"AWS SDK for JavaScript Ecr Public Client for Node.js, Browser and React Native","version":"3.1026.0","scripts":{"build":"concurrently \'yarn:build:types\' \'yarn:build:es\' && yarn build:cjs","build:cjs":"node ../../scripts/compilation/inline client-ecr-public","build:es":"tsc -p tsconfig.es.json","build:include:deps":"yarn g:turbo run build -F=\\"$npm_package_name\\"","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"premove dist-cjs dist-es dist-types tsconfig.cjs.tsbuildinfo tsconfig.es.tsbuildinfo tsconfig.types.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo ecr-public","test:index":"tsc --noEmit ./test/index-types.ts && node ./test/index-objects.spec.mjs"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"5.2.0","@aws-crypto/sha256-js":"5.2.0","@aws-sdk/core":"^3.973.27","@aws-sdk/credential-provider-node":"^3.972.30","@aws-sdk/middleware-host-header":"^3.972.9","@aws-sdk/middleware-logger":"^3.972.9","@aws-sdk/middleware-recursion-detection":"^3.972.10","@aws-sdk/middleware-user-agent":"^3.972.29","@aws-sdk/region-config-resolver":"^3.972.11","@aws-sdk/types":"^3.973.7","@aws-sdk/util-endpoints":"^3.996.6","@aws-sdk/util-user-agent-browser":"^3.972.9","@aws-sdk/util-user-agent-node":"^3.973.15","@smithy/config-resolver":"^4.4.14","@smithy/core":"^3.23.14","@smithy/fetch-http-handler":"^5.3.16","@smithy/hash-node":"^4.2.13","@smithy/invalid-dependency":"^4.2.13","@smithy/middleware-content-length":"^4.2.13","@smithy/middleware-endpoint":"^4.4.29","@smithy/middleware-retry":"^4.5.0","@smithy/middleware-serde":"^4.2.17","@smithy/middleware-stack":"^4.2.13","@smithy/node-config-provider":"^4.3.13","@smithy/node-http-handler":"^4.5.2","@smithy/protocol-http":"^5.3.13","@smithy/smithy-client":"^4.12.9","@smithy/types":"^4.14.0","@smithy/url-parser":"^4.2.13","@smithy/util-base64":"^4.3.2","@smithy/util-body-length-browser":"^4.2.2","@smithy/util-body-length-node":"^4.2.3","@smithy/util-defaults-mode-browser":"^4.3.45","@smithy/util-defaults-mode-node":"^4.2.49","@smithy/util-endpoints":"^3.3.4","@smithy/util-middleware":"^4.2.13","@smithy/util-retry":"^4.3.0","@smithy/util-utf8":"^4.2.2","tslib":"^2.6.2"},"devDependencies":{"@tsconfig/node20":"20.1.8","@types/node":"^20.14.8","concurrently":"7.0.0","downlevel-dts":"0.10.1","premove":"4.0.0","typescript":"~5.8.3"},"engines":{"node":">=20.0.0"},"typesVersions":{"<4.5":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-ecr-public","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-ecr-public"}}');
 
 /***/ }),
 
 /***/ 121:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/client-ecr","description":"AWS SDK for JavaScript Ecr Client for Node.js, Browser and React Native","version":"3.1021.0","scripts":{"build":"concurrently \'yarn:build:types\' \'yarn:build:es\' && yarn build:cjs","build:cjs":"node ../../scripts/compilation/inline client-ecr","build:es":"tsc -p tsconfig.es.json","build:include:deps":"yarn g:turbo run build -F=\\"$npm_package_name\\"","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"premove dist-cjs dist-es dist-types tsconfig.cjs.tsbuildinfo tsconfig.es.tsbuildinfo tsconfig.types.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo ecr","test:e2e":"yarn g:vitest run -c vitest.config.e2e.mts --mode development","test:e2e:watch":"yarn g:vitest watch -c vitest.config.e2e.mts","test:index":"tsc --noEmit ./test/index-types.ts && node ./test/index-objects.spec.mjs"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"5.2.0","@aws-crypto/sha256-js":"5.2.0","@aws-sdk/core":"^3.973.26","@aws-sdk/credential-provider-node":"^3.972.29","@aws-sdk/middleware-host-header":"^3.972.8","@aws-sdk/middleware-logger":"^3.972.8","@aws-sdk/middleware-recursion-detection":"^3.972.9","@aws-sdk/middleware-user-agent":"^3.972.28","@aws-sdk/region-config-resolver":"^3.972.10","@aws-sdk/types":"^3.973.6","@aws-sdk/util-endpoints":"^3.996.5","@aws-sdk/util-user-agent-browser":"^3.972.8","@aws-sdk/util-user-agent-node":"^3.973.14","@smithy/config-resolver":"^4.4.13","@smithy/core":"^3.23.13","@smithy/fetch-http-handler":"^5.3.15","@smithy/hash-node":"^4.2.12","@smithy/invalid-dependency":"^4.2.12","@smithy/middleware-content-length":"^4.2.12","@smithy/middleware-endpoint":"^4.4.28","@smithy/middleware-retry":"^4.4.46","@smithy/middleware-serde":"^4.2.16","@smithy/middleware-stack":"^4.2.12","@smithy/node-config-provider":"^4.3.12","@smithy/node-http-handler":"^4.5.1","@smithy/protocol-http":"^5.3.12","@smithy/smithy-client":"^4.12.8","@smithy/types":"^4.13.1","@smithy/url-parser":"^4.2.12","@smithy/util-base64":"^4.3.2","@smithy/util-body-length-browser":"^4.2.2","@smithy/util-body-length-node":"^4.2.3","@smithy/util-defaults-mode-browser":"^4.3.44","@smithy/util-defaults-mode-node":"^4.2.48","@smithy/util-endpoints":"^3.3.3","@smithy/util-middleware":"^4.2.12","@smithy/util-retry":"^4.2.13","@smithy/util-utf8":"^4.2.2","@smithy/util-waiter":"^4.2.14","tslib":"^2.6.2"},"devDependencies":{"@tsconfig/node20":"20.1.8","@types/node":"^20.14.8","concurrently":"7.0.0","downlevel-dts":"0.10.1","premove":"4.0.0","typescript":"~5.8.3"},"engines":{"node":">=20.0.0"},"typesVersions":{"<4.5":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-ecr","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-ecr"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/client-ecr","description":"AWS SDK for JavaScript Ecr Client for Node.js, Browser and React Native","version":"3.1026.0","scripts":{"build":"concurrently \'yarn:build:types\' \'yarn:build:es\' && yarn build:cjs","build:cjs":"node ../../scripts/compilation/inline client-ecr","build:es":"tsc -p tsconfig.es.json","build:include:deps":"yarn g:turbo run build -F=\\"$npm_package_name\\"","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"premove dist-cjs dist-es dist-types tsconfig.cjs.tsbuildinfo tsconfig.es.tsbuildinfo tsconfig.types.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo ecr","test:e2e":"yarn g:vitest run -c vitest.config.e2e.mts --mode development","test:e2e:watch":"yarn g:vitest watch -c vitest.config.e2e.mts","test:index":"tsc --noEmit ./test/index-types.ts && node ./test/index-objects.spec.mjs"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"5.2.0","@aws-crypto/sha256-js":"5.2.0","@aws-sdk/core":"^3.973.27","@aws-sdk/credential-provider-node":"^3.972.30","@aws-sdk/middleware-host-header":"^3.972.9","@aws-sdk/middleware-logger":"^3.972.9","@aws-sdk/middleware-recursion-detection":"^3.972.10","@aws-sdk/middleware-user-agent":"^3.972.29","@aws-sdk/region-config-resolver":"^3.972.11","@aws-sdk/types":"^3.973.7","@aws-sdk/util-endpoints":"^3.996.6","@aws-sdk/util-user-agent-browser":"^3.972.9","@aws-sdk/util-user-agent-node":"^3.973.15","@smithy/config-resolver":"^4.4.14","@smithy/core":"^3.23.14","@smithy/fetch-http-handler":"^5.3.16","@smithy/hash-node":"^4.2.13","@smithy/invalid-dependency":"^4.2.13","@smithy/middleware-content-length":"^4.2.13","@smithy/middleware-endpoint":"^4.4.29","@smithy/middleware-retry":"^4.5.0","@smithy/middleware-serde":"^4.2.17","@smithy/middleware-stack":"^4.2.13","@smithy/node-config-provider":"^4.3.13","@smithy/node-http-handler":"^4.5.2","@smithy/protocol-http":"^5.3.13","@smithy/smithy-client":"^4.12.9","@smithy/types":"^4.14.0","@smithy/url-parser":"^4.2.13","@smithy/util-base64":"^4.3.2","@smithy/util-body-length-browser":"^4.2.2","@smithy/util-body-length-node":"^4.2.3","@smithy/util-defaults-mode-browser":"^4.3.45","@smithy/util-defaults-mode-node":"^4.2.49","@smithy/util-endpoints":"^3.3.4","@smithy/util-middleware":"^4.2.13","@smithy/util-retry":"^4.3.0","@smithy/util-utf8":"^4.2.2","@smithy/util-waiter":"^4.2.15","tslib":"^2.6.2"},"devDependencies":{"@tsconfig/node20":"20.1.8","@types/node":"^20.14.8","concurrently":"7.0.0","downlevel-dts":"0.10.1","premove":"4.0.0","typescript":"~5.8.3"},"engines":{"node":">=20.0.0"},"typesVersions":{"<4.5":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-ecr","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-ecr"}}');
 
 /***/ }),
 
 /***/ 9955:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/nested-clients","version":"3.996.18","description":"Nested clients for AWS SDK packages.","main":"./dist-cjs/index.js","module":"./dist-es/index.js","types":"./dist-types/index.d.ts","scripts":{"build":"yarn lint && concurrently \'yarn:build:types\' \'yarn:build:es\' && yarn build:cjs","build:cjs":"node ../../scripts/compilation/inline nested-clients","build:es":"tsc -p tsconfig.es.json","build:include:deps":"yarn g:turbo run build -F=\\"$npm_package_name\\"","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"premove dist-cjs dist-es dist-types tsconfig.cjs.tsbuildinfo tsconfig.es.tsbuildinfo tsconfig.types.tsbuildinfo","lint":"node ../../scripts/validation/submodules-linter.js --pkg nested-clients","test":"yarn g:vitest run","test:watch":"yarn g:vitest watch"},"engines":{"node":">=20.0.0"},"sideEffects":false,"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","dependencies":{"@aws-crypto/sha256-browser":"5.2.0","@aws-crypto/sha256-js":"5.2.0","@aws-sdk/core":"^3.973.26","@aws-sdk/middleware-host-header":"^3.972.8","@aws-sdk/middleware-logger":"^3.972.8","@aws-sdk/middleware-recursion-detection":"^3.972.9","@aws-sdk/middleware-user-agent":"^3.972.28","@aws-sdk/region-config-resolver":"^3.972.10","@aws-sdk/types":"^3.973.6","@aws-sdk/util-endpoints":"^3.996.5","@aws-sdk/util-user-agent-browser":"^3.972.8","@aws-sdk/util-user-agent-node":"^3.973.14","@smithy/config-resolver":"^4.4.13","@smithy/core":"^3.23.13","@smithy/fetch-http-handler":"^5.3.15","@smithy/hash-node":"^4.2.12","@smithy/invalid-dependency":"^4.2.12","@smithy/middleware-content-length":"^4.2.12","@smithy/middleware-endpoint":"^4.4.28","@smithy/middleware-retry":"^4.4.46","@smithy/middleware-serde":"^4.2.16","@smithy/middleware-stack":"^4.2.12","@smithy/node-config-provider":"^4.3.12","@smithy/node-http-handler":"^4.5.1","@smithy/protocol-http":"^5.3.12","@smithy/smithy-client":"^4.12.8","@smithy/types":"^4.13.1","@smithy/url-parser":"^4.2.12","@smithy/util-base64":"^4.3.2","@smithy/util-body-length-browser":"^4.2.2","@smithy/util-body-length-node":"^4.2.3","@smithy/util-defaults-mode-browser":"^4.3.44","@smithy/util-defaults-mode-node":"^4.2.48","@smithy/util-endpoints":"^3.3.3","@smithy/util-middleware":"^4.2.12","@smithy/util-retry":"^4.2.13","@smithy/util-utf8":"^4.2.2","tslib":"^2.6.2"},"devDependencies":{"concurrently":"7.0.0","downlevel-dts":"0.10.1","premove":"4.0.0","typescript":"~5.8.3"},"typesVersions":{"<4.5":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["./cognito-identity.d.ts","./cognito-identity.js","./signin.d.ts","./signin.js","./sso-oidc.d.ts","./sso-oidc.js","./sso.d.ts","./sso.js","./sts.d.ts","./sts.js","dist-*/**"],"browser":{"./dist-es/submodules/cognito-identity/runtimeConfig":"./dist-es/submodules/cognito-identity/runtimeConfig.browser","./dist-es/submodules/signin/runtimeConfig":"./dist-es/submodules/signin/runtimeConfig.browser","./dist-es/submodules/sso-oidc/runtimeConfig":"./dist-es/submodules/sso-oidc/runtimeConfig.browser","./dist-es/submodules/sso/runtimeConfig":"./dist-es/submodules/sso/runtimeConfig.browser","./dist-es/submodules/sts/runtimeConfig":"./dist-es/submodules/sts/runtimeConfig.browser"},"react-native":{},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/packages/nested-clients","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"packages/nested-clients"},"exports":{"./package.json":"./package.json","./sso-oidc":{"types":"./dist-types/submodules/sso-oidc/index.d.ts","module":"./dist-es/submodules/sso-oidc/index.js","node":"./dist-cjs/submodules/sso-oidc/index.js","import":"./dist-es/submodules/sso-oidc/index.js","require":"./dist-cjs/submodules/sso-oidc/index.js"},"./sts":{"types":"./dist-types/submodules/sts/index.d.ts","module":"./dist-es/submodules/sts/index.js","node":"./dist-cjs/submodules/sts/index.js","import":"./dist-es/submodules/sts/index.js","require":"./dist-cjs/submodules/sts/index.js"},"./signin":{"types":"./dist-types/submodules/signin/index.d.ts","module":"./dist-es/submodules/signin/index.js","node":"./dist-cjs/submodules/signin/index.js","import":"./dist-es/submodules/signin/index.js","require":"./dist-cjs/submodules/signin/index.js"},"./cognito-identity":{"types":"./dist-types/submodules/cognito-identity/index.d.ts","module":"./dist-es/submodules/cognito-identity/index.js","node":"./dist-cjs/submodules/cognito-identity/index.js","import":"./dist-es/submodules/cognito-identity/index.js","require":"./dist-cjs/submodules/cognito-identity/index.js"},"./sso":{"types":"./dist-types/submodules/sso/index.d.ts","module":"./dist-es/submodules/sso/index.js","node":"./dist-cjs/submodules/sso/index.js","import":"./dist-es/submodules/sso/index.js","require":"./dist-cjs/submodules/sso/index.js"}}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/nested-clients","version":"3.996.19","description":"Nested clients for AWS SDK packages.","main":"./dist-cjs/index.js","module":"./dist-es/index.js","types":"./dist-types/index.d.ts","scripts":{"build":"yarn lint && concurrently \'yarn:build:types\' \'yarn:build:es\' && yarn build:cjs","build:cjs":"node ../../scripts/compilation/inline nested-clients","build:es":"tsc -p tsconfig.es.json","build:include:deps":"yarn g:turbo run build -F=\\"$npm_package_name\\"","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"premove dist-cjs dist-es dist-types tsconfig.cjs.tsbuildinfo tsconfig.es.tsbuildinfo tsconfig.types.tsbuildinfo","lint":"node ../../scripts/validation/submodules-linter.js --pkg nested-clients","test":"yarn g:vitest run","test:watch":"yarn g:vitest watch"},"engines":{"node":">=20.0.0"},"sideEffects":false,"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","dependencies":{"@aws-crypto/sha256-browser":"5.2.0","@aws-crypto/sha256-js":"5.2.0","@aws-sdk/core":"^3.973.27","@aws-sdk/middleware-host-header":"^3.972.9","@aws-sdk/middleware-logger":"^3.972.9","@aws-sdk/middleware-recursion-detection":"^3.972.10","@aws-sdk/middleware-user-agent":"^3.972.29","@aws-sdk/region-config-resolver":"^3.972.11","@aws-sdk/types":"^3.973.7","@aws-sdk/util-endpoints":"^3.996.6","@aws-sdk/util-user-agent-browser":"^3.972.9","@aws-sdk/util-user-agent-node":"^3.973.15","@smithy/config-resolver":"^4.4.14","@smithy/core":"^3.23.14","@smithy/fetch-http-handler":"^5.3.16","@smithy/hash-node":"^4.2.13","@smithy/invalid-dependency":"^4.2.13","@smithy/middleware-content-length":"^4.2.13","@smithy/middleware-endpoint":"^4.4.29","@smithy/middleware-retry":"^4.5.0","@smithy/middleware-serde":"^4.2.17","@smithy/middleware-stack":"^4.2.13","@smithy/node-config-provider":"^4.3.13","@smithy/node-http-handler":"^4.5.2","@smithy/protocol-http":"^5.3.13","@smithy/smithy-client":"^4.12.9","@smithy/types":"^4.14.0","@smithy/url-parser":"^4.2.13","@smithy/util-base64":"^4.3.2","@smithy/util-body-length-browser":"^4.2.2","@smithy/util-body-length-node":"^4.2.3","@smithy/util-defaults-mode-browser":"^4.3.45","@smithy/util-defaults-mode-node":"^4.2.49","@smithy/util-endpoints":"^3.3.4","@smithy/util-middleware":"^4.2.13","@smithy/util-retry":"^4.3.0","@smithy/util-utf8":"^4.2.2","tslib":"^2.6.2"},"devDependencies":{"concurrently":"7.0.0","downlevel-dts":"0.10.1","premove":"4.0.0","typescript":"~5.8.3"},"typesVersions":{"<4.5":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["./cognito-identity.d.ts","./cognito-identity.js","./signin.d.ts","./signin.js","./sso-oidc.d.ts","./sso-oidc.js","./sso.d.ts","./sso.js","./sts.d.ts","./sts.js","dist-*/**"],"browser":{"./dist-es/submodules/cognito-identity/runtimeConfig":"./dist-es/submodules/cognito-identity/runtimeConfig.browser","./dist-es/submodules/signin/runtimeConfig":"./dist-es/submodules/signin/runtimeConfig.browser","./dist-es/submodules/sso-oidc/runtimeConfig":"./dist-es/submodules/sso-oidc/runtimeConfig.browser","./dist-es/submodules/sso/runtimeConfig":"./dist-es/submodules/sso/runtimeConfig.browser","./dist-es/submodules/sts/runtimeConfig":"./dist-es/submodules/sts/runtimeConfig.browser"},"react-native":{},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/packages/nested-clients","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"packages/nested-clients"},"exports":{"./package.json":"./package.json","./sso-oidc":{"types":"./dist-types/submodules/sso-oidc/index.d.ts","module":"./dist-es/submodules/sso-oidc/index.js","node":"./dist-cjs/submodules/sso-oidc/index.js","import":"./dist-es/submodules/sso-oidc/index.js","require":"./dist-cjs/submodules/sso-oidc/index.js"},"./sts":{"types":"./dist-types/submodules/sts/index.d.ts","module":"./dist-es/submodules/sts/index.js","node":"./dist-cjs/submodules/sts/index.js","import":"./dist-es/submodules/sts/index.js","require":"./dist-cjs/submodules/sts/index.js"},"./signin":{"types":"./dist-types/submodules/signin/index.d.ts","module":"./dist-es/submodules/signin/index.js","node":"./dist-cjs/submodules/signin/index.js","import":"./dist-es/submodules/signin/index.js","require":"./dist-cjs/submodules/signin/index.js"},"./cognito-identity":{"types":"./dist-types/submodules/cognito-identity/index.d.ts","module":"./dist-es/submodules/cognito-identity/index.js","node":"./dist-cjs/submodules/cognito-identity/index.js","import":"./dist-es/submodules/cognito-identity/index.js","require":"./dist-cjs/submodules/cognito-identity/index.js"},"./sso":{"types":"./dist-types/submodules/sso/index.d.ts","module":"./dist-es/submodules/sso/index.js","node":"./dist-cjs/submodules/sso/index.js","import":"./dist-es/submodules/sso/index.js","require":"./dist-cjs/submodules/sso/index.js"}}}');
 
 /***/ })
 
@@ -67461,9 +67579,9 @@ class Agent extends external_http_.Agent {
             .then(() => this.connect(req, connectOpts))
             .then((socket) => {
             this.decrementSockets(name, fakeSocket);
-            if (socket instanceof external_http_.Agent) {
+            if (typeof socket
+                .addRequest === 'function') {
                 try {
-                    // @ts-expect-error `addRequest()` isn't defined in `@types/node`
                     return socket.addRequest(req, connectOpts);
                 }
                 catch (err) {
