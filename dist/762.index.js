@@ -65,6 +65,103 @@ exports.resolveHttpAuthSchemeConfig = resolveHttpAuthSchemeConfig;
 
 /***/ }),
 
+/***/ 4776:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.bdd = void 0;
+const util_endpoints_1 = __webpack_require__(9674);
+const m = "ref";
+const a = -1, b = true, c = "isSet", d = "PartitionResult", e = "booleanEquals", f = "getAttr", g = "stringEquals", h = { [m]: "Endpoint" }, i = { [m]: d }, j = { fn: f, argv: [i, "name"] }, k = {}, l = [{ [m]: "Region" }];
+const _data = {
+    conditions: [
+        [c, [h]],
+        [c, l],
+        ["aws.partition", l, d],
+        [e, [{ [m]: "UseFIPS" }, b]],
+        [e, [{ [m]: "UseDualStack" }, b]],
+        [e, [{ fn: f, argv: [i, "supportsDualStack"] }, b]],
+        [e, [{ fn: f, argv: [i, "supportsFIPS"] }, b]],
+        [g, [j, "aws"]],
+        [g, [j, "aws-cn"]],
+        [g, [j, "aws-us-gov"]],
+    ],
+    results: [
+        [a],
+        [a, "Invalid Configuration: FIPS and custom endpoint are not supported"],
+        [a, "Invalid Configuration: Dualstack and custom endpoint are not supported"],
+        [h, k],
+        ["https://{Region}.signin.aws.amazon.com", k],
+        ["https://{Region}.signin.amazonaws.cn", k],
+        ["https://{Region}.signin.amazonaws-us-gov.com", k],
+        ["https://signin-fips.{Region}.{PartitionResult#dualStackDnsSuffix}", k],
+        [a, "FIPS and DualStack are enabled, but this partition does not support one or both"],
+        ["https://signin-fips.{Region}.{PartitionResult#dnsSuffix}", k],
+        [a, "FIPS is enabled but this partition does not support FIPS"],
+        ["https://signin.{Region}.{PartitionResult#dualStackDnsSuffix}", k],
+        [a, "DualStack is enabled but this partition does not support DualStack"],
+        ["https://signin.{Region}.{PartitionResult#dnsSuffix}", k],
+        [a, "Invalid Configuration: Missing Region"],
+    ],
+};
+const root = 2;
+const r = 100_000_000;
+const nodes = new Int32Array([
+    -1,
+    1,
+    -1,
+    0,
+    15,
+    3,
+    1,
+    4,
+    r + 14,
+    2,
+    5,
+    r + 14,
+    3,
+    11,
+    6,
+    4,
+    10,
+    7,
+    7,
+    r + 4,
+    8,
+    8,
+    r + 5,
+    9,
+    9,
+    r + 6,
+    r + 13,
+    5,
+    r + 11,
+    r + 12,
+    4,
+    13,
+    12,
+    6,
+    r + 9,
+    r + 10,
+    5,
+    14,
+    r + 8,
+    6,
+    r + 7,
+    r + 8,
+    3,
+    r + 1,
+    16,
+    4,
+    r + 2,
+    r + 3,
+]);
+exports.bdd = util_endpoints_1.BinaryDecisionDiagram.from(nodes, root, _data.conditions, _data.results);
+
+
+/***/ }),
+
 /***/ 2547:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
@@ -73,159 +170,19 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.defaultEndpointResolver = void 0;
 const util_endpoints_1 = __webpack_require__(3068);
 const util_endpoints_2 = __webpack_require__(9674);
-const ruleset_1 = __webpack_require__(6904);
+const bdd_1 = __webpack_require__(4776);
 const cache = new util_endpoints_2.EndpointCache({
     size: 50,
     params: ["Endpoint", "Region", "UseDualStack", "UseFIPS"],
 });
 const defaultEndpointResolver = (endpointParams, context = {}) => {
-    return cache.get(endpointParams, () => (0, util_endpoints_2.resolveEndpoint)(ruleset_1.ruleSet, {
+    return cache.get(endpointParams, () => (0, util_endpoints_2.decideEndpoint)(bdd_1.bdd, {
         endpointParams: endpointParams,
         logger: context.logger,
     }));
 };
 exports.defaultEndpointResolver = defaultEndpointResolver;
 util_endpoints_2.customEndpointFunctions.aws = util_endpoints_1.awsEndpointFunctions;
-
-
-/***/ }),
-
-/***/ 6904:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ruleSet = void 0;
-const u = "required", v = "fn", w = "argv", x = "ref";
-const a = true, b = "isSet", c = "booleanEquals", d = "error", e = "endpoint", f = "tree", g = "PartitionResult", h = "stringEquals", i = { [u]: true, default: false, type: "boolean" }, j = { [u]: false, type: "string" }, k = { [x]: "Endpoint" }, l = { [v]: c, [w]: [{ [x]: "UseFIPS" }, true] }, m = { [v]: c, [w]: [{ [x]: "UseDualStack" }, true] }, n = {}, o = { [v]: "getAttr", [w]: [{ [x]: g }, "name"] }, p = { [v]: c, [w]: [{ [x]: "UseFIPS" }, false] }, q = { [v]: c, [w]: [{ [x]: "UseDualStack" }, false] }, r = { [v]: "getAttr", [w]: [{ [x]: g }, "supportsFIPS"] }, s = { [v]: c, [w]: [true, { [v]: "getAttr", [w]: [{ [x]: g }, "supportsDualStack"] }] }, t = [{ [x]: "Region" }];
-const _data = {
-    version: "1.0",
-    parameters: { UseDualStack: i, UseFIPS: i, Endpoint: j, Region: j },
-    rules: [
-        {
-            conditions: [{ [v]: b, [w]: [k] }],
-            rules: [
-                { conditions: [l], error: "Invalid Configuration: FIPS and custom endpoint are not supported", type: d },
-                {
-                    rules: [
-                        {
-                            conditions: [m],
-                            error: "Invalid Configuration: Dualstack and custom endpoint are not supported",
-                            type: d,
-                        },
-                        { endpoint: { url: k, properties: n, headers: n }, type: e },
-                    ],
-                    type: f,
-                },
-            ],
-            type: f,
-        },
-        {
-            rules: [
-                {
-                    conditions: [{ [v]: b, [w]: t }],
-                    rules: [
-                        {
-                            conditions: [{ [v]: "aws.partition", [w]: t, assign: g }],
-                            rules: [
-                                {
-                                    conditions: [{ [v]: h, [w]: [o, "aws"] }, p, q],
-                                    endpoint: { url: "https://{Region}.signin.aws.amazon.com", properties: n, headers: n },
-                                    type: e,
-                                },
-                                {
-                                    conditions: [{ [v]: h, [w]: [o, "aws-cn"] }, p, q],
-                                    endpoint: { url: "https://{Region}.signin.amazonaws.cn", properties: n, headers: n },
-                                    type: e,
-                                },
-                                {
-                                    conditions: [{ [v]: h, [w]: [o, "aws-us-gov"] }, p, q],
-                                    endpoint: { url: "https://{Region}.signin.amazonaws-us-gov.com", properties: n, headers: n },
-                                    type: e,
-                                },
-                                {
-                                    conditions: [l, m],
-                                    rules: [
-                                        {
-                                            conditions: [{ [v]: c, [w]: [a, r] }, s],
-                                            rules: [
-                                                {
-                                                    endpoint: {
-                                                        url: "https://signin-fips.{Region}.{PartitionResult#dualStackDnsSuffix}",
-                                                        properties: n,
-                                                        headers: n,
-                                                    },
-                                                    type: e,
-                                                },
-                                            ],
-                                            type: f,
-                                        },
-                                        {
-                                            error: "FIPS and DualStack are enabled, but this partition does not support one or both",
-                                            type: d,
-                                        },
-                                    ],
-                                    type: f,
-                                },
-                                {
-                                    conditions: [l, q],
-                                    rules: [
-                                        {
-                                            conditions: [{ [v]: c, [w]: [r, a] }],
-                                            rules: [
-                                                {
-                                                    endpoint: {
-                                                        url: "https://signin-fips.{Region}.{PartitionResult#dnsSuffix}",
-                                                        properties: n,
-                                                        headers: n,
-                                                    },
-                                                    type: e,
-                                                },
-                                            ],
-                                            type: f,
-                                        },
-                                        { error: "FIPS is enabled but this partition does not support FIPS", type: d },
-                                    ],
-                                    type: f,
-                                },
-                                {
-                                    conditions: [p, m],
-                                    rules: [
-                                        {
-                                            conditions: [s],
-                                            rules: [
-                                                {
-                                                    endpoint: {
-                                                        url: "https://signin.{Region}.{PartitionResult#dualStackDnsSuffix}",
-                                                        properties: n,
-                                                        headers: n,
-                                                    },
-                                                    type: e,
-                                                },
-                                            ],
-                                            type: f,
-                                        },
-                                        { error: "DualStack is enabled but this partition does not support DualStack", type: d },
-                                    ],
-                                    type: f,
-                                },
-                                {
-                                    endpoint: { url: "https://signin.{Region}.{PartitionResult#dnsSuffix}", properties: n, headers: n },
-                                    type: e,
-                                },
-                            ],
-                            type: f,
-                        },
-                    ],
-                    type: f,
-                },
-                { error: "Invalid Configuration: Missing Region", type: d },
-            ],
-            type: f,
-        },
-    ],
-};
-exports.ruleSet = _data;
 
 
 /***/ }),
