@@ -57,9 +57,13 @@ class EventStreamSerde {
                     body: event.body,
                 };
             }
-            const unionMember = Object.keys(event).find((key) => {
-                return key !== "__type";
-            }) ?? "";
+            let unionMember = "";
+            for (const key in event) {
+                if (key !== "__type") {
+                    unionMember = key;
+                    break;
+                }
+            }
             const { additionalHeaders, body, eventType, explicitPayloadContentType } = this.writeEventBody(unionMember, unionSchema, event);
             const headers = {
                 ":event-type": { type: "string", value: eventType },
@@ -80,9 +84,13 @@ class EventStreamSerde {
         const memberSchemas = unionSchema.getMemberSchemas();
         const initialResponseMarker = Symbol("initialResponseMarker");
         const asyncIterable = marshaller.deserialize(response.body, async (event) => {
-            const unionMember = Object.keys(event).find((key) => {
-                return key !== "__type";
-            }) ?? "";
+            let unionMember = "";
+            for (const key in event) {
+                if (key !== "__type") {
+                    unionMember = key;
+                    break;
+                }
+            }
             const body = event[unionMember].body;
             if (unionMember === "initial-response") {
                 const dataObject = await this.deserializer.read(responseSchema, body);
@@ -158,8 +166,8 @@ class EventStreamSerde {
             if (!responseSchema) {
                 throw new Error("@smithy::core/protocols - initial-response event encountered in event stream but no response schema given.");
             }
-            for (const [key, value] of Object.entries(firstEvent.value)) {
-                initialResponseContainer[key] = value;
+            for (const key in firstEvent.value) {
+                initialResponseContainer[key] = firstEvent.value[key];
             }
         }
         return {
