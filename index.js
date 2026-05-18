@@ -5,6 +5,7 @@ import { NodeHttpHandler } from '@aws-sdk/node-http-handler';
 import { fromHttp } from '@aws-sdk/credential-providers';
 import { ECRClient, GetAuthorizationTokenCommand } from '@aws-sdk/client-ecr';
 import { ECRPUBLICClient, GetAuthorizationTokenCommand as GetAuthorizationTokenCommandPublic } from '@aws-sdk/client-ecr-public';
+import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const ECR_LOGIN_GITHUB_ACTION_USER_AGENT = 'amazon-ecr-login-for-github-actions';
@@ -232,6 +233,6 @@ export {
 };
 
 /* istanbul ignore next */
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))) {
   run();
 }
