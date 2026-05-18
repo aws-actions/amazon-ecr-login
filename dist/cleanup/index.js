@@ -30915,9 +30915,12 @@ function getIDToken(aud) {
  */
 
 //# sourceMappingURL=core.js.map
+;// CONCATENATED MODULE: external "node:fs"
+const external_node_fs_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:fs");
 // EXTERNAL MODULE: external "node:url"
 var external_node_url_ = __nccwpck_require__(3136);
 ;// CONCATENATED MODULE: ./cleanup.js
+
 
 
 
@@ -30977,7 +30980,7 @@ async function cleanup() {
 /* harmony default export */ const cleanup_0 = (cleanup);
 
 /* istanbul ignore next */
-if (process.argv[1] === (0,external_node_url_.fileURLToPath)(import.meta.url)) {
+if ((0,external_node_fs_namespaceObject.realpathSync)(process.argv[1]) === (0,external_node_fs_namespaceObject.realpathSync)((0,external_node_url_.fileURLToPath)(import.meta.url))) {
   cleanup();
 }
 
