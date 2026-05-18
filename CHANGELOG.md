@@ -4,11 +4,41 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### [2.1.5](https://github.com/aws-actions/amazon-ecr-login/compare/v2.1.4...v2.1.5) (2026-05-06)
 
+
+### Dependency Updates
+
+* bump @aws-sdk/client-ecr from 3.1038.0 to 3.1043.0 ([#1040](https://github.com/aws-actions/amazon-ecr-login/issues/1040))
+* bump @aws-sdk/client-ecr-public from 3.1034.0 to 3.1043.0 ([#1032](https://github.com/aws-actions/amazon-ecr-login/issues/1032), [#1041](https://github.com/aws-actions/amazon-ecr-login/issues/1041))
+* bump @aws-sdk/credential-providers ([#1030](https://github.com/aws-actions/amazon-ecr-login/issues/1030), [#1043](https://github.com/aws-actions/amazon-ecr-login/issues/1043))
+
 ### [2.1.4](https://github.com/aws-actions/amazon-ecr-login/compare/v2.1.3...v2.1.4) (2026-04-22)
+
+
+### Dependency Updates
+
+* bump @actions/core from 3.0.0 to 3.0.1 ([#1015](https://github.com/aws-actions/amazon-ecr-login/issues/1015))
+* bump @aws-sdk/client-ecr from 3.1030.0 to 3.1034.0 ([#1017](https://github.com/aws-actions/amazon-ecr-login/issues/1017))
+* bump @aws-sdk/client-ecr-public from 3.1026.0 to 3.1034.0 ([#1016](https://github.com/aws-actions/amazon-ecr-login/issues/1016))
+* bump @aws-sdk/credential-providers ([#1014](https://github.com/aws-actions/amazon-ecr-login/issues/1014))
 
 ### [2.1.3](https://github.com/aws-actions/amazon-ecr-login/compare/v2.1.2...v2.1.3) (2026-04-15)
 
+
+### Dependency Updates
+
+* bump @aws-sdk/client-ecr from 3.1021.0 to 3.1030.0 ([#987](https://github.com/aws-actions/amazon-ecr-login/issues/987), [#1001](https://github.com/aws-actions/amazon-ecr-login/issues/1001))
+* bump @aws-sdk/client-ecr-public from 3.1021.0 to 3.1026.0 ([#990](https://github.com/aws-actions/amazon-ecr-login/issues/990))
+* bump @aws-sdk/credential-providers ([#1002](https://github.com/aws-actions/amazon-ecr-login/issues/1002))
+* bump https-proxy-agent from 8.0.0 to 9.0.0 ([#991](https://github.com/aws-actions/amazon-ecr-login/issues/991))
+
 ### [2.1.2](https://github.com/aws-actions/amazon-ecr-login/compare/v2.1.1...v2.1.2) (2026-04-01)
+
+
+### Dependency Updates
+
+* bump @aws-sdk/client-ecr from 3.1011.0 to 3.1021.0 ([#966](https://github.com/aws-actions/amazon-ecr-login/issues/966), [#977](https://github.com/aws-actions/amazon-ecr-login/issues/977))
+* bump @aws-sdk/client-ecr-public from 3.1011.0 to 3.1021.0 ([#963](https://github.com/aws-actions/amazon-ecr-login/issues/963), [#976](https://github.com/aws-actions/amazon-ecr-login/issues/976))
+* bump @aws-sdk/credential-providers ([#965](https://github.com/aws-actions/amazon-ecr-login/issues/965), [#978](https://github.com/aws-actions/amazon-ecr-login/issues/978))
 
 ### [2.1.1](https://github.com/aws-actions/amazon-ecr-login/compare/v2.1.0...v2.1.1) (2026-03-24)
 
