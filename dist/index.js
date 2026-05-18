@@ -74015,9 +74015,12 @@ var credential_providers_dist_cjs = __nccwpck_require__(9719);
 var client_ecr_dist_cjs = __nccwpck_require__(8249);
 // EXTERNAL MODULE: ./node_modules/@aws-sdk/client-ecr-public/dist-cjs/index.js
 var client_ecr_public_dist_cjs = __nccwpck_require__(9821);
+// EXTERNAL MODULE: external "node:fs"
+var external_node_fs_ = __nccwpck_require__(3024);
 // EXTERNAL MODULE: external "node:url"
 var external_node_url_ = __nccwpck_require__(3136);
 ;// CONCATENATED MODULE: ./index.js
+
 
 
 
@@ -74247,7 +74250,7 @@ async function run() {
 
 
 /* istanbul ignore next */
-if (process.argv[1] === (0,external_node_url_.fileURLToPath)(import.meta.url)) {
+if ((0,external_node_fs_.realpathSync)(process.argv[1]) === (0,external_node_fs_.realpathSync)((0,external_node_url_.fileURLToPath)(import.meta.url))) {
   run();
 }
 
