@@ -1,6 +1,20 @@
-export const id = 136;
-export const ids = [136];
+export const id = 819;
+export const ids = [819,136];
 export const modules = {
+
+/***/ 3819:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+var __webpack_unused_export__;
+
+__webpack_unused_export__ = ({ value: true });
+exports.STSClient = exports.AssumeRoleCommand = void 0;
+const sts_1 = __webpack_require__(1136);
+Object.defineProperty(exports, "AssumeRoleCommand", ({ enumerable: true, get: function () { return sts_1.AssumeRoleCommand; } }));
+Object.defineProperty(exports, "STSClient", ({ enumerable: true, get: function () { return sts_1.STSClient; } }));
+
+
+/***/ }),
 
 /***/ 1136:
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
