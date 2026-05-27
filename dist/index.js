@@ -11231,11 +11231,9 @@ Set AWS_CONTAINER_CREDENTIALS_FULL_URI or AWS_CONTAINER_CREDENTIALS_RELATIVE_URI
     }
     const url = new URL(host);
     (0, checkUrl_1.checkUrl)(url, options.logger);
-    const requestHandler = node_http_handler_1.NodeHttpHandler.create({
-        requestTimeout: options.timeout ?? 1000,
-        connectionTimeout: options.timeout ?? 1000,
-    });
-    return (0, retry_wrapper_1.retryWrapper)(async () => {
+    const requestHandler = node_http_handler_1.NodeHttpHandler.create({ connectionTimeout: options.timeout ?? 1000 });
+    const requestTimeout = options.timeout ?? 1000;
+    const provider = (0, retry_wrapper_1.retryWrapper)(async () => {
         const request = (0, requestHelpers_1.createGetRequest)(url);
         if (token) {
             request.headers.Authorization = token;
@@ -11244,13 +11242,21 @@ Set AWS_CONTAINER_CREDENTIALS_FULL_URI or AWS_CONTAINER_CREDENTIALS_RELATIVE_URI
             request.headers.Authorization = (await promises_1.default.readFile(tokenFile)).toString();
         }
         try {
-            const result = await requestHandler.handle(request);
+            const result = await requestHandler.handle(request, { requestTimeout });
             return (0, requestHelpers_1.getCredentials)(result.response).then((creds) => (0, client_1.setCredentialFeature)(creds, "CREDENTIALS_HTTP", "z"));
         }
         catch (e) {
             throw new config_1.CredentialsProviderError(String(e), { logger: options.logger });
         }
     }, options.maxRetries ?? 3, options.timeout ?? 1000);
+    return async () => {
+        try {
+            return await provider();
+        }
+        finally {
+            requestHandler.destroy?.();
+        }
+    };
 };
 exports.fromHttp = fromHttp;
 
@@ -13978,7 +13984,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.9";
+var version = "3.997.11";
 var packageInfo = {
 	version: version};
 
@@ -14616,7 +14622,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.9";
+var version = "3.997.11";
 var packageInfo = {
 	version: version};
 
