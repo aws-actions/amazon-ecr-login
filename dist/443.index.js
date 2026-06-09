@@ -24,10 +24,9 @@ var protocols$1 = __webpack_require__(7288);
 const defaultSSOOIDCHttpAuthSchemeParametersProvider = async (config, context, input) => {
     return {
         operation: client.getSmithyContext(context).operation,
-        region: (await client.normalizeProvider(config.region)()) ||
-            (() => {
-                throw new Error("expected `region` to be configured for `aws.auth#sigv4`");
-            })(),
+        region: await client.normalizeProvider(config.region)() || (() => {
+            throw new Error("expected `region` to be configured for `aws.auth#sigv4`");
+        })(),
     };
 };
 function createAwsAuthSigv4HttpAuthOption(authParameters) {
@@ -84,7 +83,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.14";
+var version = "3.997.18";
 var packageInfo = {
 	version: version};
 
@@ -99,7 +98,7 @@ const _data = {
         [e, [{ [k]: "UseDualStack" }, b]],
         [e, [{ fn: f, argv: [h, "supportsDualStack"] }, b]],
         [e, [{ fn: f, argv: [h, "supportsFIPS"] }, b]],
-        ["stringEquals", [{ fn: f, argv: [h, "name"] }, "aws-us-gov"]],
+        ["stringEquals", [{ fn: f, argv: [h, "name"] }, "aws-us-gov"]]
     ],
     results: [
         [a],
@@ -114,54 +113,26 @@ const _data = {
         ["https://oidc.{Region}.{PartitionResult#dualStackDnsSuffix}", i],
         [a, "DualStack is enabled but this partition does not support DualStack"],
         ["https://oidc.{Region}.{PartitionResult#dnsSuffix}", i],
-        [a, "Invalid Configuration: Missing Region"],
-    ],
+        [a, "Invalid Configuration: Missing Region"]
+    ]
 };
 const root = 2;
 const r = 100_000_000;
 const nodes = new Int32Array([
-    -1,
-    1,
-    -1,
-    0,
-    13,
-    3,
-    1,
-    4,
-    r + 12,
-    2,
-    5,
-    r + 12,
-    3,
-    8,
-    6,
-    4,
-    7,
-    r + 11,
-    5,
-    r + 9,
-    r + 10,
-    4,
-    11,
-    9,
-    6,
-    10,
-    r + 8,
-    7,
-    r + 6,
-    r + 7,
-    5,
-    12,
-    r + 5,
-    6,
-    r + 4,
-    r + 5,
-    3,
-    r + 1,
-    14,
-    4,
-    r + 2,
-    r + 3,
+    -1, 1, -1,
+    0, 13, 3,
+    1, 4, r + 12,
+    2, 5, r + 12,
+    3, 8, 6,
+    4, 7, r + 11,
+    5, r + 9, r + 10,
+    4, 11, 9,
+    6, 10, r + 8,
+    7, r + 6, r + 7,
+    5, 12, r + 5,
+    6, r + 4, r + 5,
+    3, r + 1, 14,
+    4, r + 2, r + 3,
 ]);
 const bdd = endpoints.BinaryDecisionDiagram.from(nodes, root, _data.conditions, _data.results);
 
@@ -410,93 +381,93 @@ const _s_registry = schema.TypeRegistry.for(_s);
 var SSOOIDCServiceException$ = [-3, _s, "SSOOIDCServiceException", 0, [], []];
 _s_registry.registerError(SSOOIDCServiceException$, SSOOIDCServiceException);
 const n0_registry = schema.TypeRegistry.for(n0);
-var AccessDeniedException$ = [
-    -3,
-    n0,
-    _ADE,
+var AccessDeniedException$ = [-3, n0, _ADE,
     { [_e]: _c, [_hE]: 400 },
     [_e, _r, _ed],
-    [0, 0, 0],
+    [0, 0, 0]
 ];
 n0_registry.registerError(AccessDeniedException$, AccessDeniedException);
-var AuthorizationPendingException$ = [
-    -3,
-    n0,
-    _APE,
+var AuthorizationPendingException$ = [-3, n0, _APE,
     { [_e]: _c, [_hE]: 400 },
     [_e, _ed],
-    [0, 0],
+    [0, 0]
 ];
 n0_registry.registerError(AuthorizationPendingException$, AuthorizationPendingException);
-var ExpiredTokenException$ = [-3, n0, _ETE, { [_e]: _c, [_hE]: 400 }, [_e, _ed], [0, 0]];
+var ExpiredTokenException$ = [-3, n0, _ETE,
+    { [_e]: _c, [_hE]: 400 },
+    [_e, _ed],
+    [0, 0]
+];
 n0_registry.registerError(ExpiredTokenException$, ExpiredTokenException);
-var InternalServerException$ = [-3, n0, _ISE, { [_e]: _se, [_hE]: 500 }, [_e, _ed], [0, 0]];
+var InternalServerException$ = [-3, n0, _ISE,
+    { [_e]: _se, [_hE]: 500 },
+    [_e, _ed],
+    [0, 0]
+];
 n0_registry.registerError(InternalServerException$, InternalServerException);
-var InvalidClientException$ = [-3, n0, _ICE, { [_e]: _c, [_hE]: 401 }, [_e, _ed], [0, 0]];
+var InvalidClientException$ = [-3, n0, _ICE,
+    { [_e]: _c, [_hE]: 401 },
+    [_e, _ed],
+    [0, 0]
+];
 n0_registry.registerError(InvalidClientException$, InvalidClientException);
-var InvalidGrantException$ = [-3, n0, _IGE, { [_e]: _c, [_hE]: 400 }, [_e, _ed], [0, 0]];
+var InvalidGrantException$ = [-3, n0, _IGE,
+    { [_e]: _c, [_hE]: 400 },
+    [_e, _ed],
+    [0, 0]
+];
 n0_registry.registerError(InvalidGrantException$, InvalidGrantException);
-var InvalidRequestException$ = [
-    -3,
-    n0,
-    _IRE,
+var InvalidRequestException$ = [-3, n0, _IRE,
     { [_e]: _c, [_hE]: 400 },
     [_e, _r, _ed],
-    [0, 0, 0],
+    [0, 0, 0]
 ];
 n0_registry.registerError(InvalidRequestException$, InvalidRequestException);
-var InvalidScopeException$ = [-3, n0, _ISEn, { [_e]: _c, [_hE]: 400 }, [_e, _ed], [0, 0]];
-n0_registry.registerError(InvalidScopeException$, InvalidScopeException);
-var SlowDownException$ = [-3, n0, _SDE, { [_e]: _c, [_hE]: 400 }, [_e, _ed], [0, 0]];
-n0_registry.registerError(SlowDownException$, SlowDownException);
-var UnauthorizedClientException$ = [
-    -3,
-    n0,
-    _UCE,
+var InvalidScopeException$ = [-3, n0, _ISEn,
     { [_e]: _c, [_hE]: 400 },
     [_e, _ed],
-    [0, 0],
+    [0, 0]
+];
+n0_registry.registerError(InvalidScopeException$, InvalidScopeException);
+var SlowDownException$ = [-3, n0, _SDE,
+    { [_e]: _c, [_hE]: 400 },
+    [_e, _ed],
+    [0, 0]
+];
+n0_registry.registerError(SlowDownException$, SlowDownException);
+var UnauthorizedClientException$ = [-3, n0, _UCE,
+    { [_e]: _c, [_hE]: 400 },
+    [_e, _ed],
+    [0, 0]
 ];
 n0_registry.registerError(UnauthorizedClientException$, UnauthorizedClientException);
-var UnsupportedGrantTypeException$ = [
-    -3,
-    n0,
-    _UGTE,
+var UnsupportedGrantTypeException$ = [-3, n0, _UGTE,
     { [_e]: _c, [_hE]: 400 },
     [_e, _ed],
-    [0, 0],
+    [0, 0]
 ];
 n0_registry.registerError(UnsupportedGrantTypeException$, UnsupportedGrantTypeException);
-const errorTypeRegistries = [_s_registry, n0_registry];
+const errorTypeRegistries = [
+    _s_registry,
+    n0_registry,
+];
 var AccessToken = [0, n0, _AT, 8, 0];
 var ClientSecret = [0, n0, _CS, 8, 0];
 var CodeVerifier = [0, n0, _CV, 8, 0];
 var IdToken = [0, n0, _IT, 8, 0];
 var RefreshToken = [0, n0, _RT, 8, 0];
-var CreateTokenRequest$ = [
-    3,
-    n0,
-    _CTR,
+var CreateTokenRequest$ = [3, n0, _CTR,
     0,
     [_cI, _cS, _gT, _dC, _co, _rT, _sc, _rU, _cV],
-    [0, [() => ClientSecret, 0], 0, 0, 0, [() => RefreshToken, 0], 64 | 0, 0, [() => CodeVerifier, 0]],
-    3,
+    [0, [() => ClientSecret, 0], 0, 0, 0, [() => RefreshToken, 0], 64 | 0, 0, [() => CodeVerifier, 0]], 3
 ];
-var CreateTokenResponse$ = [
-    3,
-    n0,
-    _CTRr,
+var CreateTokenResponse$ = [3, n0, _CTRr,
     0,
     [_aT, _tT, _eI, _rT, _iT],
-    [[() => AccessToken, 0], 0, 1, [() => RefreshToken, 0], [() => IdToken, 0]],
+    [[() => AccessToken, 0], 0, 1, [() => RefreshToken, 0], [() => IdToken, 0]]
 ];
-var CreateToken$ = [
-    9,
-    n0,
-    _CT,
-    { [_h]: ["POST", "/token", 200] },
-    () => CreateTokenRequest$,
-    () => CreateTokenResponse$,
+var CreateToken$ = [9, n0, _CT,
+    { [_h]: ["POST", "/token", 200] }, () => CreateTokenRequest$, () => CreateTokenResponse$
 ];
 
 const getRuntimeConfig$1 = (config) => {
@@ -552,11 +523,9 @@ const getRuntimeConfig = (config$1) => {
         defaultsMode,
         authSchemePreference: config$1?.authSchemePreference ?? config.loadConfig(httpAuthSchemes.NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
         bodyLengthChecker: config$1?.bodyLengthChecker ?? serde.calculateBodyLength,
-        defaultUserAgentProvider: config$1?.defaultUserAgentProvider ??
-            client$1.createDefaultUserAgentProvider({ serviceId: clientSharedValues.serviceId, clientVersion: packageInfo.version }),
+        defaultUserAgentProvider: config$1?.defaultUserAgentProvider ?? client$1.createDefaultUserAgentProvider({ serviceId: clientSharedValues.serviceId, clientVersion: packageInfo.version }),
         maxAttempts: config$1?.maxAttempts ?? config.loadConfig(retry.NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config$1),
-        region: config$1?.region ??
-            config.loadConfig(config.NODE_REGION_CONFIG_OPTIONS, { ...config.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
+        region: config$1?.region ?? config.loadConfig(config.NODE_REGION_CONFIG_OPTIONS, { ...config.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
         requestHandler: nodeHttpHandler.NodeHttpHandler.create(config$1?.requestHandler ?? defaultConfigProvider),
         retryMode: config$1?.retryMode ??
             config.loadConfig({
