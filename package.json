@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@vercel/ncc": "^0.38.4",
+    "@vercel/ncc": "^0.44.0",
     "aws-sdk-client-mock": "^4.1.0",
     "eslint": "^10.4.1",
     "globals": "^17.6.0",
