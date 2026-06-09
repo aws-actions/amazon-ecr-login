@@ -24,10 +24,9 @@ var protocols$1 = __webpack_require__(7288);
 const defaultSigninHttpAuthSchemeParametersProvider = async (config, context, input) => {
     return {
         operation: client.getSmithyContext(context).operation,
-        region: (await client.normalizeProvider(config.region)()) ||
-            (() => {
-                throw new Error("expected `region` to be configured for `aws.auth#sigv4`");
-            })(),
+        region: await client.normalizeProvider(config.region)() || (() => {
+            throw new Error("expected `region` to be configured for `aws.auth#sigv4`");
+        })(),
     };
 };
 function createAwsAuthSigv4HttpAuthOption(authParameters) {
@@ -84,12 +83,12 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.14";
+var version = "3.997.18";
 var packageInfo = {
 	version: version};
 
 const m = "ref";
-const a = -1, b = true, c = "isSet", d = "PartitionResult", e = "booleanEquals", f = "getAttr", g = "stringEquals", h = { [m]: "Endpoint" }, i = { [m]: d }, j = { fn: f, argv: [i, "name"] }, k = {}, l = [{ [m]: "Region" }];
+const a = -1, b = true, c = "isSet", d = "PartitionResult", e = "booleanEquals", f = "getAttr", g = "stringEquals", h = { [m]: "Endpoint" }, i = { [m]: d }, j = { "fn": f, "argv": [i, "name"] }, k = {}, l = [{ [m]: "Region" }];
 const _data = {
     conditions: [
         [c, [h]],
@@ -101,7 +100,7 @@ const _data = {
         [e, [{ fn: f, argv: [i, "supportsFIPS"] }, b]],
         [g, [j, "aws"]],
         [g, [j, "aws-cn"]],
-        [g, [j, "aws-us-gov"]],
+        [g, [j, "aws-us-gov"]]
     ],
     results: [
         [a],
@@ -118,60 +117,28 @@ const _data = {
         ["https://signin.{Region}.{PartitionResult#dualStackDnsSuffix}", k],
         [a, "DualStack is enabled but this partition does not support DualStack"],
         ["https://signin.{Region}.{PartitionResult#dnsSuffix}", k],
-        [a, "Invalid Configuration: Missing Region"],
-    ],
+        [a, "Invalid Configuration: Missing Region"]
+    ]
 };
 const root = 2;
 const r = 100_000_000;
 const nodes = new Int32Array([
-    -1,
-    1,
-    -1,
-    0,
-    15,
-    3,
-    1,
-    4,
-    r + 14,
-    2,
-    5,
-    r + 14,
-    3,
-    11,
-    6,
-    4,
-    10,
-    7,
-    7,
-    r + 4,
-    8,
-    8,
-    r + 5,
-    9,
-    9,
-    r + 6,
-    r + 13,
-    5,
-    r + 11,
-    r + 12,
-    4,
-    13,
-    12,
-    6,
-    r + 9,
-    r + 10,
-    5,
-    14,
-    r + 8,
-    6,
-    r + 7,
-    r + 8,
-    3,
-    r + 1,
-    16,
-    4,
-    r + 2,
-    r + 3,
+    -1, 1, -1,
+    0, 15, 3,
+    1, 4, r + 14,
+    2, 5, r + 14,
+    3, 11, 6,
+    4, 10, 7,
+    7, r + 4, 8,
+    8, r + 5, 9,
+    9, r + 6, r + 13,
+    5, r + 11, r + 12,
+    4, 13, 12,
+    6, r + 9, r + 10,
+    5, 14, r + 8,
+    6, r + 7, r + 8,
+    3, r + 1, 16,
+    4, r + 2, r + 3,
 ]);
 const bdd = endpoints.BinaryDecisionDiagram.from(nodes, root, _data.conditions, _data.results);
 
@@ -290,85 +257,62 @@ const _s_registry = schema.TypeRegistry.for(_s);
 var SigninServiceException$ = [-3, _s, "SigninServiceException", 0, [], []];
 _s_registry.registerError(SigninServiceException$, SigninServiceException);
 const n0_registry = schema.TypeRegistry.for(n0);
-var AccessDeniedException$ = [-3, n0, _ADE, { [_e]: _c }, [_e, _m], [0, 0], 2];
+var AccessDeniedException$ = [-3, n0, _ADE,
+    { [_e]: _c },
+    [_e, _m],
+    [0, 0], 2
+];
 n0_registry.registerError(AccessDeniedException$, AccessDeniedException);
-var InternalServerException$ = [-3, n0, _ISE, { [_e]: _se, [_hE]: 500 }, [_e, _m], [0, 0], 2];
+var InternalServerException$ = [-3, n0, _ISE,
+    { [_e]: _se, [_hE]: 500 },
+    [_e, _m],
+    [0, 0], 2
+];
 n0_registry.registerError(InternalServerException$, InternalServerException);
-var TooManyRequestsError$ = [-3, n0, _TMRE, { [_e]: _c, [_hE]: 429 }, [_e, _m], [0, 0], 2];
+var TooManyRequestsError$ = [-3, n0, _TMRE,
+    { [_e]: _c, [_hE]: 429 },
+    [_e, _m],
+    [0, 0], 2
+];
 n0_registry.registerError(TooManyRequestsError$, TooManyRequestsError);
-var ValidationException$ = [-3, n0, _VE, { [_e]: _c, [_hE]: 400 }, [_e, _m], [0, 0], 2];
+var ValidationException$ = [-3, n0, _VE,
+    { [_e]: _c, [_hE]: 400 },
+    [_e, _m],
+    [0, 0], 2
+];
 n0_registry.registerError(ValidationException$, ValidationException);
-const errorTypeRegistries = [_s_registry, n0_registry];
+const errorTypeRegistries = [
+    _s_registry,
+    n0_registry,
+];
 var RefreshToken = [0, n0, _RT, 8, 0];
-var AccessToken$ = [
-    3,
-    n0,
-    _AT,
+var AccessToken$ = [3, n0, _AT,
     8,
     [_aKI, _sAK, _sT],
-    [
-        [0, { [_jN]: _aKI }],
-        [0, { [_jN]: _sAK }],
-        [0, { [_jN]: _sT }],
-    ],
-    3,
+    [[0, { [_jN]: _aKI }], [0, { [_jN]: _sAK }], [0, { [_jN]: _sT }]], 3
 ];
-var CreateOAuth2TokenRequest$ = [
-    3,
-    n0,
-    _COATR,
+var CreateOAuth2TokenRequest$ = [3, n0, _COATR,
     0,
     [_tI],
-    [[() => CreateOAuth2TokenRequestBody$, 16]],
-    1,
+    [[() => CreateOAuth2TokenRequestBody$, 16]], 1
 ];
-var CreateOAuth2TokenRequestBody$ = [
-    3,
-    n0,
-    _COATRB,
+var CreateOAuth2TokenRequestBody$ = [3, n0, _COATRB,
     0,
     [_cI, _gT, _co, _rU, _cV, _rT],
-    [
-        [0, { [_jN]: _cI }],
-        [0, { [_jN]: _gT }],
-        0,
-        [0, { [_jN]: _rU }],
-        [0, { [_jN]: _cV }],
-        [() => RefreshToken, { [_jN]: _rT }],
-    ],
-    2,
+    [[0, { [_jN]: _cI }], [0, { [_jN]: _gT }], 0, [0, { [_jN]: _rU }], [0, { [_jN]: _cV }], [() => RefreshToken, { [_jN]: _rT }]], 2
 ];
-var CreateOAuth2TokenResponse$ = [
-    3,
-    n0,
-    _COATRr,
+var CreateOAuth2TokenResponse$ = [3, n0, _COATRr,
     0,
     [_tO],
-    [[() => CreateOAuth2TokenResponseBody$, 16]],
-    1,
+    [[() => CreateOAuth2TokenResponseBody$, 16]], 1
 ];
-var CreateOAuth2TokenResponseBody$ = [
-    3,
-    n0,
-    _COATRBr,
+var CreateOAuth2TokenResponseBody$ = [3, n0, _COATRBr,
     0,
     [_aT, _tT, _eI, _rT, _iT],
-    [
-        [() => AccessToken$, { [_jN]: _aT }],
-        [0, { [_jN]: _tT }],
-        [1, { [_jN]: _eI }],
-        [() => RefreshToken, { [_jN]: _rT }],
-        [0, { [_jN]: _iT }],
-    ],
-    4,
+    [[() => AccessToken$, { [_jN]: _aT }], [0, { [_jN]: _tT }], [1, { [_jN]: _eI }], [() => RefreshToken, { [_jN]: _rT }], [0, { [_jN]: _iT }]], 4
 ];
-var CreateOAuth2Token$ = [
-    9,
-    n0,
-    _COAT,
-    { [_h]: ["POST", "/v1/token", 200] },
-    () => CreateOAuth2TokenRequest$,
-    () => CreateOAuth2TokenResponse$,
+var CreateOAuth2Token$ = [9, n0, _COAT,
+    { [_h]: ["POST", "/v1/token", 200] }, () => CreateOAuth2TokenRequest$, () => CreateOAuth2TokenResponse$
 ];
 
 const getRuntimeConfig$1 = (config) => {
@@ -424,11 +368,9 @@ const getRuntimeConfig = (config$1) => {
         defaultsMode,
         authSchemePreference: config$1?.authSchemePreference ?? config.loadConfig(httpAuthSchemes.NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
         bodyLengthChecker: config$1?.bodyLengthChecker ?? serde.calculateBodyLength,
-        defaultUserAgentProvider: config$1?.defaultUserAgentProvider ??
-            client$1.createDefaultUserAgentProvider({ serviceId: clientSharedValues.serviceId, clientVersion: packageInfo.version }),
+        defaultUserAgentProvider: config$1?.defaultUserAgentProvider ?? client$1.createDefaultUserAgentProvider({ serviceId: clientSharedValues.serviceId, clientVersion: packageInfo.version }),
         maxAttempts: config$1?.maxAttempts ?? config.loadConfig(retry.NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config$1),
-        region: config$1?.region ??
-            config.loadConfig(config.NODE_REGION_CONFIG_OPTIONS, { ...config.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
+        region: config$1?.region ?? config.loadConfig(config.NODE_REGION_CONFIG_OPTIONS, { ...config.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
         requestHandler: nodeHttpHandler.NodeHttpHandler.create(config$1?.requestHandler ?? defaultConfigProvider),
         retryMode: config$1?.retryMode ??
             config.loadConfig({

@@ -8679,6 +8679,7 @@ class AwsSdkSigV4Signer {
                 signingName = second?.signingName ?? signingName;
             }
         }
+        signingProperties._preRequestSystemClockOffset = config.systemClockOffset;
         const signedRequest = await signer.sign(httpRequest, {
             signingDate: getSkewCorrectedDate(config.systemClockOffset),
             signingRegion: signingRegion,
@@ -8688,14 +8689,18 @@ class AwsSdkSigV4Signer {
     }
     errorHandler(signingProperties) {
         return (error) => {
-            const serverTime = error.ServerTime ?? getDateHeader(error.$response);
+            const errorException = error;
+            const serverTime = errorException.ServerTime ?? getDateHeader(errorException.$response);
             if (serverTime) {
                 const config = throwSigningPropertyError("config", signingProperties.config);
-                const initialSystemClockOffset = config.systemClockOffset;
-                config.systemClockOffset = getUpdatedSystemClockOffset(serverTime, config.systemClockOffset);
-                const clockSkewCorrected = config.systemClockOffset !== initialSystemClockOffset;
-                if (clockSkewCorrected && error.$metadata) {
-                    error.$metadata.clockSkewCorrected = true;
+                const preRequestOffset = signingProperties._preRequestSystemClockOffset;
+                const newOffset = getUpdatedSystemClockOffset(serverTime, config.systemClockOffset);
+                const isLocalCorrection = newOffset !== config.systemClockOffset;
+                const isConcurrentCorrection = preRequestOffset !== undefined && preRequestOffset !== newOffset;
+                const clockSkewCorrected = isLocalCorrection || isConcurrentCorrection;
+                if (clockSkewCorrected && errorException.$metadata) {
+                    config.systemClockOffset = newOffset;
+                    errorException.$metadata.clockSkewCorrected = true;
                 }
             }
             throw error;
@@ -8720,6 +8725,7 @@ class AwsSdkSigV4ASigner extends AwsSdkSigV4Signer {
         const configResolvedSigningRegionSet = await config.sigv4aSigningRegionSet?.();
         const multiRegionOverride = (configResolvedSigningRegionSet ??
             signingRegionSet ?? [signingRegion]).join(",");
+        signingProperties._preRequestSystemClockOffset = config.systemClockOffset;
         const signedRequest = await signer.sign(httpRequest, {
             signingDate: getSkewCorrectedDate(config.systemClockOffset),
             signingRegion: multiRegionOverride,
@@ -13063,7 +13069,10 @@ const resolveSSOCredentials = async ({ ssoStartUrl, ssoSession, ssoAccountId, ss
                 filepath,
                 configFilepath,
                 ignoreCache,
-            })();
+                clientConfig,
+                parentClientConfig,
+                logger,
+            })({ callerClientConfig });
             token = {
                 accessToken: _token.token,
                 expiresAt: new Date(_token.expiration).toISOString(),
@@ -13931,10 +13940,9 @@ var protocols$1 = __nccwpck_require__(7288);
 const defaultCognitoIdentityHttpAuthSchemeParametersProvider = async (config, context, input) => {
     return {
         operation: client.getSmithyContext(context).operation,
-        region: (await client.normalizeProvider(config.region)()) ||
-            (() => {
-                throw new Error("expected `region` to be configured for `aws.auth#sigv4`");
-            })(),
+        region: await client.normalizeProvider(config.region)() || (() => {
+            throw new Error("expected `region` to be configured for `aws.auth#sigv4`");
+        })(),
     };
 };
 function createAwsAuthSigv4HttpAuthOption(authParameters) {
@@ -13995,7 +14003,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.14";
+var version = "3.997.18";
 var packageInfo = {
 	version: version};
 
@@ -14014,7 +14022,7 @@ const _data = {
         [g, [j, "us-east-1"]],
         [g, [j, "us-east-2"]],
         [g, [j, "us-west-1"]],
-        [g, [j, "us-west-2"]],
+        [g, [j, "us-west-2"]]
     ],
     results: [
         [a],
@@ -14033,66 +14041,30 @@ const _data = {
         ["https://cognito-identity.{Region}.{PartitionResult#dualStackDnsSuffix}", k],
         [a, "DualStack is enabled but this partition does not support DualStack"],
         ["https://cognito-identity.{Region}.{PartitionResult#dnsSuffix}", k],
-        [a, "Invalid Configuration: Missing Region"],
-    ],
+        [a, "Invalid Configuration: Missing Region"]
+    ]
 };
 const root = 2;
 const r = 100_000_000;
 const nodes = new Int32Array([
-    -1,
-    1,
-    -1,
-    0,
-    17,
-    3,
-    1,
-    4,
-    r + 16,
-    2,
-    5,
-    r + 16,
-    3,
-    9,
-    6,
-    5,
-    7,
-    r + 15,
-    6,
-    8,
-    r + 14,
-    7,
-    r + 12,
-    r + 13,
-    4,
-    11,
-    10,
-    5,
-    r + 9,
-    r + 11,
-    5,
-    12,
-    r + 10,
-    6,
-    13,
-    r + 9,
-    8,
-    r + 4,
-    14,
-    9,
-    r + 5,
-    15,
-    10,
-    r + 6,
-    16,
-    11,
-    r + 7,
-    r + 8,
-    3,
-    r + 1,
-    18,
-    5,
-    r + 2,
-    r + 3,
+    -1, 1, -1,
+    0, 17, 3,
+    1, 4, r + 16,
+    2, 5, r + 16,
+    3, 9, 6,
+    5, 7, r + 15,
+    6, 8, r + 14,
+    7, r + 12, r + 13,
+    4, 11, 10,
+    5, r + 9, r + 11,
+    5, 12, r + 10,
+    6, 13, r + 9,
+    8, r + 4, 14,
+    9, r + 5, 15,
+    10, r + 6, 16,
+    11, r + 7, r + 8,
+    3, r + 1, 18,
+    5, r + 2, r + 3,
 ]);
 const bdd = endpoints.BinaryDecisionDiagram.from(nodes, root, _data.conditions, _data.results);
 
@@ -14263,71 +14235,103 @@ const _s_registry = schema.TypeRegistry.for(_s);
 var CognitoIdentityServiceException$ = [-3, _s, "CognitoIdentityServiceException", 0, [], []];
 _s_registry.registerError(CognitoIdentityServiceException$, CognitoIdentityServiceException);
 const n0_registry = schema.TypeRegistry.for(n0);
-var ExternalServiceException$ = [-3, n0, _ESE, { [_e]: _c, [_hE]: 400 }, [_m], [0]];
-n0_registry.registerError(ExternalServiceException$, ExternalServiceException);
-var InternalErrorException$ = [-3, n0, _IEE, { [_e]: _se }, [_m], [0]];
-n0_registry.registerError(InternalErrorException$, InternalErrorException);
-var InvalidIdentityPoolConfigurationException$ = [
-    -3,
-    n0,
-    _IIPCE,
+var ExternalServiceException$ = [-3, n0, _ESE,
     { [_e]: _c, [_hE]: 400 },
     [_m],
-    [0],
+    [0]
+];
+n0_registry.registerError(ExternalServiceException$, ExternalServiceException);
+var InternalErrorException$ = [-3, n0, _IEE,
+    { [_e]: _se },
+    [_m],
+    [0]
+];
+n0_registry.registerError(InternalErrorException$, InternalErrorException);
+var InvalidIdentityPoolConfigurationException$ = [-3, n0, _IIPCE,
+    { [_e]: _c, [_hE]: 400 },
+    [_m],
+    [0]
 ];
 n0_registry.registerError(InvalidIdentityPoolConfigurationException$, InvalidIdentityPoolConfigurationException);
-var InvalidParameterException$ = [-3, n0, _IPE, { [_e]: _c, [_hE]: 400 }, [_m], [0]];
+var InvalidParameterException$ = [-3, n0, _IPE,
+    { [_e]: _c, [_hE]: 400 },
+    [_m],
+    [0]
+];
 n0_registry.registerError(InvalidParameterException$, InvalidParameterException);
-var LimitExceededException$ = [-3, n0, _LEE, { [_e]: _c, [_hE]: 400 }, [_m], [0]];
+var LimitExceededException$ = [-3, n0, _LEE,
+    { [_e]: _c, [_hE]: 400 },
+    [_m],
+    [0]
+];
 n0_registry.registerError(LimitExceededException$, LimitExceededException);
-var NotAuthorizedException$ = [-3, n0, _NAE, { [_e]: _c, [_hE]: 403 }, [_m], [0]];
+var NotAuthorizedException$ = [-3, n0, _NAE,
+    { [_e]: _c, [_hE]: 403 },
+    [_m],
+    [0]
+];
 n0_registry.registerError(NotAuthorizedException$, NotAuthorizedException);
-var ResourceConflictException$ = [-3, n0, _RCE, { [_e]: _c, [_hE]: 409 }, [_m], [0]];
+var ResourceConflictException$ = [-3, n0, _RCE,
+    { [_e]: _c, [_hE]: 409 },
+    [_m],
+    [0]
+];
 n0_registry.registerError(ResourceConflictException$, ResourceConflictException);
-var ResourceNotFoundException$ = [-3, n0, _RNFE, { [_e]: _c, [_hE]: 404 }, [_m], [0]];
+var ResourceNotFoundException$ = [-3, n0, _RNFE,
+    { [_e]: _c, [_hE]: 404 },
+    [_m],
+    [0]
+];
 n0_registry.registerError(ResourceNotFoundException$, ResourceNotFoundException);
-var TooManyRequestsException$ = [-3, n0, _TMRE, { [_e]: _c, [_hE]: 429 }, [_m], [0]];
+var TooManyRequestsException$ = [-3, n0, _TMRE,
+    { [_e]: _c, [_hE]: 429 },
+    [_m],
+    [0]
+];
 n0_registry.registerError(TooManyRequestsException$, TooManyRequestsException);
-const errorTypeRegistries = [_s_registry, n0_registry];
+const errorTypeRegistries = [
+    _s_registry,
+    n0_registry,
+];
 var IdentityProviderToken = [0, n0, _IPT, 8, 0];
 var SecretKeyString = [0, n0, _SKS, 8, 0];
-var Credentials$ = [
-    3,
-    n0,
-    _C,
+var Credentials$ = [3, n0, _C,
     0,
     [_AKI, _SK, _ST, _E],
-    [0, [() => SecretKeyString, 0], 0, 4],
+    [0, [() => SecretKeyString, 0], 0, 4]
 ];
-var GetCredentialsForIdentityInput$ = [
-    3,
-    n0,
-    _GCFII,
+var GetCredentialsForIdentityInput$ = [3, n0, _GCFII,
     0,
     [_II, _L, _CRA],
-    [0, [() => LoginsMap, 0], 0],
-    1,
+    [0, [() => LoginsMap, 0], 0], 1
 ];
-var GetCredentialsForIdentityResponse$ = [
-    3,
-    n0,
-    _GCFIR,
+var GetCredentialsForIdentityResponse$ = [3, n0, _GCFIR,
     0,
     [_II, _C],
-    [0, [() => Credentials$, 0]],
+    [0, [() => Credentials$, 0]]
 ];
-var GetIdInput$ = [3, n0, _GII, 0, [_IPI, _AI, _L], [0, 0, [() => LoginsMap, 0]], 1];
-var GetIdResponse$ = [3, n0, _GIR, 0, [_II], [0]];
-var LoginsMap = [2, n0, _LM, 0, [0, 0], [() => IdentityProviderToken, 0]];
-var GetCredentialsForIdentity$ = [
-    9,
-    n0,
-    _GCFI,
+var GetIdInput$ = [3, n0, _GII,
     0,
-    () => GetCredentialsForIdentityInput$,
-    () => GetCredentialsForIdentityResponse$,
+    [_IPI, _AI, _L],
+    [0, 0, [() => LoginsMap, 0]], 1
 ];
-var GetId$ = [9, n0, _GI, 0, () => GetIdInput$, () => GetIdResponse$];
+var GetIdResponse$ = [3, n0, _GIR,
+    0,
+    [_II],
+    [0]
+];
+var LoginsMap = [2, n0, _LM,
+    0, [0,
+        0],
+    [() => IdentityProviderToken,
+        0]
+];
+var GetCredentialsForIdentity$ = [9, n0, _GCFI,
+    0, () => GetCredentialsForIdentityInput$, () => GetCredentialsForIdentityResponse$
+];
+var GetId$ = [9, n0, _GI,
+    0, () => GetIdInput$, () => GetIdResponse$
+];
 
 const getRuntimeConfig$1 = (config) => {
     return {
@@ -14383,11 +14387,9 @@ const getRuntimeConfig = (config$1) => {
         defaultsMode,
         authSchemePreference: config$1?.authSchemePreference ?? config.loadConfig(httpAuthSchemes.NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
         bodyLengthChecker: config$1?.bodyLengthChecker ?? serde.calculateBodyLength,
-        defaultUserAgentProvider: config$1?.defaultUserAgentProvider ??
-            client$1.createDefaultUserAgentProvider({ serviceId: clientSharedValues.serviceId, clientVersion: packageInfo.version }),
+        defaultUserAgentProvider: config$1?.defaultUserAgentProvider ?? client$1.createDefaultUserAgentProvider({ serviceId: clientSharedValues.serviceId, clientVersion: packageInfo.version }),
         maxAttempts: config$1?.maxAttempts ?? config.loadConfig(retry.NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config$1),
-        region: config$1?.region ??
-            config.loadConfig(config.NODE_REGION_CONFIG_OPTIONS, { ...config.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
+        region: config$1?.region ?? config.loadConfig(config.NODE_REGION_CONFIG_OPTIONS, { ...config.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
         requestHandler: nodeHttpHandler.NodeHttpHandler.create(config$1?.requestHandler ?? defaultConfigProvider),
         retryMode: config$1?.retryMode ??
             config.loadConfig({
@@ -14573,10 +14575,9 @@ var protocols$1 = __nccwpck_require__(7288);
 const defaultSSOHttpAuthSchemeParametersProvider = async (config, context, input) => {
     return {
         operation: client.getSmithyContext(context).operation,
-        region: (await client.normalizeProvider(config.region)()) ||
-            (() => {
-                throw new Error("expected `region` to be configured for `aws.auth#sigv4`");
-            })(),
+        region: await client.normalizeProvider(config.region)() || (() => {
+            throw new Error("expected `region` to be configured for `aws.auth#sigv4`");
+        })(),
     };
 };
 function createAwsAuthSigv4HttpAuthOption(authParameters) {
@@ -14633,7 +14634,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.14";
+var version = "3.997.18";
 var packageInfo = {
 	version: version};
 
@@ -14648,7 +14649,7 @@ const _data = {
         [e, [{ [k]: "UseDualStack" }, b]],
         [e, [{ fn: f, argv: [h, "supportsDualStack"] }, b]],
         [e, [{ fn: f, argv: [h, "supportsFIPS"] }, b]],
-        ["stringEquals", [{ fn: f, argv: [h, "name"] }, "aws-us-gov"]],
+        ["stringEquals", [{ fn: f, argv: [h, "name"] }, "aws-us-gov"]]
     ],
     results: [
         [a],
@@ -14663,54 +14664,26 @@ const _data = {
         ["https://portal.sso.{Region}.{PartitionResult#dualStackDnsSuffix}", i],
         [a, "DualStack is enabled but this partition does not support DualStack"],
         ["https://portal.sso.{Region}.{PartitionResult#dnsSuffix}", i],
-        [a, "Invalid Configuration: Missing Region"],
-    ],
+        [a, "Invalid Configuration: Missing Region"]
+    ]
 };
 const root = 2;
 const r = 100_000_000;
 const nodes = new Int32Array([
-    -1,
-    1,
-    -1,
-    0,
-    13,
-    3,
-    1,
-    4,
-    r + 12,
-    2,
-    5,
-    r + 12,
-    3,
-    8,
-    6,
-    4,
-    7,
-    r + 11,
-    5,
-    r + 9,
-    r + 10,
-    4,
-    11,
-    9,
-    6,
-    10,
-    r + 8,
-    7,
-    r + 6,
-    r + 7,
-    5,
-    12,
-    r + 5,
-    6,
-    r + 4,
-    r + 5,
-    3,
-    r + 1,
-    14,
-    4,
-    r + 2,
-    r + 3,
+    -1, 1, -1,
+    0, 13, 3,
+    1, 4, r + 12,
+    2, 5, r + 12,
+    3, 8, 6,
+    4, 7, r + 11,
+    5, r + 9, r + 10,
+    4, 11, 9,
+    6, 10, r + 8,
+    7, r + 6, r + 7,
+    5, 12, r + 5,
+    6, r + 4, r + 5,
+    3, r + 1, 14,
+    4, r + 2, r + 3,
 ]);
 const bdd = endpoints.BinaryDecisionDiagram.from(nodes, root, _data.conditions, _data.results);
 
@@ -14817,54 +14790,54 @@ const _s_registry = schema.TypeRegistry.for(_s);
 var SSOServiceException$ = [-3, _s, "SSOServiceException", 0, [], []];
 _s_registry.registerError(SSOServiceException$, SSOServiceException);
 const n0_registry = schema.TypeRegistry.for(n0);
-var InvalidRequestException$ = [-3, n0, _IRE, { [_e]: _c, [_hE]: 400 }, [_m], [0]];
+var InvalidRequestException$ = [-3, n0, _IRE,
+    { [_e]: _c, [_hE]: 400 },
+    [_m],
+    [0]
+];
 n0_registry.registerError(InvalidRequestException$, InvalidRequestException);
-var ResourceNotFoundException$ = [-3, n0, _RNFE, { [_e]: _c, [_hE]: 404 }, [_m], [0]];
+var ResourceNotFoundException$ = [-3, n0, _RNFE,
+    { [_e]: _c, [_hE]: 404 },
+    [_m],
+    [0]
+];
 n0_registry.registerError(ResourceNotFoundException$, ResourceNotFoundException);
-var TooManyRequestsException$ = [-3, n0, _TMRE, { [_e]: _c, [_hE]: 429 }, [_m], [0]];
+var TooManyRequestsException$ = [-3, n0, _TMRE,
+    { [_e]: _c, [_hE]: 429 },
+    [_m],
+    [0]
+];
 n0_registry.registerError(TooManyRequestsException$, TooManyRequestsException);
-var UnauthorizedException$ = [-3, n0, _UE, { [_e]: _c, [_hE]: 401 }, [_m], [0]];
+var UnauthorizedException$ = [-3, n0, _UE,
+    { [_e]: _c, [_hE]: 401 },
+    [_m],
+    [0]
+];
 n0_registry.registerError(UnauthorizedException$, UnauthorizedException);
-const errorTypeRegistries = [_s_registry, n0_registry];
+const errorTypeRegistries = [
+    _s_registry,
+    n0_registry,
+];
 var AccessTokenType = [0, n0, _ATT, 8, 0];
 var SecretAccessKeyType = [0, n0, _SAKT, 8, 0];
 var SessionTokenType = [0, n0, _STT, 8, 0];
-var GetRoleCredentialsRequest$ = [
-    3,
-    n0,
-    _GRCR,
+var GetRoleCredentialsRequest$ = [3, n0, _GRCR,
     0,
     [_rN, _aI, _aT],
-    [
-        [0, { [_hQ]: _rn }],
-        [0, { [_hQ]: _ai }],
-        [() => AccessTokenType, { [_hH]: _xasbt }],
-    ],
-    3,
+    [[0, { [_hQ]: _rn }], [0, { [_hQ]: _ai }], [() => AccessTokenType, { [_hH]: _xasbt }]], 3
 ];
-var GetRoleCredentialsResponse$ = [
-    3,
-    n0,
-    _GRCRe,
+var GetRoleCredentialsResponse$ = [3, n0, _GRCRe,
     0,
     [_rC],
-    [[() => RoleCredentials$, 0]],
+    [[() => RoleCredentials$, 0]]
 ];
-var RoleCredentials$ = [
-    3,
-    n0,
-    _RC,
+var RoleCredentials$ = [3, n0, _RC,
     0,
     [_aKI, _sAK, _sT, _ex],
-    [0, [() => SecretAccessKeyType, 0], [() => SessionTokenType, 0], 1],
+    [0, [() => SecretAccessKeyType, 0], [() => SessionTokenType, 0], 1]
 ];
-var GetRoleCredentials$ = [
-    9,
-    n0,
-    _GRC,
-    { [_h]: ["GET", "/federation/credentials", 200] },
-    () => GetRoleCredentialsRequest$,
-    () => GetRoleCredentialsResponse$,
+var GetRoleCredentials$ = [9, n0, _GRC,
+    { [_h]: ["GET", "/federation/credentials", 200] }, () => GetRoleCredentialsRequest$, () => GetRoleCredentialsResponse$
 ];
 
 const getRuntimeConfig$1 = (config) => {
@@ -14920,11 +14893,9 @@ const getRuntimeConfig = (config$1) => {
         defaultsMode,
         authSchemePreference: config$1?.authSchemePreference ?? config.loadConfig(httpAuthSchemes.NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
         bodyLengthChecker: config$1?.bodyLengthChecker ?? serde.calculateBodyLength,
-        defaultUserAgentProvider: config$1?.defaultUserAgentProvider ??
-            client$1.createDefaultUserAgentProvider({ serviceId: clientSharedValues.serviceId, clientVersion: packageInfo.version }),
+        defaultUserAgentProvider: config$1?.defaultUserAgentProvider ?? client$1.createDefaultUserAgentProvider({ serviceId: clientSharedValues.serviceId, clientVersion: packageInfo.version }),
         maxAttempts: config$1?.maxAttempts ?? config.loadConfig(retry.NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config$1),
-        region: config$1?.region ??
-            config.loadConfig(config.NODE_REGION_CONFIG_OPTIONS, { ...config.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
+        region: config$1?.region ?? config.loadConfig(config.NODE_REGION_CONFIG_OPTIONS, { ...config.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
         requestHandler: nodeHttpHandler.NodeHttpHandler.create(config$1?.requestHandler ?? defaultConfigProvider),
         retryMode: config$1?.retryMode ??
             config.loadConfig({
@@ -57575,7 +57546,7 @@ module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("util");
 /***/ 7643:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/client-ecr-public","description":"AWS SDK for JavaScript Ecr Public Client for Node.js, Browser and React Native","version":"3.1061.0","scripts":{"build":"concurrently \'yarn:build:types\' \'yarn:build:es\' && yarn build:cjs","build:cjs":"node ../../scripts/compilation/inline client-ecr-public","build:es":"tsc -p tsconfig.es.json","build:include:deps":"yarn g:turbo run build -F=\\"$npm_package_name\\"","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"premove dist-cjs dist-es dist-types tsconfig.cjs.tsbuildinfo tsconfig.es.tsbuildinfo tsconfig.types.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo ecr-public","test:index":"tsc --noEmit ./test/index-types.ts && node ./test/index-objects.spec.mjs"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"5.2.0","@aws-crypto/sha256-js":"5.2.0","@aws-sdk/core":"^3.974.17","@aws-sdk/credential-provider-node":"^3.972.50","@aws-sdk/types":"^3.973.10","@smithy/core":"^3.24.6","@smithy/fetch-http-handler":"^5.4.6","@smithy/node-http-handler":"^4.7.6","@smithy/types":"^4.14.3","tslib":"^2.6.2"},"devDependencies":{"@tsconfig/node20":"20.1.8","@types/node":"^20.14.8","concurrently":"7.0.0","downlevel-dts":"0.10.1","premove":"4.0.0","typescript":"~5.8.3"},"engines":{"node":">=20.0.0"},"typesVersions":{"<4.5":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-ecr-public","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-ecr-public"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/client-ecr-public","description":"AWS SDK for JavaScript Ecr Public Client for Node.js, Browser and React Native","version":"3.1065.0","scripts":{"build":"concurrently \'yarn:build:types\' \'yarn:build:es\' && yarn build:cjs","build:cjs":"node ../../scripts/compilation/inline","build:es":"tsc -p tsconfig.es.json","build:include:deps":"yarn g:turbo run build -F=\\"$npm_package_name\\"","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"premove dist-cjs dist-es dist-types tsconfig.cjs.tsbuildinfo tsconfig.es.tsbuildinfo tsconfig.types.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo ecr-public","test:index":"tsc --noEmit ./test/index-types.ts && node ./test/index-objects.spec.mjs"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"5.2.0","@aws-crypto/sha256-js":"5.2.0","@aws-sdk/core":"^3.974.20","@aws-sdk/credential-provider-node":"^3.972.54","@aws-sdk/types":"^3.973.12","@smithy/core":"^3.24.6","@smithy/fetch-http-handler":"^5.4.6","@smithy/node-http-handler":"^4.7.6","@smithy/types":"^4.14.3","tslib":"^2.6.2"},"devDependencies":{"@tsconfig/node20":"20.1.8","@types/node":"^20.14.8","concurrently":"7.0.0","downlevel-dts":"0.10.1","premove":"4.0.0","typescript":"~5.8.3"},"engines":{"node":">=20.0.0"},"typesVersions":{"<4.5":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/sdk-for-javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-ecr-public","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-ecr-public"}}');
 
 /***/ }),
 
@@ -61013,7 +60984,44 @@ function parseProxyResponse(socket) {
     });
 }
 //# sourceMappingURL=parse-proxy-response.js.map
+;// CONCATENATED MODULE: ./node_modules/proxy-agent-negotiate/dist/index.js
+function createNegotiateAuth() {
+    return async ({ response, scheme }) => {
+        if (scheme.toLowerCase() !== 'negotiate') {
+            throw new Error(`Expected Negotiate scheme but got "${scheme}"`);
+        }
+        let kerberos;
+        try {
+            kerberos = await __nccwpck_require__.e(/* import() */ 50).then(__nccwpck_require__.t.bind(__nccwpck_require__, 8050, 19));
+        }
+        catch {
+            throw new Error('The "kerberos" package is required for Negotiate proxy authentication. ' +
+                'Install it with: npm install kerberos');
+        }
+        const proxyAuthenticate = response.headers['proxy-authenticate'] || '';
+        const challengeHeader = Array.isArray(proxyAuthenticate)
+            ? proxyAuthenticate[0]
+            : proxyAuthenticate;
+        const serverToken = typeof challengeHeader === 'string' && challengeHeader.includes(' ')
+            ? challengeHeader.split(' ').slice(1).join(' ')
+            : undefined;
+        const client = await kerberos.initializeClient('HTTP@proxy', {
+            mechOID: kerberos.GSS_MECH_OID_SPNEGO,
+        });
+        const token = await client.step(serverToken || '');
+        if (!token) {
+            throw new Error('Kerberos client.step() returned no token');
+        }
+        return {
+            headers: {
+                'Proxy-Authorization': `Negotiate ${token}`,
+            },
+        };
+    };
+}
+//# sourceMappingURL=index.js.map
 ;// CONCATENATED MODULE: ./node_modules/https-proxy-agent/dist/index.js
+
 
 
 
@@ -61052,6 +61060,12 @@ class HttpsProxyAgent extends Agent {
         this.proxy = typeof proxy === 'string' ? new external_url_namespaceObject.URL(proxy) : proxy;
         this.proxyHeaders = opts?.headers ?? {};
         dist_debug('Creating new HttpsProxyAgent instance: %o', this.proxy.href);
+        if (opts?.negotiate) {
+            this.onProxyAuth = createNegotiateAuth();
+        }
+        else if (opts?.onProxyAuth) {
+            this.onProxyAuth = opts.onProxyAuth;
+        }
         // Trim off the brackets from IPv6 addresses
         const host = (this.proxy.hostname || this.proxy.host).replace(/^\[|\]$/g, '');
         const port = this.proxy.port
@@ -61062,7 +61076,9 @@ class HttpsProxyAgent extends Agent {
         this.connectOpts = {
             // Attempt to negotiate http/1.1 for proxy servers that support http/2
             ALPNProtocols: ['http/1.1'],
-            ...(opts ? omit(opts, 'headers') : null),
+            ...(opts
+                ? omit(opts, 'headers', 'onProxyAuth', 'negotiate')
+                : null),
             host,
             port,
         };
@@ -61110,6 +61126,7 @@ class HttpsProxyAgent extends Agent {
         const { connect, buffered } = await proxyResponsePromise;
         req.emit('proxyConnect', connect);
         this.emit('proxyConnect', connect, req);
+        req.emit('proxy', { proxy: this.proxy.href, socket });
         if (connect.statusCode === 200) {
             req.once('socket', resume);
             if (opts.secureEndpoint) {
@@ -61122,6 +61139,21 @@ class HttpsProxyAgent extends Agent {
                 });
             }
             return socket;
+        }
+        // Handle 407 Proxy Authentication Required
+        if (connect.statusCode === 407 && this.onProxyAuth) {
+            dist_debug('Got 407 response, invoking onProxyAuth callback');
+            socket.destroy();
+            const proxyAuthenticate = connect.headers['proxy-authenticate'] || '';
+            const scheme = Array.isArray(proxyAuthenticate)
+                ? proxyAuthenticate[0].split(/\s/)[0]
+                : proxyAuthenticate.split(/\s/)[0];
+            const authResponse = await this.onProxyAuth({
+                response: connect,
+                scheme,
+            });
+            // Retry with the auth headers
+            return this._connectWithAuth(req, opts, authResponse.headers);
         }
         // Some other status code that's not 200... need to re-play the HTTP
         // header "data" events onto the socket once the HTTP machinery is
@@ -61148,10 +61180,69 @@ class HttpsProxyAgent extends Agent {
         });
         return fakeSocket;
     }
+    /**
+     * Retry a CONNECT request with additional auth headers.
+     */
+    async _connectWithAuth(req, opts, authHeaders) {
+        const { proxy } = this;
+        let socket;
+        if (proxy.protocol === 'https:') {
+            socket = external_tls_.connect(setServernameFromNonIpHost(this.connectOpts));
+        }
+        else {
+            socket = external_net_.connect(this.connectOpts);
+        }
+        const headers = typeof this.proxyHeaders === 'function'
+            ? this.proxyHeaders()
+            : { ...this.proxyHeaders };
+        const host = external_net_.isIPv6(opts.host) ? `[${opts.host}]` : opts.host;
+        let payload = `CONNECT ${host}:${opts.port} HTTP/1.1\r\n`;
+        if (proxy.username || proxy.password) {
+            const auth = `${decodeURIComponent(proxy.username)}:${decodeURIComponent(proxy.password)}`;
+            headers['Proxy-Authorization'] = `Basic ${Buffer.from(auth).toString('base64')}`;
+        }
+        // Merge auth headers (overrides existing)
+        Object.assign(headers, authHeaders);
+        headers.Host = `${host}:${opts.port}`;
+        if (!headers['Proxy-Connection']) {
+            headers['Proxy-Connection'] = this.keepAlive
+                ? 'Keep-Alive'
+                : 'close';
+        }
+        for (const name of Object.keys(headers)) {
+            payload += `${name}: ${headers[name]}\r\n`;
+        }
+        const proxyResponsePromise = parseProxyResponse(socket);
+        socket.write(`${payload}\r\n`);
+        const { connect } = await proxyResponsePromise;
+        req.emit('proxyConnect', connect);
+        this.emit('proxyConnect', connect, req);
+        if (connect.statusCode === 200) {
+            req.once('socket', resume);
+            if (opts.secureEndpoint) {
+                dist_debug('Upgrading socket connection to TLS');
+                return external_tls_.connect({
+                    ...omit(setServernameFromNonIpHost(opts), 'host', 'path', 'port'),
+                    socket,
+                });
+            }
+            return socket;
+        }
+        // If still not 200, throw
+        socket.destroy();
+        throw new Error(`Proxy authentication failed with status ${connect.statusCode} after retry`);
+    }
 }
 HttpsProxyAgent.protocols = ['http', 'https'];
 function resume(socket) {
-    socket.resume();
+    // Defer the resume so that all 'socket' event handlers have a chance
+    // to attach their listeners (e.g. the HTTP client's 'data' handler)
+    // before data starts flowing. Without this, buffered proxy-response
+    // data can be emitted synchronously before listeners are ready.
+    // See: https://github.com/nicolo-ribaudo/tc39-proposal-await-dictionary/issues/7
+    setImmediate(() => {
+        socket.resume();
+    });
 }
 function omit(obj, ...keys) {
     const ret = {};
