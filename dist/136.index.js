@@ -49,7 +49,7 @@ const _data = {
         [f, [m, "ap-southeast-1"]],
         [f, [m, "ap-northeast-1"]],
         [f, [m, "ap-southeast-2"]],
-        [f, [{ fn: g, argv: [n, "name"] }, "aws-us-gov"]],
+        [f, [{ fn: g, argv: [n, "name"] }, "aws-us-gov"]]
     ],
     results: [
         [a],
@@ -66,105 +66,43 @@ const _data = {
         ["https://sts.{Region}.{PartitionResult#dualStackDnsSuffix}", o],
         [a, "DualStack is enabled but this partition does not support DualStack"],
         [k, o],
-        [a, "Invalid Configuration: Missing Region"],
-    ],
+        [a, "Invalid Configuration: Missing Region"]
+    ]
 };
 const root = 2;
 const r = 100_000_000;
 const nodes = new Int32Array([
-    -1,
-    1,
-    -1,
-    0,
-    30,
-    3,
-    1,
-    4,
-    r + 14,
-    2,
-    5,
-    r + 14,
-    3,
-    25,
-    6,
-    4,
-    24,
-    7,
-    5,
-    r + 1,
-    8,
-    6,
-    9,
-    r + 13,
-    7,
-    r + 1,
-    10,
-    10,
-    r + 1,
-    11,
-    11,
-    r + 1,
-    12,
-    12,
-    r + 1,
-    13,
-    13,
-    r + 1,
-    14,
-    14,
-    r + 1,
-    15,
-    15,
-    r + 1,
-    16,
-    16,
-    r + 1,
-    17,
-    17,
-    r + 1,
-    18,
-    18,
-    r + 1,
-    19,
-    19,
-    r + 1,
-    20,
-    20,
-    r + 1,
-    21,
-    21,
-    r + 1,
-    22,
-    22,
-    r + 1,
-    23,
-    23,
-    r + 1,
-    r + 2,
-    8,
-    r + 11,
-    r + 12,
-    4,
-    28,
-    26,
-    9,
-    27,
-    r + 10,
-    24,
-    r + 8,
-    r + 9,
-    8,
-    29,
-    r + 7,
-    9,
-    r + 6,
-    r + 7,
-    3,
-    r + 3,
-    31,
-    4,
-    r + 4,
-    r + 5,
+    -1, 1, -1,
+    0, 30, 3,
+    1, 4, r + 14,
+    2, 5, r + 14,
+    3, 25, 6,
+    4, 24, 7,
+    5, r + 1, 8,
+    6, 9, r + 13,
+    7, r + 1, 10,
+    10, r + 1, 11,
+    11, r + 1, 12,
+    12, r + 1, 13,
+    13, r + 1, 14,
+    14, r + 1, 15,
+    15, r + 1, 16,
+    16, r + 1, 17,
+    17, r + 1, 18,
+    18, r + 1, 19,
+    19, r + 1, 20,
+    20, r + 1, 21,
+    21, r + 1, 22,
+    22, r + 1, 23,
+    23, r + 1, r + 2,
+    8, r + 11, r + 12,
+    4, 28, 26,
+    9, 27, r + 10,
+    24, r + 8, r + 9,
+    8, 29, r + 7,
+    9, r + 6, r + 7,
+    3, r + 3, 31,
+    4, r + 4, r + 5,
 ]);
 const bdd = endpoints.BinaryDecisionDiagram.from(nodes, root, _data.conditions, _data.results);
 
@@ -196,10 +134,9 @@ const createEndpointRuleSetHttpAuthSchemeParametersProvider = (defaultHttpAuthSc
 const _defaultSTSHttpAuthSchemeParametersProvider = async (config, context, input) => {
     return {
         operation: client.getSmithyContext(context).operation,
-        region: (await client.normalizeProvider(config.region)()) ||
-            (() => {
-                throw new Error("expected `region` to be configured for `aws.auth#sigv4`");
-            })(),
+        region: await client.normalizeProvider(config.region)() || (() => {
+            throw new Error("expected `region` to be configured for `aws.auth#sigv4`");
+        })(),
     };
 };
 const defaultSTSHttpAuthSchemeParametersProvider = createEndpointRuleSetHttpAuthSchemeParametersProvider(_defaultSTSHttpAuthSchemeParametersProvider);
@@ -326,7 +263,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.14";
+var version = "3.997.18";
 var packageInfo = {
 	version: version};
 
@@ -486,130 +423,113 @@ const _s_registry = schema.TypeRegistry.for(_s);
 var STSServiceException$ = [-3, _s, "STSServiceException", 0, [], []];
 _s_registry.registerError(STSServiceException$, STSServiceException);
 const n0_registry = schema.TypeRegistry.for(n0);
-var ExpiredTokenException$ = [
-    -3,
-    n0,
-    _ETE,
+var ExpiredTokenException$ = [-3, n0, _ETE,
     { [_aQE]: [`ExpiredTokenException`, 400], [_e]: _c, [_hE]: 400 },
     [_m],
-    [0],
+    [0]
 ];
 n0_registry.registerError(ExpiredTokenException$, ExpiredTokenException);
-var IDPCommunicationErrorException$ = [
-    -3,
-    n0,
-    _IDPCEE,
+var IDPCommunicationErrorException$ = [-3, n0, _IDPCEE,
     { [_aQE]: [`IDPCommunicationError`, 400], [_e]: _c, [_hE]: 400 },
     [_m],
-    [0],
+    [0]
 ];
 n0_registry.registerError(IDPCommunicationErrorException$, IDPCommunicationErrorException);
-var IDPRejectedClaimException$ = [
-    -3,
-    n0,
-    _IDPRCE,
+var IDPRejectedClaimException$ = [-3, n0, _IDPRCE,
     { [_aQE]: [`IDPRejectedClaim`, 403], [_e]: _c, [_hE]: 403 },
     [_m],
-    [0],
+    [0]
 ];
 n0_registry.registerError(IDPRejectedClaimException$, IDPRejectedClaimException);
-var InvalidIdentityTokenException$ = [
-    -3,
-    n0,
-    _IITE,
+var InvalidIdentityTokenException$ = [-3, n0, _IITE,
     { [_aQE]: [`InvalidIdentityToken`, 400], [_e]: _c, [_hE]: 400 },
     [_m],
-    [0],
+    [0]
 ];
 n0_registry.registerError(InvalidIdentityTokenException$, InvalidIdentityTokenException);
-var MalformedPolicyDocumentException$ = [
-    -3,
-    n0,
-    _MPDE,
+var MalformedPolicyDocumentException$ = [-3, n0, _MPDE,
     { [_aQE]: [`MalformedPolicyDocument`, 400], [_e]: _c, [_hE]: 400 },
     [_m],
-    [0],
+    [0]
 ];
 n0_registry.registerError(MalformedPolicyDocumentException$, MalformedPolicyDocumentException);
-var PackedPolicyTooLargeException$ = [
-    -3,
-    n0,
-    _PPTLE,
+var PackedPolicyTooLargeException$ = [-3, n0, _PPTLE,
     { [_aQE]: [`PackedPolicyTooLarge`, 400], [_e]: _c, [_hE]: 400 },
     [_m],
-    [0],
+    [0]
 ];
 n0_registry.registerError(PackedPolicyTooLargeException$, PackedPolicyTooLargeException);
-var RegionDisabledException$ = [
-    -3,
-    n0,
-    _RDE,
+var RegionDisabledException$ = [-3, n0, _RDE,
     { [_aQE]: [`RegionDisabledException`, 403], [_e]: _c, [_hE]: 403 },
     [_m],
-    [0],
+    [0]
 ];
 n0_registry.registerError(RegionDisabledException$, RegionDisabledException);
-const errorTypeRegistries = [_s_registry, n0_registry];
+const errorTypeRegistries = [
+    _s_registry,
+    n0_registry,
+];
 var accessKeySecretType = [0, n0, _aKST, 8, 0];
 var clientTokenType = [0, n0, _cTT, 8, 0];
-var AssumedRoleUser$ = [3, n0, _ARU, 0, [_ARI, _A], [0, 0], 2];
-var AssumeRoleRequest$ = [
-    3,
-    n0,
-    _ARR,
+var AssumedRoleUser$ = [3, n0, _ARU,
+    0,
+    [_ARI, _A],
+    [0, 0], 2
+];
+var AssumeRoleRequest$ = [3, n0, _ARR,
     0,
     [_RA, _RSN, _PA, _P, _DS, _T, _TTK, _EI, _SN, _TC, _SI, _PC],
-    [0, 0, () => policyDescriptorListType, 0, 1, () => tagListType, 64 | 0, 0, 0, 0, 0, () => ProvidedContextsListType],
-    2,
+    [0, 0, () => policyDescriptorListType, 0, 1, () => tagListType, 64 | 0, 0, 0, 0, 0, () => ProvidedContextsListType], 2
 ];
-var AssumeRoleResponse$ = [
-    3,
-    n0,
-    _ARRs,
+var AssumeRoleResponse$ = [3, n0, _ARRs,
     0,
     [_C, _ARU, _PPS, _SI],
-    [[() => Credentials$, 0], () => AssumedRoleUser$, 1, 0],
+    [[() => Credentials$, 0], () => AssumedRoleUser$, 1, 0]
 ];
-var AssumeRoleWithWebIdentityRequest$ = [
-    3,
-    n0,
-    _ARWWIR,
+var AssumeRoleWithWebIdentityRequest$ = [3, n0, _ARWWIR,
     0,
     [_RA, _RSN, _WIT, _PI, _PA, _P, _DS],
-    [0, 0, [() => clientTokenType, 0], 0, () => policyDescriptorListType, 0, 1],
-    3,
+    [0, 0, [() => clientTokenType, 0], 0, () => policyDescriptorListType, 0, 1], 3
 ];
-var AssumeRoleWithWebIdentityResponse$ = [
-    3,
-    n0,
-    _ARWWIRs,
+var AssumeRoleWithWebIdentityResponse$ = [3, n0, _ARWWIRs,
     0,
     [_C, _SFWIT, _ARU, _PPS, _Pr, _Au, _SI],
-    [[() => Credentials$, 0], 0, () => AssumedRoleUser$, 1, 0, 0, 0],
+    [[() => Credentials$, 0], 0, () => AssumedRoleUser$, 1, 0, 0, 0]
 ];
-var Credentials$ = [
-    3,
-    n0,
-    _C,
+var Credentials$ = [3, n0, _C,
     0,
     [_AKI, _SAK, _ST, _E],
-    [0, [() => accessKeySecretType, 0], 0, 4],
-    4,
+    [0, [() => accessKeySecretType, 0], 0, 4], 4
 ];
-var PolicyDescriptorType$ = [3, n0, _PDT, 0, [_a], [0]];
-var ProvidedContext$ = [3, n0, _PCr, 0, [_PAr, _CA], [0, 0]];
-var Tag$ = [3, n0, _Ta, 0, [_K, _V], [0, 0], 2];
-var policyDescriptorListType = [1, n0, _pDLT, 0, () => PolicyDescriptorType$];
-var ProvidedContextsListType = [1, n0, _PCLT, 0, () => ProvidedContext$];
-var tagListType = [1, n0, _tLT, 0, () => Tag$];
-var AssumeRole$ = [9, n0, _AR, 0, () => AssumeRoleRequest$, () => AssumeRoleResponse$];
-var AssumeRoleWithWebIdentity$ = [
-    9,
-    n0,
-    _ARWWI,
+var PolicyDescriptorType$ = [3, n0, _PDT,
     0,
-    () => AssumeRoleWithWebIdentityRequest$,
-    () => AssumeRoleWithWebIdentityResponse$,
+    [_a],
+    [0]
+];
+var ProvidedContext$ = [3, n0, _PCr,
+    0,
+    [_PAr, _CA],
+    [0, 0]
+];
+var Tag$ = [3, n0, _Ta,
+    0,
+    [_K, _V],
+    [0, 0], 2
+];
+var policyDescriptorListType = [1, n0, _pDLT,
+    0, () => PolicyDescriptorType$
+];
+var ProvidedContextsListType = [1, n0, _PCLT,
+    0, () => ProvidedContext$
+];
+var tagListType = [1, n0, _tLT,
+    0, () => Tag$
+];
+var AssumeRole$ = [9, n0, _AR,
+    0, () => AssumeRoleRequest$, () => AssumeRoleResponse$
+];
+var AssumeRoleWithWebIdentity$ = [9, n0, _ARWWI,
+    0, () => AssumeRoleWithWebIdentityRequest$, () => AssumeRoleWithWebIdentityResponse$
 ];
 
 const getRuntimeConfig$1 = (config) => {
@@ -672,13 +592,11 @@ const getRuntimeConfig = (config$1) => {
         defaultsMode,
         authSchemePreference: config$1?.authSchemePreference ?? config.loadConfig(httpAuthSchemes.NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
         bodyLengthChecker: config$1?.bodyLengthChecker ?? serde.calculateBodyLength,
-        defaultUserAgentProvider: config$1?.defaultUserAgentProvider ??
-            client$1.createDefaultUserAgentProvider({ serviceId: clientSharedValues.serviceId, clientVersion: packageInfo.version }),
+        defaultUserAgentProvider: config$1?.defaultUserAgentProvider ?? client$1.createDefaultUserAgentProvider({ serviceId: clientSharedValues.serviceId, clientVersion: packageInfo.version }),
         httpAuthSchemes: config$1?.httpAuthSchemes ?? [
             {
                 schemeId: "aws.auth#sigv4",
-                identityProvider: (ipc) => ipc.getIdentityProvider("aws.auth#sigv4") ||
-                    (async (idProps) => await config$1.credentialDefaultProvider(idProps?.__config || {})()),
+                identityProvider: (ipc) => ipc.getIdentityProvider("aws.auth#sigv4") || (async (idProps) => await config$1.credentialDefaultProvider(idProps?.__config || {})()),
                 signer: new httpAuthSchemes.AwsSdkSigV4Signer(),
             },
             {
@@ -693,8 +611,7 @@ const getRuntimeConfig = (config$1) => {
             },
         ],
         maxAttempts: config$1?.maxAttempts ?? config.loadConfig(retry.NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config$1),
-        region: config$1?.region ??
-            config.loadConfig(config.NODE_REGION_CONFIG_OPTIONS, { ...config.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
+        region: config$1?.region ?? config.loadConfig(config.NODE_REGION_CONFIG_OPTIONS, { ...config.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
         requestHandler: nodeHttpHandler.NodeHttpHandler.create(config$1?.requestHandler ?? defaultConfigProvider),
         retryMode: config$1?.retryMode ??
             config.loadConfig({
