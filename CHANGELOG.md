@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.1.6](https://github.com/aws-actions/amazon-ecr-login/compare/v2.1.5...v2.1.6) (2026-06-10)
+
+
+### Bug Fixes
+
+* use realpathSync for main module check ([#955](https://github.com/aws-actions/amazon-ecr-login/issues/955)) ([ba52b8c](https://github.com/aws-actions/amazon-ecr-login/commit/ba52b8ca4be92a547595f1f7aa0c039a173e4681))
+
+
+### Dependency Updates
+
+* **deps:** bump @aws-sdk/client-ecr from 3.1043.0 to 3.1045.0 ([#1057](https://github.com/aws-actions/amazon-ecr-login/issues/1057)) ([b0e05b3](https://github.com/aws-actions/amazon-ecr-login/commit/b0e05b3b74c1d603191cabf7e179327f1235a500))
+* **deps:** bump @aws-sdk/client-ecr from 3.1045.0 to 3.1050.0 ([#1071](https://github.com/aws-actions/amazon-ecr-login/issues/1071)) ([232323c](https://github.com/aws-actions/amazon-ecr-login/commit/232323c909b7a93db72d6902bfc8847f5b2a3a0d))
+* **deps:** bump @aws-sdk/client-ecr from 3.1050.0 to 3.1054.0 ([#1087](https://github.com/aws-actions/amazon-ecr-login/issues/1087)) ([c7e6a40](https://github.com/aws-actions/amazon-ecr-login/commit/c7e6a404807b7277c9d6795efe13d6fefca02e3a))
+* **deps:** bump @aws-sdk/client-ecr from 3.1054.0 to 3.1061.0 ([#1100](https://github.com/aws-actions/amazon-ecr-login/issues/1100)) ([c96b184](https://github.com/aws-actions/amazon-ecr-login/commit/c96b184581321bde52eb2e2d955b66658a2ca529))
+* **deps:** bump @aws-sdk/client-ecr from 3.1061.0 to 3.1065.0 ([#1114](https://github.com/aws-actions/amazon-ecr-login/issues/1114)) ([cf74b49](https://github.com/aws-actions/amazon-ecr-login/commit/cf74b495168f439303d07c6d036b027bddbc1818))
+* **deps:** bump @aws-sdk/client-ecr-public from 3.1043.0 to 3.1045.0 ([#1054](https://github.com/aws-actions/amazon-ecr-login/issues/1054)) ([8f1dd37](https://github.com/aws-actions/amazon-ecr-login/commit/8f1dd374115c74abf79956d37d33fb4172ff2445))
+* **deps:** bump @aws-sdk/client-ecr-public from 3.1045.0 to 3.1050.0 ([#1072](https://github.com/aws-actions/amazon-ecr-login/issues/1072)) ([8e32190](https://github.com/aws-actions/amazon-ecr-login/commit/8e321901f5702ed5ee523388721c549d0900784a))
+* **deps:** bump @aws-sdk/client-ecr-public from 3.1050.0 to 3.1054.0 ([#1086](https://github.com/aws-actions/amazon-ecr-login/issues/1086)) ([5b9998f](https://github.com/aws-actions/amazon-ecr-login/commit/5b9998fc45467c2ab64ad534cb291e445c00bf0b))
+* **deps:** bump @aws-sdk/client-ecr-public from 3.1054.0 to 3.1061.0 ([#1101](https://github.com/aws-actions/amazon-ecr-login/issues/1101)) ([93ad116](https://github.com/aws-actions/amazon-ecr-login/commit/93ad1168fd6685e55ba42c2de71925a22bb84886))
+* **deps:** bump @aws-sdk/client-ecr-public from 3.1061.0 to 3.1065.0 ([#1112](https://github.com/aws-actions/amazon-ecr-login/issues/1112)) ([48e2e44](https://github.com/aws-actions/amazon-ecr-login/commit/48e2e445fe30ed137a3d8386b9bbad6c2883a699))
+* **deps:** bump @aws-sdk/credential-providers ([#1055](https://github.com/aws-actions/amazon-ecr-login/issues/1055)) ([9a1166e](https://github.com/aws-actions/amazon-ecr-login/commit/9a1166e4345c6cf28dda39c91f6199cb7adcc9b0))
+* **deps:** bump @aws-sdk/credential-providers ([#1074](https://github.com/aws-actions/amazon-ecr-login/issues/1074)) ([ab879f0](https://github.com/aws-actions/amazon-ecr-login/commit/ab879f0a570758d33dfd6e45d1d2570e0fc564bd))
+* **deps:** bump @aws-sdk/credential-providers ([#1085](https://github.com/aws-actions/amazon-ecr-login/issues/1085)) ([1a7efcf](https://github.com/aws-actions/amazon-ecr-login/commit/1a7efcf2f4803169c6d1c3f6eec65ee22629d967))
+* **deps:** bump @aws-sdk/credential-providers ([#1099](https://github.com/aws-actions/amazon-ecr-login/issues/1099)) ([040ce46](https://github.com/aws-actions/amazon-ecr-login/commit/040ce46a99927d6b0819b988192c736ab7d26e49))
+* **deps:** bump @aws-sdk/credential-providers ([#1115](https://github.com/aws-actions/amazon-ecr-login/issues/1115)) ([afa57de](https://github.com/aws-actions/amazon-ecr-login/commit/afa57de95f0332e7429660ff25088728127be33d))
+* **deps:** bump https-proxy-agent from 9.0.0 to 9.1.0 ([#1113](https://github.com/aws-actions/amazon-ecr-login/issues/1113)) ([52a2eef](https://github.com/aws-actions/amazon-ecr-login/commit/52a2eef20535f2bf71e7872873e410a7d1c20ba5))
+
 ### [2.1.5](https://github.com/aws-actions/amazon-ecr-login/compare/v2.1.4...v2.1.5) (2026-05-06)
 
 
