@@ -427,20 +427,16 @@ var toUtf8 = /* @__PURE__ */ __name((input) => {
 /***/ 3182:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.resolveHttpAuthSchemeConfig = exports.defaultECRPUBLICHttpAuthSchemeProvider = exports.defaultECRPUBLICHttpAuthSchemeParametersProvider = void 0;
-const httpAuthSchemes_1 = __nccwpck_require__(7523);
-const client_1 = __nccwpck_require__(2658);
-const defaultECRPUBLICHttpAuthSchemeParametersProvider = async (config, context, input) => {
+const { resolveAwsSdkSigV4Config } = __nccwpck_require__(7523);
+const { getSmithyContext, normalizeProvider } = __nccwpck_require__(2658);
+exports.defaultECRPUBLICHttpAuthSchemeParametersProvider = async (config, context, input) => {
     return {
-        operation: (0, client_1.getSmithyContext)(context).operation,
-        region: await (0, client_1.normalizeProvider)(config.region)() || (() => {
+        operation: getSmithyContext(context).operation,
+        region: await normalizeProvider(config.region)() || (() => {
             throw new Error("expected `region` to be configured for `aws.auth#sigv4`");
         })(),
     };
 };
-exports.defaultECRPUBLICHttpAuthSchemeParametersProvider = defaultECRPUBLICHttpAuthSchemeParametersProvider;
 function createAwsAuthSigv4HttpAuthOption(authParameters) {
     return {
         schemeId: "aws.auth#sigv4",
@@ -456,7 +452,7 @@ function createAwsAuthSigv4HttpAuthOption(authParameters) {
         }),
     };
 }
-const defaultECRPUBLICHttpAuthSchemeProvider = (authParameters) => {
+exports.defaultECRPUBLICHttpAuthSchemeProvider = (authParameters) => {
     const options = [];
     switch (authParameters.operation) {
         default: {
@@ -465,14 +461,12 @@ const defaultECRPUBLICHttpAuthSchemeProvider = (authParameters) => {
     }
     return options;
 };
-exports.defaultECRPUBLICHttpAuthSchemeProvider = defaultECRPUBLICHttpAuthSchemeProvider;
-const resolveHttpAuthSchemeConfig = (config) => {
-    const config_0 = (0, httpAuthSchemes_1.resolveAwsSdkSigV4Config)(config);
+exports.resolveHttpAuthSchemeConfig = (config) => {
+    const config_0 = resolveAwsSdkSigV4Config(config);
     return Object.assign(config_0, {
-        authSchemePreference: (0, client_1.normalizeProvider)(config.authSchemePreference ?? []),
+        authSchemePreference: normalizeProvider(config.authSchemePreference ?? []),
     });
 };
-exports.resolveHttpAuthSchemeConfig = resolveHttpAuthSchemeConfig;
 
 
 /***/ }),
@@ -480,10 +474,7 @@ exports.resolveHttpAuthSchemeConfig = resolveHttpAuthSchemeConfig;
 /***/ 7925:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.bdd = void 0;
-const endpoints_1 = __nccwpck_require__(2085);
+const { BinaryDecisionDiagram } = __nccwpck_require__(2085);
 const k = "ref";
 const a = -1, b = true, c = "isSet", d = "PartitionResult", e = "booleanEquals", f = "getAttr", g = { [k]: "Endpoint" }, h = { [k]: d }, i = {}, j = [{ [k]: "Region" }];
 const _data = {
@@ -531,7 +522,7 @@ const nodes = new Int32Array([
     3, r + 1, 14,
     4, r + 2, r + 3,
 ]);
-exports.bdd = endpoints_1.BinaryDecisionDiagram.from(nodes, root, _data.conditions, _data.results);
+exports.bdd = BinaryDecisionDiagram.from(nodes, root, _data.conditions, _data.results);
 
 
 /***/ }),
@@ -539,24 +530,20 @@ exports.bdd = endpoints_1.BinaryDecisionDiagram.from(nodes, root, _data.conditio
 /***/ 6072:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.defaultEndpointResolver = void 0;
-const client_1 = __nccwpck_require__(5152);
-const endpoints_1 = __nccwpck_require__(2085);
-const bdd_1 = __nccwpck_require__(7925);
-const cache = new endpoints_1.EndpointCache({
+const { awsEndpointFunctions } = __nccwpck_require__(5152);
+const { customEndpointFunctions, decideEndpoint, EndpointCache } = __nccwpck_require__(2085);
+const { bdd } = __nccwpck_require__(7925);
+const cache = new EndpointCache({
     size: 50,
     params: ["Endpoint", "Region", "UseDualStack", "UseFIPS"],
 });
-const defaultEndpointResolver = (endpointParams, context = {}) => {
-    return cache.get(endpointParams, () => (0, endpoints_1.decideEndpoint)(bdd_1.bdd, {
+exports.defaultEndpointResolver = (endpointParams, context = {}) => {
+    return cache.get(endpointParams, () => decideEndpoint(bdd, {
         endpointParams: endpointParams,
         logger: context.logger,
     }));
 };
-exports.defaultEndpointResolver = defaultEndpointResolver;
-endpoints_1.customEndpointFunctions.aws = client_1.awsEndpointFunctions;
+customEndpointFunctions.aws = awsEndpointFunctions;
 
 
 /***/ }),
@@ -564,21 +551,24 @@ endpoints_1.customEndpointFunctions.aws = client_1.awsEndpointFunctions;
 /***/ 9821:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-
-
-var client$1 = __nccwpck_require__(5152);
-var core = __nccwpck_require__(402);
-var client = __nccwpck_require__(2658);
-var config = __nccwpck_require__(7291);
-var endpoints = __nccwpck_require__(2085);
-var protocols = __nccwpck_require__(3422);
-var retry = __nccwpck_require__(3609);
-var schema = __nccwpck_require__(6890);
-var httpAuthSchemeProvider = __nccwpck_require__(3182);
-var runtimeConfig = __nccwpck_require__(8199);
-var schemas_0 = __nccwpck_require__(3917);
-var errors = __nccwpck_require__(977);
-var ECRPUBLICServiceException = __nccwpck_require__(3303);
+var __exportStar = (m, e) => { Object.assign(e, m); };
+const { getAwsRegionExtensionConfiguration, resolveAwsRegionExtensionConfiguration, resolveUserAgentConfig, resolveHostHeaderConfig, getUserAgentPlugin, getHostHeaderPlugin, getLoggerPlugin, getRecursionDetectionPlugin } = __nccwpck_require__(5152);
+const { getHttpAuthSchemeEndpointRuleSetPlugin, DefaultIdentityProviderConfig, getHttpSigningPlugin, createPaginator } = __nccwpck_require__(402);
+const { getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, Command, createAggregatedClient } = __nccwpck_require__(2658);
+exports.$Command = Command;
+exports.__Client = Client;
+const { resolveRegionConfig } = __nccwpck_require__(7291);
+const { resolveEndpointConfig, getEndpointPlugin } = __nccwpck_require__(2085);
+const { getHttpHandlerExtensionConfiguration, resolveHttpHandlerRuntimeConfig, getContentLengthPlugin } = __nccwpck_require__(3422);
+const { resolveRetryConfig, getRetryPlugin } = __nccwpck_require__(3609);
+const { getSchemaSerdePlugin } = __nccwpck_require__(6890);
+const { resolveHttpAuthSchemeConfig, defaultECRPUBLICHttpAuthSchemeParametersProvider } = __nccwpck_require__(3182);
+const { getRuntimeConfig } = __nccwpck_require__(8199);
+const { BatchCheckLayerAvailability$, BatchDeleteImage$, CompleteLayerUpload$, CreateRepository$, DeleteRepository$, DeleteRepositoryPolicy$, DescribeImages$, DescribeImageTags$, DescribeRegistries$, DescribeRepositories$, GetAuthorizationToken$, GetRegistryCatalogData$, GetRepositoryCatalogData$, GetRepositoryPolicy$, InitiateLayerUpload$, ListTagsForResource$, PutImage$, PutRegistryCatalogData$, PutRepositoryCatalogData$, SetRepositoryPolicy$, TagResource$, UntagResource$, UploadLayerPart$ } = __nccwpck_require__(3917);
+__exportStar(__nccwpck_require__(3917), exports);
+__exportStar(__nccwpck_require__(977), exports);
+const { ECRPUBLICServiceException } = __nccwpck_require__(3303);
+exports.ECRPUBLICServiceException = ECRPUBLICServiceException;
 
 const resolveClientEndpointParameters = (options) => {
     return Object.assign(options, {
@@ -634,329 +624,329 @@ const resolveHttpAuthRuntimeConfig = (config) => {
 };
 
 const resolveRuntimeExtensions = (runtimeConfig, extensions) => {
-    const extensionConfiguration = Object.assign(client$1.getAwsRegionExtensionConfiguration(runtimeConfig), client.getDefaultExtensionConfiguration(runtimeConfig), protocols.getHttpHandlerExtensionConfiguration(runtimeConfig), getHttpAuthExtensionConfiguration(runtimeConfig));
+    const extensionConfiguration = Object.assign(getAwsRegionExtensionConfiguration(runtimeConfig), getDefaultExtensionConfiguration(runtimeConfig), getHttpHandlerExtensionConfiguration(runtimeConfig), getHttpAuthExtensionConfiguration(runtimeConfig));
     extensions.forEach((extension) => extension.configure(extensionConfiguration));
-    return Object.assign(runtimeConfig, client$1.resolveAwsRegionExtensionConfiguration(extensionConfiguration), client.resolveDefaultRuntimeConfig(extensionConfiguration), protocols.resolveHttpHandlerRuntimeConfig(extensionConfiguration), resolveHttpAuthRuntimeConfig(extensionConfiguration));
+    return Object.assign(runtimeConfig, resolveAwsRegionExtensionConfiguration(extensionConfiguration), resolveDefaultRuntimeConfig(extensionConfiguration), resolveHttpHandlerRuntimeConfig(extensionConfiguration), resolveHttpAuthRuntimeConfig(extensionConfiguration));
 };
 
-class ECRPUBLICClient extends client.Client {
+class ECRPUBLICClient extends Client {
     config;
     constructor(...[configuration]) {
-        const _config_0 = runtimeConfig.getRuntimeConfig(configuration || {});
+        const _config_0 = getRuntimeConfig(configuration || {});
         super(_config_0);
         this.initConfig = _config_0;
         const _config_1 = resolveClientEndpointParameters(_config_0);
-        const _config_2 = client$1.resolveUserAgentConfig(_config_1);
-        const _config_3 = retry.resolveRetryConfig(_config_2);
-        const _config_4 = config.resolveRegionConfig(_config_3);
-        const _config_5 = client$1.resolveHostHeaderConfig(_config_4);
-        const _config_6 = endpoints.resolveEndpointConfig(_config_5);
-        const _config_7 = httpAuthSchemeProvider.resolveHttpAuthSchemeConfig(_config_6);
+        const _config_2 = resolveUserAgentConfig(_config_1);
+        const _config_3 = resolveRetryConfig(_config_2);
+        const _config_4 = resolveRegionConfig(_config_3);
+        const _config_5 = resolveHostHeaderConfig(_config_4);
+        const _config_6 = resolveEndpointConfig(_config_5);
+        const _config_7 = resolveHttpAuthSchemeConfig(_config_6);
         const _config_8 = resolveRuntimeExtensions(_config_7, configuration?.extensions || []);
         this.config = _config_8;
-        this.middlewareStack.use(schema.getSchemaSerdePlugin(this.config));
-        this.middlewareStack.use(client$1.getUserAgentPlugin(this.config));
-        this.middlewareStack.use(retry.getRetryPlugin(this.config));
-        this.middlewareStack.use(protocols.getContentLengthPlugin(this.config));
-        this.middlewareStack.use(client$1.getHostHeaderPlugin(this.config));
-        this.middlewareStack.use(client$1.getLoggerPlugin(this.config));
-        this.middlewareStack.use(client$1.getRecursionDetectionPlugin(this.config));
-        this.middlewareStack.use(core.getHttpAuthSchemeEndpointRuleSetPlugin(this.config, {
-            httpAuthSchemeParametersProvider: httpAuthSchemeProvider.defaultECRPUBLICHttpAuthSchemeParametersProvider,
-            identityProviderConfigProvider: async (config) => new core.DefaultIdentityProviderConfig({
+        this.middlewareStack.use(getSchemaSerdePlugin(this.config));
+        this.middlewareStack.use(getUserAgentPlugin(this.config));
+        this.middlewareStack.use(getRetryPlugin(this.config));
+        this.middlewareStack.use(getContentLengthPlugin(this.config));
+        this.middlewareStack.use(getHostHeaderPlugin(this.config));
+        this.middlewareStack.use(getLoggerPlugin(this.config));
+        this.middlewareStack.use(getRecursionDetectionPlugin(this.config));
+        this.middlewareStack.use(getHttpAuthSchemeEndpointRuleSetPlugin(this.config, {
+            httpAuthSchemeParametersProvider: defaultECRPUBLICHttpAuthSchemeParametersProvider,
+            identityProviderConfigProvider: async (config) => new DefaultIdentityProviderConfig({
                 "aws.auth#sigv4": config.credentials,
             }),
         }));
-        this.middlewareStack.use(core.getHttpSigningPlugin(this.config));
+        this.middlewareStack.use(getHttpSigningPlugin(this.config));
     }
     destroy() {
         super.destroy();
     }
 }
 
-class BatchCheckLayerAvailabilityCommand extends client.Command
+class BatchCheckLayerAvailabilityCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "BatchCheckLayerAvailability", {})
     .n("ECRPUBLICClient", "BatchCheckLayerAvailabilityCommand")
-    .sc(schemas_0.BatchCheckLayerAvailability$)
+    .sc(BatchCheckLayerAvailability$)
     .build() {
 }
 
-class BatchDeleteImageCommand extends client.Command
+class BatchDeleteImageCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "BatchDeleteImage", {})
     .n("ECRPUBLICClient", "BatchDeleteImageCommand")
-    .sc(schemas_0.BatchDeleteImage$)
+    .sc(BatchDeleteImage$)
     .build() {
 }
 
-class CompleteLayerUploadCommand extends client.Command
+class CompleteLayerUploadCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "CompleteLayerUpload", {})
     .n("ECRPUBLICClient", "CompleteLayerUploadCommand")
-    .sc(schemas_0.CompleteLayerUpload$)
+    .sc(CompleteLayerUpload$)
     .build() {
 }
 
-class CreateRepositoryCommand extends client.Command
+class CreateRepositoryCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "CreateRepository", {})
     .n("ECRPUBLICClient", "CreateRepositoryCommand")
-    .sc(schemas_0.CreateRepository$)
+    .sc(CreateRepository$)
     .build() {
 }
 
-class DeleteRepositoryCommand extends client.Command
+class DeleteRepositoryCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "DeleteRepository", {})
     .n("ECRPUBLICClient", "DeleteRepositoryCommand")
-    .sc(schemas_0.DeleteRepository$)
+    .sc(DeleteRepository$)
     .build() {
 }
 
-class DeleteRepositoryPolicyCommand extends client.Command
+class DeleteRepositoryPolicyCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "DeleteRepositoryPolicy", {})
     .n("ECRPUBLICClient", "DeleteRepositoryPolicyCommand")
-    .sc(schemas_0.DeleteRepositoryPolicy$)
+    .sc(DeleteRepositoryPolicy$)
     .build() {
 }
 
-class DescribeImagesCommand extends client.Command
+class DescribeImagesCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "DescribeImages", {})
     .n("ECRPUBLICClient", "DescribeImagesCommand")
-    .sc(schemas_0.DescribeImages$)
+    .sc(DescribeImages$)
     .build() {
 }
 
-class DescribeImageTagsCommand extends client.Command
+class DescribeImageTagsCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "DescribeImageTags", {})
     .n("ECRPUBLICClient", "DescribeImageTagsCommand")
-    .sc(schemas_0.DescribeImageTags$)
+    .sc(DescribeImageTags$)
     .build() {
 }
 
-class DescribeRegistriesCommand extends client.Command
+class DescribeRegistriesCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "DescribeRegistries", {})
     .n("ECRPUBLICClient", "DescribeRegistriesCommand")
-    .sc(schemas_0.DescribeRegistries$)
+    .sc(DescribeRegistries$)
     .build() {
 }
 
-class DescribeRepositoriesCommand extends client.Command
+class DescribeRepositoriesCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "DescribeRepositories", {})
     .n("ECRPUBLICClient", "DescribeRepositoriesCommand")
-    .sc(schemas_0.DescribeRepositories$)
+    .sc(DescribeRepositories$)
     .build() {
 }
 
-class GetAuthorizationTokenCommand extends client.Command
+class GetAuthorizationTokenCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "GetAuthorizationToken", {})
     .n("ECRPUBLICClient", "GetAuthorizationTokenCommand")
-    .sc(schemas_0.GetAuthorizationToken$)
+    .sc(GetAuthorizationToken$)
     .build() {
 }
 
-class GetRegistryCatalogDataCommand extends client.Command
+class GetRegistryCatalogDataCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "GetRegistryCatalogData", {})
     .n("ECRPUBLICClient", "GetRegistryCatalogDataCommand")
-    .sc(schemas_0.GetRegistryCatalogData$)
+    .sc(GetRegistryCatalogData$)
     .build() {
 }
 
-class GetRepositoryCatalogDataCommand extends client.Command
+class GetRepositoryCatalogDataCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "GetRepositoryCatalogData", {})
     .n("ECRPUBLICClient", "GetRepositoryCatalogDataCommand")
-    .sc(schemas_0.GetRepositoryCatalogData$)
+    .sc(GetRepositoryCatalogData$)
     .build() {
 }
 
-class GetRepositoryPolicyCommand extends client.Command
+class GetRepositoryPolicyCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "GetRepositoryPolicy", {})
     .n("ECRPUBLICClient", "GetRepositoryPolicyCommand")
-    .sc(schemas_0.GetRepositoryPolicy$)
+    .sc(GetRepositoryPolicy$)
     .build() {
 }
 
-class InitiateLayerUploadCommand extends client.Command
+class InitiateLayerUploadCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "InitiateLayerUpload", {})
     .n("ECRPUBLICClient", "InitiateLayerUploadCommand")
-    .sc(schemas_0.InitiateLayerUpload$)
+    .sc(InitiateLayerUpload$)
     .build() {
 }
 
-class ListTagsForResourceCommand extends client.Command
+class ListTagsForResourceCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "ListTagsForResource", {})
     .n("ECRPUBLICClient", "ListTagsForResourceCommand")
-    .sc(schemas_0.ListTagsForResource$)
+    .sc(ListTagsForResource$)
     .build() {
 }
 
-class PutImageCommand extends client.Command
+class PutImageCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "PutImage", {})
     .n("ECRPUBLICClient", "PutImageCommand")
-    .sc(schemas_0.PutImage$)
+    .sc(PutImage$)
     .build() {
 }
 
-class PutRegistryCatalogDataCommand extends client.Command
+class PutRegistryCatalogDataCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "PutRegistryCatalogData", {})
     .n("ECRPUBLICClient", "PutRegistryCatalogDataCommand")
-    .sc(schemas_0.PutRegistryCatalogData$)
+    .sc(PutRegistryCatalogData$)
     .build() {
 }
 
-class PutRepositoryCatalogDataCommand extends client.Command
+class PutRepositoryCatalogDataCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "PutRepositoryCatalogData", {})
     .n("ECRPUBLICClient", "PutRepositoryCatalogDataCommand")
-    .sc(schemas_0.PutRepositoryCatalogData$)
+    .sc(PutRepositoryCatalogData$)
     .build() {
 }
 
-class SetRepositoryPolicyCommand extends client.Command
+class SetRepositoryPolicyCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "SetRepositoryPolicy", {})
     .n("ECRPUBLICClient", "SetRepositoryPolicyCommand")
-    .sc(schemas_0.SetRepositoryPolicy$)
+    .sc(SetRepositoryPolicy$)
     .build() {
 }
 
-class TagResourceCommand extends client.Command
+class TagResourceCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "TagResource", {})
     .n("ECRPUBLICClient", "TagResourceCommand")
-    .sc(schemas_0.TagResource$)
+    .sc(TagResource$)
     .build() {
 }
 
-class UntagResourceCommand extends client.Command
+class UntagResourceCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "UntagResource", {})
     .n("ECRPUBLICClient", "UntagResourceCommand")
-    .sc(schemas_0.UntagResource$)
+    .sc(UntagResource$)
     .build() {
 }
 
-class UploadLayerPartCommand extends client.Command
+class UploadLayerPartCommand extends Command
     .classBuilder()
     .ep(commonParams)
     .m(function (Command, cs, config, o) {
-    return [endpoints.getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
+    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
 })
     .s("SpencerFrontendService", "UploadLayerPart", {})
     .n("ECRPUBLICClient", "UploadLayerPartCommand")
-    .sc(schemas_0.UploadLayerPart$)
+    .sc(UploadLayerPart$)
     .build() {
 }
 
-const paginateDescribeImages = core.createPaginator(ECRPUBLICClient, DescribeImagesCommand, "nextToken", "nextToken", "maxResults");
+const paginateDescribeImages = createPaginator(ECRPUBLICClient, DescribeImagesCommand, "nextToken", "nextToken", "maxResults");
 
-const paginateDescribeImageTags = core.createPaginator(ECRPUBLICClient, DescribeImageTagsCommand, "nextToken", "nextToken", "maxResults");
+const paginateDescribeImageTags = createPaginator(ECRPUBLICClient, DescribeImageTagsCommand, "nextToken", "nextToken", "maxResults");
 
-const paginateDescribeRegistries = core.createPaginator(ECRPUBLICClient, DescribeRegistriesCommand, "nextToken", "nextToken", "maxResults");
+const paginateDescribeRegistries = createPaginator(ECRPUBLICClient, DescribeRegistriesCommand, "nextToken", "nextToken", "maxResults");
 
-const paginateDescribeRepositories = core.createPaginator(ECRPUBLICClient, DescribeRepositoriesCommand, "nextToken", "nextToken", "maxResults");
+const paginateDescribeRepositories = createPaginator(ECRPUBLICClient, DescribeRepositoriesCommand, "nextToken", "nextToken", "maxResults");
 
 const commands = {
     BatchCheckLayerAvailabilityCommand,
@@ -991,7 +981,7 @@ const paginators = {
 };
 class ECRPUBLIC extends ECRPUBLICClient {
 }
-client.createAggregatedClient(commands, ECRPUBLIC, { paginators });
+createAggregatedClient(commands, ECRPUBLIC, { paginators });
 
 const LayerFailureCode = {
     InvalidLayerDigest: "InvalidLayerDigest",
@@ -1016,9 +1006,6 @@ const RegistryAliasStatus = {
     REJECTED: "REJECTED",
 };
 
-exports.$Command = client.Command;
-exports.__Client = client.Client;
-exports.ECRPUBLICServiceException = ECRPUBLICServiceException.ECRPUBLICServiceException;
 exports.BatchCheckLayerAvailabilityCommand = BatchCheckLayerAvailabilityCommand;
 exports.BatchDeleteImageCommand = BatchDeleteImageCommand;
 exports.CompleteLayerUploadCommand = CompleteLayerUploadCommand;
@@ -1052,26 +1039,6 @@ exports.paginateDescribeImageTags = paginateDescribeImageTags;
 exports.paginateDescribeImages = paginateDescribeImages;
 exports.paginateDescribeRegistries = paginateDescribeRegistries;
 exports.paginateDescribeRepositories = paginateDescribeRepositories;
-Object.prototype.hasOwnProperty.call(schemas_0, '__proto__') &&
-    !Object.prototype.hasOwnProperty.call(exports, '__proto__') &&
-    Object.defineProperty(exports, '__proto__', {
-        enumerable: true,
-        value: schemas_0['__proto__']
-    });
-
-Object.keys(schemas_0).forEach(function (k) {
-    if (k !== 'default' && !Object.prototype.hasOwnProperty.call(exports, k)) exports[k] = schemas_0[k];
-});
-Object.prototype.hasOwnProperty.call(errors, '__proto__') &&
-    !Object.prototype.hasOwnProperty.call(exports, '__proto__') &&
-    Object.defineProperty(exports, '__proto__', {
-        enumerable: true,
-        value: errors['__proto__']
-    });
-
-Object.keys(errors).forEach(function (k) {
-    if (k !== 'default' && !Object.prototype.hasOwnProperty.call(exports, k)) exports[k] = errors[k];
-});
 
 
 /***/ }),
@@ -1079,18 +1046,14 @@ Object.keys(errors).forEach(function (k) {
 /***/ 3303:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ECRPUBLICServiceException = exports.__ServiceException = void 0;
-const client_1 = __nccwpck_require__(2658);
-Object.defineProperty(exports, "__ServiceException", ({ enumerable: true, get: function () { return client_1.ServiceException; } }));
-class ECRPUBLICServiceException extends client_1.ServiceException {
+const { ServiceException: __ServiceException } = __nccwpck_require__(2658);
+exports.__ServiceException = __ServiceException;
+exports.ECRPUBLICServiceException = class ECRPUBLICServiceException extends __ServiceException {
     constructor(options) {
         super(options);
         Object.setPrototypeOf(this, ECRPUBLICServiceException.prototype);
     }
-}
-exports.ECRPUBLICServiceException = ECRPUBLICServiceException;
+};
 
 
 /***/ }),
@@ -1098,11 +1061,8 @@ exports.ECRPUBLICServiceException = ECRPUBLICServiceException;
 /***/ 977:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ReferencedImagesNotFoundException = exports.LayersNotFoundException = exports.InvalidLayerPartException = exports.ImageTagAlreadyExistsException = exports.ImageDigestDoesNotMatchException = exports.ImageAlreadyExistsException = exports.RepositoryCatalogDataNotFoundException = exports.ImageNotFoundException = exports.RepositoryPolicyNotFoundException = exports.RepositoryNotEmptyException = exports.TooManyTagsException = exports.RepositoryAlreadyExistsException = exports.LimitExceededException = exports.InvalidTagParameterException = exports.UploadNotFoundException = exports.LayerPartTooSmallException = exports.LayerAlreadyExistsException = exports.InvalidLayerException = exports.EmptyUploadException = exports.UnsupportedCommandException = exports.ServerException = exports.RepositoryNotFoundException = exports.RegistryNotFoundException = exports.InvalidParameterException = void 0;
-const ECRPUBLICServiceException_1 = __nccwpck_require__(3303);
-class InvalidParameterException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+const { ECRPUBLICServiceException: __BaseException } = __nccwpck_require__(3303);
+exports.InvalidParameterException = class InvalidParameterException extends __BaseException {
     name = "InvalidParameterException";
     $fault = "client";
     constructor(opts) {
@@ -1113,9 +1073,8 @@ class InvalidParameterException extends ECRPUBLICServiceException_1.ECRPUBLICSer
         });
         Object.setPrototypeOf(this, InvalidParameterException.prototype);
     }
-}
-exports.InvalidParameterException = InvalidParameterException;
-class RegistryNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.RegistryNotFoundException = class RegistryNotFoundException extends __BaseException {
     name = "RegistryNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -1126,9 +1085,8 @@ class RegistryNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICSer
         });
         Object.setPrototypeOf(this, RegistryNotFoundException.prototype);
     }
-}
-exports.RegistryNotFoundException = RegistryNotFoundException;
-class RepositoryNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.RepositoryNotFoundException = class RepositoryNotFoundException extends __BaseException {
     name = "RepositoryNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -1139,9 +1097,8 @@ class RepositoryNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICS
         });
         Object.setPrototypeOf(this, RepositoryNotFoundException.prototype);
     }
-}
-exports.RepositoryNotFoundException = RepositoryNotFoundException;
-class ServerException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.ServerException = class ServerException extends __BaseException {
     name = "ServerException";
     $fault = "server";
     constructor(opts) {
@@ -1152,9 +1109,8 @@ class ServerException extends ECRPUBLICServiceException_1.ECRPUBLICServiceExcept
         });
         Object.setPrototypeOf(this, ServerException.prototype);
     }
-}
-exports.ServerException = ServerException;
-class UnsupportedCommandException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.UnsupportedCommandException = class UnsupportedCommandException extends __BaseException {
     name = "UnsupportedCommandException";
     $fault = "client";
     constructor(opts) {
@@ -1165,9 +1121,8 @@ class UnsupportedCommandException extends ECRPUBLICServiceException_1.ECRPUBLICS
         });
         Object.setPrototypeOf(this, UnsupportedCommandException.prototype);
     }
-}
-exports.UnsupportedCommandException = UnsupportedCommandException;
-class EmptyUploadException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.EmptyUploadException = class EmptyUploadException extends __BaseException {
     name = "EmptyUploadException";
     $fault = "client";
     constructor(opts) {
@@ -1178,9 +1133,8 @@ class EmptyUploadException extends ECRPUBLICServiceException_1.ECRPUBLICServiceE
         });
         Object.setPrototypeOf(this, EmptyUploadException.prototype);
     }
-}
-exports.EmptyUploadException = EmptyUploadException;
-class InvalidLayerException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.InvalidLayerException = class InvalidLayerException extends __BaseException {
     name = "InvalidLayerException";
     $fault = "client";
     constructor(opts) {
@@ -1191,9 +1145,8 @@ class InvalidLayerException extends ECRPUBLICServiceException_1.ECRPUBLICService
         });
         Object.setPrototypeOf(this, InvalidLayerException.prototype);
     }
-}
-exports.InvalidLayerException = InvalidLayerException;
-class LayerAlreadyExistsException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.LayerAlreadyExistsException = class LayerAlreadyExistsException extends __BaseException {
     name = "LayerAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -1204,9 +1157,8 @@ class LayerAlreadyExistsException extends ECRPUBLICServiceException_1.ECRPUBLICS
         });
         Object.setPrototypeOf(this, LayerAlreadyExistsException.prototype);
     }
-}
-exports.LayerAlreadyExistsException = LayerAlreadyExistsException;
-class LayerPartTooSmallException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.LayerPartTooSmallException = class LayerPartTooSmallException extends __BaseException {
     name = "LayerPartTooSmallException";
     $fault = "client";
     constructor(opts) {
@@ -1217,9 +1169,8 @@ class LayerPartTooSmallException extends ECRPUBLICServiceException_1.ECRPUBLICSe
         });
         Object.setPrototypeOf(this, LayerPartTooSmallException.prototype);
     }
-}
-exports.LayerPartTooSmallException = LayerPartTooSmallException;
-class UploadNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.UploadNotFoundException = class UploadNotFoundException extends __BaseException {
     name = "UploadNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -1230,9 +1181,8 @@ class UploadNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServi
         });
         Object.setPrototypeOf(this, UploadNotFoundException.prototype);
     }
-}
-exports.UploadNotFoundException = UploadNotFoundException;
-class InvalidTagParameterException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.InvalidTagParameterException = class InvalidTagParameterException extends __BaseException {
     name = "InvalidTagParameterException";
     $fault = "client";
     constructor(opts) {
@@ -1243,9 +1193,8 @@ class InvalidTagParameterException extends ECRPUBLICServiceException_1.ECRPUBLIC
         });
         Object.setPrototypeOf(this, InvalidTagParameterException.prototype);
     }
-}
-exports.InvalidTagParameterException = InvalidTagParameterException;
-class LimitExceededException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.LimitExceededException = class LimitExceededException extends __BaseException {
     name = "LimitExceededException";
     $fault = "client";
     constructor(opts) {
@@ -1256,9 +1205,8 @@ class LimitExceededException extends ECRPUBLICServiceException_1.ECRPUBLICServic
         });
         Object.setPrototypeOf(this, LimitExceededException.prototype);
     }
-}
-exports.LimitExceededException = LimitExceededException;
-class RepositoryAlreadyExistsException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.RepositoryAlreadyExistsException = class RepositoryAlreadyExistsException extends __BaseException {
     name = "RepositoryAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -1269,9 +1217,8 @@ class RepositoryAlreadyExistsException extends ECRPUBLICServiceException_1.ECRPU
         });
         Object.setPrototypeOf(this, RepositoryAlreadyExistsException.prototype);
     }
-}
-exports.RepositoryAlreadyExistsException = RepositoryAlreadyExistsException;
-class TooManyTagsException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.TooManyTagsException = class TooManyTagsException extends __BaseException {
     name = "TooManyTagsException";
     $fault = "client";
     constructor(opts) {
@@ -1282,9 +1229,8 @@ class TooManyTagsException extends ECRPUBLICServiceException_1.ECRPUBLICServiceE
         });
         Object.setPrototypeOf(this, TooManyTagsException.prototype);
     }
-}
-exports.TooManyTagsException = TooManyTagsException;
-class RepositoryNotEmptyException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.RepositoryNotEmptyException = class RepositoryNotEmptyException extends __BaseException {
     name = "RepositoryNotEmptyException";
     $fault = "client";
     constructor(opts) {
@@ -1295,9 +1241,8 @@ class RepositoryNotEmptyException extends ECRPUBLICServiceException_1.ECRPUBLICS
         });
         Object.setPrototypeOf(this, RepositoryNotEmptyException.prototype);
     }
-}
-exports.RepositoryNotEmptyException = RepositoryNotEmptyException;
-class RepositoryPolicyNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.RepositoryPolicyNotFoundException = class RepositoryPolicyNotFoundException extends __BaseException {
     name = "RepositoryPolicyNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -1308,9 +1253,8 @@ class RepositoryPolicyNotFoundException extends ECRPUBLICServiceException_1.ECRP
         });
         Object.setPrototypeOf(this, RepositoryPolicyNotFoundException.prototype);
     }
-}
-exports.RepositoryPolicyNotFoundException = RepositoryPolicyNotFoundException;
-class ImageNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.ImageNotFoundException = class ImageNotFoundException extends __BaseException {
     name = "ImageNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -1321,9 +1265,8 @@ class ImageNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServic
         });
         Object.setPrototypeOf(this, ImageNotFoundException.prototype);
     }
-}
-exports.ImageNotFoundException = ImageNotFoundException;
-class RepositoryCatalogDataNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.RepositoryCatalogDataNotFoundException = class RepositoryCatalogDataNotFoundException extends __BaseException {
     name = "RepositoryCatalogDataNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -1334,9 +1277,8 @@ class RepositoryCatalogDataNotFoundException extends ECRPUBLICServiceException_1
         });
         Object.setPrototypeOf(this, RepositoryCatalogDataNotFoundException.prototype);
     }
-}
-exports.RepositoryCatalogDataNotFoundException = RepositoryCatalogDataNotFoundException;
-class ImageAlreadyExistsException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.ImageAlreadyExistsException = class ImageAlreadyExistsException extends __BaseException {
     name = "ImageAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -1347,9 +1289,8 @@ class ImageAlreadyExistsException extends ECRPUBLICServiceException_1.ECRPUBLICS
         });
         Object.setPrototypeOf(this, ImageAlreadyExistsException.prototype);
     }
-}
-exports.ImageAlreadyExistsException = ImageAlreadyExistsException;
-class ImageDigestDoesNotMatchException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.ImageDigestDoesNotMatchException = class ImageDigestDoesNotMatchException extends __BaseException {
     name = "ImageDigestDoesNotMatchException";
     $fault = "client";
     constructor(opts) {
@@ -1360,9 +1301,8 @@ class ImageDigestDoesNotMatchException extends ECRPUBLICServiceException_1.ECRPU
         });
         Object.setPrototypeOf(this, ImageDigestDoesNotMatchException.prototype);
     }
-}
-exports.ImageDigestDoesNotMatchException = ImageDigestDoesNotMatchException;
-class ImageTagAlreadyExistsException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.ImageTagAlreadyExistsException = class ImageTagAlreadyExistsException extends __BaseException {
     name = "ImageTagAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -1373,9 +1313,8 @@ class ImageTagAlreadyExistsException extends ECRPUBLICServiceException_1.ECRPUBL
         });
         Object.setPrototypeOf(this, ImageTagAlreadyExistsException.prototype);
     }
-}
-exports.ImageTagAlreadyExistsException = ImageTagAlreadyExistsException;
-class InvalidLayerPartException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.InvalidLayerPartException = class InvalidLayerPartException extends __BaseException {
     name = "InvalidLayerPartException";
     $fault = "client";
     registryId;
@@ -1394,9 +1333,8 @@ class InvalidLayerPartException extends ECRPUBLICServiceException_1.ECRPUBLICSer
         this.uploadId = opts.uploadId;
         this.lastValidByteReceived = opts.lastValidByteReceived;
     }
-}
-exports.InvalidLayerPartException = InvalidLayerPartException;
-class LayersNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.LayersNotFoundException = class LayersNotFoundException extends __BaseException {
     name = "LayersNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -1407,9 +1345,8 @@ class LayersNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServi
         });
         Object.setPrototypeOf(this, LayersNotFoundException.prototype);
     }
-}
-exports.LayersNotFoundException = LayersNotFoundException;
-class ReferencedImagesNotFoundException extends ECRPUBLICServiceException_1.ECRPUBLICServiceException {
+};
+exports.ReferencedImagesNotFoundException = class ReferencedImagesNotFoundException extends __BaseException {
     name = "ReferencedImagesNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -1420,8 +1357,7 @@ class ReferencedImagesNotFoundException extends ECRPUBLICServiceException_1.ECRP
         });
         Object.setPrototypeOf(this, ReferencedImagesNotFoundException.prototype);
     }
-}
-exports.ReferencedImagesNotFoundException = ReferencedImagesNotFoundException;
+};
 
 
 /***/ }),
@@ -1429,26 +1365,22 @@ exports.ReferencedImagesNotFoundException = ReferencedImagesNotFoundException;
 /***/ 8199:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getRuntimeConfig = void 0;
-const tslib_1 = __nccwpck_require__(1860);
-const package_json_1 = tslib_1.__importDefault(__nccwpck_require__(7643));
-const client_1 = __nccwpck_require__(5152);
-const httpAuthSchemes_1 = __nccwpck_require__(7523);
-const credential_provider_node_1 = __nccwpck_require__(5861);
-const client_2 = __nccwpck_require__(2658);
-const config_1 = __nccwpck_require__(7291);
-const retry_1 = __nccwpck_require__(3609);
-const serde_1 = __nccwpck_require__(2430);
-const node_http_handler_1 = __nccwpck_require__(8834);
-const runtimeConfig_shared_1 = __nccwpck_require__(2180);
+const packageInfo = __nccwpck_require__(7643);
+const { createDefaultUserAgentProvider, emitWarningIfUnsupportedVersion: awsCheckVersion, NODE_APP_ID_CONFIG_OPTIONS } = __nccwpck_require__(5152);
+const { NODE_AUTH_SCHEME_PREFERENCE_OPTIONS } = __nccwpck_require__(7523);
+const { defaultProvider: credentialDefaultProvider } = __nccwpck_require__(5861);
+const { emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode } = __nccwpck_require__(2658);
+const { loadConfig: loadNodeConfig, NODE_REGION_CONFIG_FILE_OPTIONS, NODE_REGION_CONFIG_OPTIONS, NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, resolveDefaultsModeConfig } = __nccwpck_require__(7291);
+const { DEFAULT_RETRY_MODE, NODE_MAX_ATTEMPT_CONFIG_OPTIONS, NODE_RETRY_MODE_CONFIG_OPTIONS } = __nccwpck_require__(3609);
+const { calculateBodyLength, Hash } = __nccwpck_require__(2430);
+const { NodeHttpHandler: RequestHandler, streamCollector } = __nccwpck_require__(8834);
+const { getRuntimeConfig: getSharedRuntimeConfig } = __nccwpck_require__(2180);
 const getRuntimeConfig = (config) => {
-    (0, client_2.emitWarningIfUnsupportedVersion)(process.version);
-    const defaultsMode = (0, config_1.resolveDefaultsModeConfig)(config);
-    const defaultConfigProvider = () => defaultsMode().then(client_2.loadConfigsForDefaultMode);
-    const clientSharedValues = (0, runtimeConfig_shared_1.getRuntimeConfig)(config);
-    (0, client_1.emitWarningIfUnsupportedVersion)(process.version);
+    emitWarningIfUnsupportedVersion(process.version);
+    const defaultsMode = resolveDefaultsModeConfig(config);
+    const defaultConfigProvider = () => defaultsMode().then(loadConfigsForDefaultMode);
+    const clientSharedValues = getSharedRuntimeConfig(config);
+    awsCheckVersion(process.version);
     const loaderConfig = {
         profile: config?.profile,
         logger: clientSharedValues.logger,
@@ -1458,23 +1390,23 @@ const getRuntimeConfig = (config) => {
         ...config,
         runtime: "node",
         defaultsMode,
-        authSchemePreference: config?.authSchemePreference ?? (0, config_1.loadConfig)(httpAuthSchemes_1.NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
-        bodyLengthChecker: config?.bodyLengthChecker ?? serde_1.calculateBodyLength,
-        credentialDefaultProvider: config?.credentialDefaultProvider ?? credential_provider_node_1.defaultProvider,
-        defaultUserAgentProvider: config?.defaultUserAgentProvider ?? (0, client_1.createDefaultUserAgentProvider)({ serviceId: clientSharedValues.serviceId, clientVersion: package_json_1.default.version }),
-        maxAttempts: config?.maxAttempts ?? (0, config_1.loadConfig)(retry_1.NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config),
-        region: config?.region ?? (0, config_1.loadConfig)(config_1.NODE_REGION_CONFIG_OPTIONS, { ...config_1.NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
-        requestHandler: node_http_handler_1.NodeHttpHandler.create(config?.requestHandler ?? defaultConfigProvider),
+        authSchemePreference: config?.authSchemePreference ?? loadNodeConfig(NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
+        bodyLengthChecker: config?.bodyLengthChecker ?? calculateBodyLength,
+        credentialDefaultProvider: config?.credentialDefaultProvider ?? credentialDefaultProvider,
+        defaultUserAgentProvider: config?.defaultUserAgentProvider ?? createDefaultUserAgentProvider({ serviceId: clientSharedValues.serviceId, clientVersion: packageInfo.version }),
+        maxAttempts: config?.maxAttempts ?? loadNodeConfig(NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config),
+        region: config?.region ?? loadNodeConfig(NODE_REGION_CONFIG_OPTIONS, { ...NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
+        requestHandler: RequestHandler.create(config?.requestHandler ?? defaultConfigProvider),
         retryMode: config?.retryMode ??
-            (0, config_1.loadConfig)({
-                ...retry_1.NODE_RETRY_MODE_CONFIG_OPTIONS,
-                default: async () => (await defaultConfigProvider()).retryMode || retry_1.DEFAULT_RETRY_MODE,
+            loadNodeConfig({
+                ...NODE_RETRY_MODE_CONFIG_OPTIONS,
+                default: async () => (await defaultConfigProvider()).retryMode || DEFAULT_RETRY_MODE,
             }, config),
-        sha256: config?.sha256 ?? serde_1.Hash.bind(null, "sha256"),
-        streamCollector: config?.streamCollector ?? node_http_handler_1.streamCollector,
-        useDualstackEndpoint: config?.useDualstackEndpoint ?? (0, config_1.loadConfig)(config_1.NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
-        useFipsEndpoint: config?.useFipsEndpoint ?? (0, config_1.loadConfig)(config_1.NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
-        userAgentAppId: config?.userAgentAppId ?? (0, config_1.loadConfig)(client_1.NODE_APP_ID_CONFIG_OPTIONS, loaderConfig),
+        sha256: config?.sha256 ?? Hash.bind(null, "sha256"),
+        streamCollector: config?.streamCollector ?? streamCollector,
+        useDualstackEndpoint: config?.useDualstackEndpoint ?? loadNodeConfig(NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
+        useFipsEndpoint: config?.useFipsEndpoint ?? loadNodeConfig(NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
+        userAgentAppId: config?.userAgentAppId ?? loadNodeConfig(NODE_APP_ID_CONFIG_OPTIONS, loaderConfig),
     };
 };
 exports.getRuntimeConfig = getRuntimeConfig;
@@ -1485,49 +1417,45 @@ exports.getRuntimeConfig = getRuntimeConfig;
 /***/ 2180:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getRuntimeConfig = void 0;
-const httpAuthSchemes_1 = __nccwpck_require__(7523);
-const protocols_1 = __nccwpck_require__(7288);
-const client_1 = __nccwpck_require__(2658);
-const protocols_2 = __nccwpck_require__(3422);
-const serde_1 = __nccwpck_require__(2430);
-const httpAuthSchemeProvider_1 = __nccwpck_require__(3182);
-const endpointResolver_1 = __nccwpck_require__(6072);
-const schemas_0_1 = __nccwpck_require__(3917);
-const getRuntimeConfig = (config) => {
+const { AwsSdkSigV4Signer } = __nccwpck_require__(7523);
+const { AwsJson1_1Protocol } = __nccwpck_require__(7288);
+const { NoOpLogger } = __nccwpck_require__(2658);
+const { parseUrl } = __nccwpck_require__(3422);
+const { fromBase64, fromUtf8, toBase64, toUtf8 } = __nccwpck_require__(2430);
+const { defaultECRPUBLICHttpAuthSchemeProvider } = __nccwpck_require__(3182);
+const { defaultEndpointResolver } = __nccwpck_require__(6072);
+const { errorTypeRegistries } = __nccwpck_require__(3917);
+exports.getRuntimeConfig = (config) => {
     return {
         apiVersion: "2020-10-30",
-        base64Decoder: config?.base64Decoder ?? serde_1.fromBase64,
-        base64Encoder: config?.base64Encoder ?? serde_1.toBase64,
+        base64Decoder: config?.base64Decoder ?? fromBase64,
+        base64Encoder: config?.base64Encoder ?? toBase64,
         disableHostPrefix: config?.disableHostPrefix ?? false,
-        endpointProvider: config?.endpointProvider ?? endpointResolver_1.defaultEndpointResolver,
+        endpointProvider: config?.endpointProvider ?? defaultEndpointResolver,
         extensions: config?.extensions ?? [],
-        httpAuthSchemeProvider: config?.httpAuthSchemeProvider ?? httpAuthSchemeProvider_1.defaultECRPUBLICHttpAuthSchemeProvider,
+        httpAuthSchemeProvider: config?.httpAuthSchemeProvider ?? defaultECRPUBLICHttpAuthSchemeProvider,
         httpAuthSchemes: config?.httpAuthSchemes ?? [
             {
                 schemeId: "aws.auth#sigv4",
                 identityProvider: (ipc) => ipc.getIdentityProvider("aws.auth#sigv4"),
-                signer: new httpAuthSchemes_1.AwsSdkSigV4Signer(),
+                signer: new AwsSdkSigV4Signer(),
             },
         ],
-        logger: config?.logger ?? new client_1.NoOpLogger(),
-        protocol: config?.protocol ?? protocols_1.AwsJson1_1Protocol,
+        logger: config?.logger ?? new NoOpLogger(),
+        protocol: config?.protocol ?? AwsJson1_1Protocol,
         protocolSettings: config?.protocolSettings ?? {
             defaultNamespace: "com.amazonaws.ecrpublic",
-            errorTypeRegistries: schemas_0_1.errorTypeRegistries,
+            errorTypeRegistries,
             xmlNamespace: "http://ecr-public.amazonaws.com/doc/2020-12-02/",
             version: "2020-10-30",
             serviceTarget: "SpencerFrontendService",
         },
         serviceId: config?.serviceId ?? "ECR PUBLIC",
-        urlParser: config?.urlParser ?? protocols_2.parseUrl,
-        utf8Decoder: config?.utf8Decoder ?? serde_1.fromUtf8,
-        utf8Encoder: config?.utf8Encoder ?? serde_1.toUtf8,
+        urlParser: config?.urlParser ?? parseUrl,
+        utf8Decoder: config?.utf8Decoder ?? fromUtf8,
+        utf8Encoder: config?.utf8Encoder ?? toUtf8,
     };
 };
-exports.getRuntimeConfig = getRuntimeConfig;
 
 
 /***/ }),
@@ -1535,11 +1463,6 @@ exports.getRuntimeConfig = getRuntimeConfig;
 /***/ 3917:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.GetRegistryCatalogDataRequest$ = exports.GetAuthorizationTokenResponse$ = exports.GetAuthorizationTokenRequest$ = exports.DescribeRepositoriesResponse$ = exports.DescribeRepositoriesRequest$ = exports.DescribeRegistriesResponse$ = exports.DescribeRegistriesRequest$ = exports.DescribeImageTagsResponse$ = exports.DescribeImageTagsRequest$ = exports.DescribeImagesResponse$ = exports.DescribeImagesRequest$ = exports.DeleteRepositoryResponse$ = exports.DeleteRepositoryRequest$ = exports.DeleteRepositoryPolicyResponse$ = exports.DeleteRepositoryPolicyRequest$ = exports.CreateRepositoryResponse$ = exports.CreateRepositoryRequest$ = exports.CompleteLayerUploadResponse$ = exports.CompleteLayerUploadRequest$ = exports.BatchDeleteImageResponse$ = exports.BatchDeleteImageRequest$ = exports.BatchCheckLayerAvailabilityResponse$ = exports.BatchCheckLayerAvailabilityRequest$ = exports.AuthorizationData$ = exports.errorTypeRegistries = exports.UploadNotFoundException$ = exports.UnsupportedCommandException$ = exports.TooManyTagsException$ = exports.ServerException$ = exports.RepositoryPolicyNotFoundException$ = exports.RepositoryNotFoundException$ = exports.RepositoryNotEmptyException$ = exports.RepositoryCatalogDataNotFoundException$ = exports.RepositoryAlreadyExistsException$ = exports.RegistryNotFoundException$ = exports.ReferencedImagesNotFoundException$ = exports.LimitExceededException$ = exports.LayersNotFoundException$ = exports.LayerPartTooSmallException$ = exports.LayerAlreadyExistsException$ = exports.InvalidTagParameterException$ = exports.InvalidParameterException$ = exports.InvalidLayerPartException$ = exports.InvalidLayerException$ = exports.ImageTagAlreadyExistsException$ = exports.ImageNotFoundException$ = exports.ImageDigestDoesNotMatchException$ = exports.ImageAlreadyExistsException$ = exports.EmptyUploadException$ = exports.ECRPUBLICServiceException$ = void 0;
-exports.GetRegistryCatalogData$ = exports.GetAuthorizationToken$ = exports.DescribeRepositories$ = exports.DescribeRegistries$ = exports.DescribeImageTags$ = exports.DescribeImages$ = exports.DeleteRepositoryPolicy$ = exports.DeleteRepository$ = exports.CreateRepository$ = exports.CompleteLayerUpload$ = exports.BatchDeleteImage$ = exports.BatchCheckLayerAvailability$ = exports.UploadLayerPartResponse$ = exports.UploadLayerPartRequest$ = exports.UntagResourceResponse$ = exports.UntagResourceRequest$ = exports.TagResourceResponse$ = exports.TagResourceRequest$ = exports.Tag$ = exports.SetRepositoryPolicyResponse$ = exports.SetRepositoryPolicyRequest$ = exports.RepositoryCatalogDataInput$ = exports.RepositoryCatalogData$ = exports.Repository$ = exports.RegistryCatalogData$ = exports.RegistryAlias$ = exports.Registry$ = exports.ReferencedImageDetail$ = exports.PutRepositoryCatalogDataResponse$ = exports.PutRepositoryCatalogDataRequest$ = exports.PutRegistryCatalogDataResponse$ = exports.PutRegistryCatalogDataRequest$ = exports.PutImageResponse$ = exports.PutImageRequest$ = exports.ListTagsForResourceResponse$ = exports.ListTagsForResourceRequest$ = exports.LayerFailure$ = exports.Layer$ = exports.InitiateLayerUploadResponse$ = exports.InitiateLayerUploadRequest$ = exports.ImageTagDetail$ = exports.ImageIdentifier$ = exports.ImageFailure$ = exports.ImageDetail$ = exports.Image$ = exports.GetRepositoryPolicyResponse$ = exports.GetRepositoryPolicyRequest$ = exports.GetRepositoryCatalogDataResponse$ = exports.GetRepositoryCatalogDataRequest$ = exports.GetRegistryCatalogDataResponse$ = void 0;
-exports.UploadLayerPart$ = exports.UntagResource$ = exports.TagResource$ = exports.SetRepositoryPolicy$ = exports.PutRepositoryCatalogData$ = exports.PutRegistryCatalogData$ = exports.PutImage$ = exports.ListTagsForResource$ = exports.InitiateLayerUpload$ = exports.GetRepositoryPolicy$ = exports.GetRepositoryCatalogData$ = void 0;
 const _AD = "AuthorizationData";
 const _BCLA = "BatchCheckLayerAvailability";
 const _BCLAR = "BatchCheckLayerAvailabilityRequest";
@@ -1735,576 +1658,663 @@ const _uI = "uploadId";
 const _uT = "usageText";
 const _v = "verified";
 const n0 = "com.amazonaws.ecrpublic";
-const schema_1 = __nccwpck_require__(6890);
-const ECRPUBLICServiceException_1 = __nccwpck_require__(3303);
-const errors_1 = __nccwpck_require__(977);
-const _s_registry = schema_1.TypeRegistry.for(_s);
-exports.ECRPUBLICServiceException$ = [-3, _s, "ECRPUBLICServiceException", 0, [], []];
-_s_registry.registerError(exports.ECRPUBLICServiceException$, ECRPUBLICServiceException_1.ECRPUBLICServiceException);
-const n0_registry = schema_1.TypeRegistry.for(n0);
-exports.EmptyUploadException$ = [-3, n0, _EUE,
+const { TypeRegistry } = __nccwpck_require__(6890);
+const { ECRPUBLICServiceException } = __nccwpck_require__(3303);
+const { EmptyUploadException, ImageAlreadyExistsException, ImageDigestDoesNotMatchException, ImageNotFoundException, ImageTagAlreadyExistsException, InvalidLayerException, InvalidLayerPartException, InvalidParameterException, InvalidTagParameterException, LayerAlreadyExistsException, LayerPartTooSmallException, LayersNotFoundException, LimitExceededException, ReferencedImagesNotFoundException, RegistryNotFoundException, RepositoryAlreadyExistsException, RepositoryCatalogDataNotFoundException, RepositoryNotEmptyException, RepositoryNotFoundException, RepositoryPolicyNotFoundException, ServerException, TooManyTagsException, UnsupportedCommandException, UploadNotFoundException } = __nccwpck_require__(977);
+const _s_registry = TypeRegistry.for(_s);
+const ECRPUBLICServiceException$ = [-3, _s, "ECRPUBLICServiceException", 0, [], []];
+exports.ECRPUBLICServiceException$ = ECRPUBLICServiceException$;
+_s_registry.registerError(ECRPUBLICServiceException$, ECRPUBLICServiceException);
+const n0_registry = TypeRegistry.for(n0);
+const EmptyUploadException$ = [-3, n0, _EUE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.EmptyUploadException$, errors_1.EmptyUploadException);
-exports.ImageAlreadyExistsException$ = [-3, n0, _IAEE,
+exports.EmptyUploadException$ = EmptyUploadException$;
+n0_registry.registerError(EmptyUploadException$, EmptyUploadException);
+const ImageAlreadyExistsException$ = [-3, n0, _IAEE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.ImageAlreadyExistsException$, errors_1.ImageAlreadyExistsException);
-exports.ImageDigestDoesNotMatchException$ = [-3, n0, _IDDNME,
+exports.ImageAlreadyExistsException$ = ImageAlreadyExistsException$;
+n0_registry.registerError(ImageAlreadyExistsException$, ImageAlreadyExistsException);
+const ImageDigestDoesNotMatchException$ = [-3, n0, _IDDNME,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.ImageDigestDoesNotMatchException$, errors_1.ImageDigestDoesNotMatchException);
-exports.ImageNotFoundException$ = [-3, n0, _INFE,
+exports.ImageDigestDoesNotMatchException$ = ImageDigestDoesNotMatchException$;
+n0_registry.registerError(ImageDigestDoesNotMatchException$, ImageDigestDoesNotMatchException);
+const ImageNotFoundException$ = [-3, n0, _INFE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.ImageNotFoundException$, errors_1.ImageNotFoundException);
-exports.ImageTagAlreadyExistsException$ = [-3, n0, _ITAEE,
+exports.ImageNotFoundException$ = ImageNotFoundException$;
+n0_registry.registerError(ImageNotFoundException$, ImageNotFoundException);
+const ImageTagAlreadyExistsException$ = [-3, n0, _ITAEE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.ImageTagAlreadyExistsException$, errors_1.ImageTagAlreadyExistsException);
-exports.InvalidLayerException$ = [-3, n0, _ILE,
+exports.ImageTagAlreadyExistsException$ = ImageTagAlreadyExistsException$;
+n0_registry.registerError(ImageTagAlreadyExistsException$, ImageTagAlreadyExistsException);
+const InvalidLayerException$ = [-3, n0, _ILE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.InvalidLayerException$, errors_1.InvalidLayerException);
-exports.InvalidLayerPartException$ = [-3, n0, _ILPE,
+exports.InvalidLayerException$ = InvalidLayerException$;
+n0_registry.registerError(InvalidLayerException$, InvalidLayerException);
+const InvalidLayerPartException$ = [-3, n0, _ILPE,
     { [_e]: _c },
     [_rI, _rN, _uI, _lVBR, _m],
     [0, 0, 0, 1, 0]
 ];
-n0_registry.registerError(exports.InvalidLayerPartException$, errors_1.InvalidLayerPartException);
-exports.InvalidParameterException$ = [-3, n0, _IPE,
+exports.InvalidLayerPartException$ = InvalidLayerPartException$;
+n0_registry.registerError(InvalidLayerPartException$, InvalidLayerPartException);
+const InvalidParameterException$ = [-3, n0, _IPE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.InvalidParameterException$, errors_1.InvalidParameterException);
-exports.InvalidTagParameterException$ = [-3, n0, _ITPE,
+exports.InvalidParameterException$ = InvalidParameterException$;
+n0_registry.registerError(InvalidParameterException$, InvalidParameterException);
+const InvalidTagParameterException$ = [-3, n0, _ITPE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.InvalidTagParameterException$, errors_1.InvalidTagParameterException);
-exports.LayerAlreadyExistsException$ = [-3, n0, _LAEE,
+exports.InvalidTagParameterException$ = InvalidTagParameterException$;
+n0_registry.registerError(InvalidTagParameterException$, InvalidTagParameterException);
+const LayerAlreadyExistsException$ = [-3, n0, _LAEE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.LayerAlreadyExistsException$, errors_1.LayerAlreadyExistsException);
-exports.LayerPartTooSmallException$ = [-3, n0, _LPTSE,
+exports.LayerAlreadyExistsException$ = LayerAlreadyExistsException$;
+n0_registry.registerError(LayerAlreadyExistsException$, LayerAlreadyExistsException);
+const LayerPartTooSmallException$ = [-3, n0, _LPTSE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.LayerPartTooSmallException$, errors_1.LayerPartTooSmallException);
-exports.LayersNotFoundException$ = [-3, n0, _LNFE,
+exports.LayerPartTooSmallException$ = LayerPartTooSmallException$;
+n0_registry.registerError(LayerPartTooSmallException$, LayerPartTooSmallException);
+const LayersNotFoundException$ = [-3, n0, _LNFE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.LayersNotFoundException$, errors_1.LayersNotFoundException);
-exports.LimitExceededException$ = [-3, n0, _LEE,
+exports.LayersNotFoundException$ = LayersNotFoundException$;
+n0_registry.registerError(LayersNotFoundException$, LayersNotFoundException);
+const LimitExceededException$ = [-3, n0, _LEE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.LimitExceededException$, errors_1.LimitExceededException);
-exports.ReferencedImagesNotFoundException$ = [-3, n0, _RINFE,
+exports.LimitExceededException$ = LimitExceededException$;
+n0_registry.registerError(LimitExceededException$, LimitExceededException);
+const ReferencedImagesNotFoundException$ = [-3, n0, _RINFE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.ReferencedImagesNotFoundException$, errors_1.ReferencedImagesNotFoundException);
-exports.RegistryNotFoundException$ = [-3, n0, _RNFE,
+exports.ReferencedImagesNotFoundException$ = ReferencedImagesNotFoundException$;
+n0_registry.registerError(ReferencedImagesNotFoundException$, ReferencedImagesNotFoundException);
+const RegistryNotFoundException$ = [-3, n0, _RNFE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.RegistryNotFoundException$, errors_1.RegistryNotFoundException);
-exports.RepositoryAlreadyExistsException$ = [-3, n0, _RAEE,
+exports.RegistryNotFoundException$ = RegistryNotFoundException$;
+n0_registry.registerError(RegistryNotFoundException$, RegistryNotFoundException);
+const RepositoryAlreadyExistsException$ = [-3, n0, _RAEE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.RepositoryAlreadyExistsException$, errors_1.RepositoryAlreadyExistsException);
-exports.RepositoryCatalogDataNotFoundException$ = [-3, n0, _RCDNFE,
+exports.RepositoryAlreadyExistsException$ = RepositoryAlreadyExistsException$;
+n0_registry.registerError(RepositoryAlreadyExistsException$, RepositoryAlreadyExistsException);
+const RepositoryCatalogDataNotFoundException$ = [-3, n0, _RCDNFE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.RepositoryCatalogDataNotFoundException$, errors_1.RepositoryCatalogDataNotFoundException);
-exports.RepositoryNotEmptyException$ = [-3, n0, _RNEE,
+exports.RepositoryCatalogDataNotFoundException$ = RepositoryCatalogDataNotFoundException$;
+n0_registry.registerError(RepositoryCatalogDataNotFoundException$, RepositoryCatalogDataNotFoundException);
+const RepositoryNotEmptyException$ = [-3, n0, _RNEE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.RepositoryNotEmptyException$, errors_1.RepositoryNotEmptyException);
-exports.RepositoryNotFoundException$ = [-3, n0, _RNFEe,
+exports.RepositoryNotEmptyException$ = RepositoryNotEmptyException$;
+n0_registry.registerError(RepositoryNotEmptyException$, RepositoryNotEmptyException);
+const RepositoryNotFoundException$ = [-3, n0, _RNFEe,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.RepositoryNotFoundException$, errors_1.RepositoryNotFoundException);
-exports.RepositoryPolicyNotFoundException$ = [-3, n0, _RPNFE,
+exports.RepositoryNotFoundException$ = RepositoryNotFoundException$;
+n0_registry.registerError(RepositoryNotFoundException$, RepositoryNotFoundException);
+const RepositoryPolicyNotFoundException$ = [-3, n0, _RPNFE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.RepositoryPolicyNotFoundException$, errors_1.RepositoryPolicyNotFoundException);
-exports.ServerException$ = [-3, n0, _SE,
+exports.RepositoryPolicyNotFoundException$ = RepositoryPolicyNotFoundException$;
+n0_registry.registerError(RepositoryPolicyNotFoundException$, RepositoryPolicyNotFoundException);
+const ServerException$ = [-3, n0, _SE,
     { [_e]: _se },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.ServerException$, errors_1.ServerException);
-exports.TooManyTagsException$ = [-3, n0, _TMTE,
+exports.ServerException$ = ServerException$;
+n0_registry.registerError(ServerException$, ServerException);
+const TooManyTagsException$ = [-3, n0, _TMTE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.TooManyTagsException$, errors_1.TooManyTagsException);
-exports.UnsupportedCommandException$ = [-3, n0, _UCE,
+exports.TooManyTagsException$ = TooManyTagsException$;
+n0_registry.registerError(TooManyTagsException$, TooManyTagsException);
+const UnsupportedCommandException$ = [-3, n0, _UCE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.UnsupportedCommandException$, errors_1.UnsupportedCommandException);
-exports.UploadNotFoundException$ = [-3, n0, _UNFE,
+exports.UnsupportedCommandException$ = UnsupportedCommandException$;
+n0_registry.registerError(UnsupportedCommandException$, UnsupportedCommandException);
+const UploadNotFoundException$ = [-3, n0, _UNFE,
     { [_e]: _c },
     [_m],
     [0]
 ];
-n0_registry.registerError(exports.UploadNotFoundException$, errors_1.UploadNotFoundException);
+exports.UploadNotFoundException$ = UploadNotFoundException$;
+n0_registry.registerError(UploadNotFoundException$, UploadNotFoundException);
 exports.errorTypeRegistries = [
     _s_registry,
     n0_registry,
 ];
-exports.AuthorizationData$ = [3, n0, _AD,
+const AuthorizationData$ = [3, n0, _AD,
     0,
     [_aT, _eA],
     [0, 4]
 ];
-exports.BatchCheckLayerAvailabilityRequest$ = [3, n0, _BCLAR,
+exports.AuthorizationData$ = AuthorizationData$;
+const BatchCheckLayerAvailabilityRequest$ = [3, n0, _BCLAR,
     0,
     [_rN, _lD, _rI],
     [0, 64 | 0, 0], 2
 ];
-exports.BatchCheckLayerAvailabilityResponse$ = [3, n0, _BCLARa,
+exports.BatchCheckLayerAvailabilityRequest$ = BatchCheckLayerAvailabilityRequest$;
+const BatchCheckLayerAvailabilityResponse$ = [3, n0, _BCLARa,
     0,
     [_l, _f],
     [() => LayerList, () => LayerFailureList]
 ];
-exports.BatchDeleteImageRequest$ = [3, n0, _BDIR,
+exports.BatchCheckLayerAvailabilityResponse$ = BatchCheckLayerAvailabilityResponse$;
+const BatchDeleteImageRequest$ = [3, n0, _BDIR,
     0,
     [_rN, _iI, _rI],
     [0, () => ImageIdentifierList, 0], 2
 ];
-exports.BatchDeleteImageResponse$ = [3, n0, _BDIRa,
+exports.BatchDeleteImageRequest$ = BatchDeleteImageRequest$;
+const BatchDeleteImageResponse$ = [3, n0, _BDIRa,
     0,
     [_iI, _f],
     [() => ImageIdentifierList, () => ImageFailureList]
 ];
-exports.CompleteLayerUploadRequest$ = [3, n0, _CLUR,
+exports.BatchDeleteImageResponse$ = BatchDeleteImageResponse$;
+const CompleteLayerUploadRequest$ = [3, n0, _CLUR,
     0,
     [_rN, _uI, _lD, _rI],
     [0, 0, 64 | 0, 0], 3
 ];
-exports.CompleteLayerUploadResponse$ = [3, n0, _CLURo,
+exports.CompleteLayerUploadRequest$ = CompleteLayerUploadRequest$;
+const CompleteLayerUploadResponse$ = [3, n0, _CLURo,
     0,
     [_rI, _rN, _uI, _lDa],
     [0, 0, 0, 0]
 ];
-exports.CreateRepositoryRequest$ = [3, n0, _CRR,
+exports.CompleteLayerUploadResponse$ = CompleteLayerUploadResponse$;
+const CreateRepositoryRequest$ = [3, n0, _CRR,
     0,
     [_rN, _cD, _t],
-    [0, () => exports.RepositoryCatalogDataInput$, () => TagList], 1
+    [0, () => RepositoryCatalogDataInput$, () => TagList], 1
 ];
-exports.CreateRepositoryResponse$ = [3, n0, _CRRr,
+exports.CreateRepositoryRequest$ = CreateRepositoryRequest$;
+const CreateRepositoryResponse$ = [3, n0, _CRRr,
     0,
     [_r, _cD],
-    [() => exports.Repository$, () => exports.RepositoryCatalogData$]
+    [() => Repository$, () => RepositoryCatalogData$]
 ];
-exports.DeleteRepositoryPolicyRequest$ = [3, n0, _DRPR,
+exports.CreateRepositoryResponse$ = CreateRepositoryResponse$;
+const DeleteRepositoryPolicyRequest$ = [3, n0, _DRPR,
     0,
     [_rN, _rI],
     [0, 0], 1
 ];
-exports.DeleteRepositoryPolicyResponse$ = [3, n0, _DRPRe,
+exports.DeleteRepositoryPolicyRequest$ = DeleteRepositoryPolicyRequest$;
+const DeleteRepositoryPolicyResponse$ = [3, n0, _DRPRe,
     0,
     [_rI, _rN, _pT],
     [0, 0, 0]
 ];
-exports.DeleteRepositoryRequest$ = [3, n0, _DRR,
+exports.DeleteRepositoryPolicyResponse$ = DeleteRepositoryPolicyResponse$;
+const DeleteRepositoryRequest$ = [3, n0, _DRR,
     0,
     [_rN, _rI, _fo],
     [0, 0, 2], 1
 ];
-exports.DeleteRepositoryResponse$ = [3, n0, _DRRe,
+exports.DeleteRepositoryRequest$ = DeleteRepositoryRequest$;
+const DeleteRepositoryResponse$ = [3, n0, _DRRe,
     0,
     [_r],
-    [() => exports.Repository$]
+    [() => Repository$]
 ];
-exports.DescribeImagesRequest$ = [3, n0, _DIR,
+exports.DeleteRepositoryResponse$ = DeleteRepositoryResponse$;
+const DescribeImagesRequest$ = [3, n0, _DIR,
     0,
     [_rN, _rI, _iI, _nT, _mR],
     [0, 0, () => ImageIdentifierList, 0, 1], 1
 ];
-exports.DescribeImagesResponse$ = [3, n0, _DIRe,
+exports.DescribeImagesRequest$ = DescribeImagesRequest$;
+const DescribeImagesResponse$ = [3, n0, _DIRe,
     0,
     [_iD, _nT],
     [() => ImageDetailList, 0]
 ];
-exports.DescribeImageTagsRequest$ = [3, n0, _DITR,
+exports.DescribeImagesResponse$ = DescribeImagesResponse$;
+const DescribeImageTagsRequest$ = [3, n0, _DITR,
     0,
     [_rN, _rI, _nT, _mR],
     [0, 0, 0, 1], 1
 ];
-exports.DescribeImageTagsResponse$ = [3, n0, _DITRe,
+exports.DescribeImageTagsRequest$ = DescribeImageTagsRequest$;
+const DescribeImageTagsResponse$ = [3, n0, _DITRe,
     0,
     [_iTD, _nT],
     [() => ImageTagDetailList, 0]
 ];
-exports.DescribeRegistriesRequest$ = [3, n0, _DRRes,
+exports.DescribeImageTagsResponse$ = DescribeImageTagsResponse$;
+const DescribeRegistriesRequest$ = [3, n0, _DRRes,
     0,
     [_nT, _mR],
     [0, 1]
 ];
-exports.DescribeRegistriesResponse$ = [3, n0, _DRResc,
+exports.DescribeRegistriesRequest$ = DescribeRegistriesRequest$;
+const DescribeRegistriesResponse$ = [3, n0, _DRResc,
     0,
     [_re, _nT],
     [() => RegistryList, 0], 1
 ];
-exports.DescribeRepositoriesRequest$ = [3, n0, _DRRescr,
+exports.DescribeRegistriesResponse$ = DescribeRegistriesResponse$;
+const DescribeRepositoriesRequest$ = [3, n0, _DRRescr,
     0,
     [_rI, _rNe, _nT, _mR],
     [0, 64 | 0, 0, 1]
 ];
-exports.DescribeRepositoriesResponse$ = [3, n0, _DRRescri,
+exports.DescribeRepositoriesRequest$ = DescribeRepositoriesRequest$;
+const DescribeRepositoriesResponse$ = [3, n0, _DRRescri,
     0,
     [_rep, _nT],
     [() => RepositoryList, 0]
 ];
-exports.GetAuthorizationTokenRequest$ = [3, n0, _GATR,
+exports.DescribeRepositoriesResponse$ = DescribeRepositoriesResponse$;
+const GetAuthorizationTokenRequest$ = [3, n0, _GATR,
     0,
     [],
     []
 ];
-exports.GetAuthorizationTokenResponse$ = [3, n0, _GATRe,
+exports.GetAuthorizationTokenRequest$ = GetAuthorizationTokenRequest$;
+const GetAuthorizationTokenResponse$ = [3, n0, _GATRe,
     0,
     [_aD],
-    [() => exports.AuthorizationData$]
+    [() => AuthorizationData$]
 ];
-exports.GetRegistryCatalogDataRequest$ = [3, n0, _GRCDR,
+exports.GetAuthorizationTokenResponse$ = GetAuthorizationTokenResponse$;
+const GetRegistryCatalogDataRequest$ = [3, n0, _GRCDR,
     0,
     [],
     []
 ];
-exports.GetRegistryCatalogDataResponse$ = [3, n0, _GRCDRe,
+exports.GetRegistryCatalogDataRequest$ = GetRegistryCatalogDataRequest$;
+const GetRegistryCatalogDataResponse$ = [3, n0, _GRCDRe,
     0,
     [_rCD],
-    [() => exports.RegistryCatalogData$], 1
+    [() => RegistryCatalogData$], 1
 ];
-exports.GetRepositoryCatalogDataRequest$ = [3, n0, _GRCDRet,
+exports.GetRegistryCatalogDataResponse$ = GetRegistryCatalogDataResponse$;
+const GetRepositoryCatalogDataRequest$ = [3, n0, _GRCDRet,
     0,
     [_rN, _rI],
     [0, 0], 1
 ];
-exports.GetRepositoryCatalogDataResponse$ = [3, n0, _GRCDRete,
+exports.GetRepositoryCatalogDataRequest$ = GetRepositoryCatalogDataRequest$;
+const GetRepositoryCatalogDataResponse$ = [3, n0, _GRCDRete,
     0,
     [_cD],
-    [() => exports.RepositoryCatalogData$]
+    [() => RepositoryCatalogData$]
 ];
-exports.GetRepositoryPolicyRequest$ = [3, n0, _GRPR,
+exports.GetRepositoryCatalogDataResponse$ = GetRepositoryCatalogDataResponse$;
+const GetRepositoryPolicyRequest$ = [3, n0, _GRPR,
     0,
     [_rN, _rI],
     [0, 0], 1
 ];
-exports.GetRepositoryPolicyResponse$ = [3, n0, _GRPRe,
+exports.GetRepositoryPolicyRequest$ = GetRepositoryPolicyRequest$;
+const GetRepositoryPolicyResponse$ = [3, n0, _GRPRe,
     0,
     [_rI, _rN, _pT],
     [0, 0, 0]
 ];
-exports.Image$ = [3, n0, _I,
+exports.GetRepositoryPolicyResponse$ = GetRepositoryPolicyResponse$;
+const Image$ = [3, n0, _I,
     0,
     [_rI, _rN, _iIm, _iM, _iMMT],
-    [0, 0, () => exports.ImageIdentifier$, 0, 0]
+    [0, 0, () => ImageIdentifier$, 0, 0]
 ];
-exports.ImageDetail$ = [3, n0, _ID,
+exports.Image$ = Image$;
+const ImageDetail$ = [3, n0, _ID,
     0,
     [_rI, _rN, _iDm, _iT, _iSIB, _iPA, _iMMT, _aMT],
     [0, 0, 0, 64 | 0, 1, 4, 0, 0]
 ];
-exports.ImageFailure$ = [3, n0, _IF,
+exports.ImageDetail$ = ImageDetail$;
+const ImageFailure$ = [3, n0, _IF,
     0,
     [_iIm, _fC, _fR],
-    [() => exports.ImageIdentifier$, 0, 0]
+    [() => ImageIdentifier$, 0, 0]
 ];
-exports.ImageIdentifier$ = [3, n0, _II,
+exports.ImageFailure$ = ImageFailure$;
+const ImageIdentifier$ = [3, n0, _II,
     0,
     [_iDm, _iTm],
     [0, 0]
 ];
-exports.ImageTagDetail$ = [3, n0, _ITD,
+exports.ImageIdentifier$ = ImageIdentifier$;
+const ImageTagDetail$ = [3, n0, _ITD,
     0,
     [_iTm, _cA, _iDma],
-    [0, 4, () => exports.ReferencedImageDetail$]
+    [0, 4, () => ReferencedImageDetail$]
 ];
-exports.InitiateLayerUploadRequest$ = [3, n0, _ILUR,
+exports.ImageTagDetail$ = ImageTagDetail$;
+const InitiateLayerUploadRequest$ = [3, n0, _ILUR,
     0,
     [_rN, _rI],
     [0, 0], 1
 ];
-exports.InitiateLayerUploadResponse$ = [3, n0, _ILURn,
+exports.InitiateLayerUploadRequest$ = InitiateLayerUploadRequest$;
+const InitiateLayerUploadResponse$ = [3, n0, _ILURn,
     0,
     [_uI, _pS],
     [0, 1]
 ];
-exports.Layer$ = [3, n0, _L,
+exports.InitiateLayerUploadResponse$ = InitiateLayerUploadResponse$;
+const Layer$ = [3, n0, _L,
     0,
     [_lDa, _lA, _lS, _mT],
     [0, 0, 1, 0]
 ];
-exports.LayerFailure$ = [3, n0, _LF,
+exports.Layer$ = Layer$;
+const LayerFailure$ = [3, n0, _LF,
     0,
     [_lDa, _fC, _fR],
     [0, 0, 0]
 ];
-exports.ListTagsForResourceRequest$ = [3, n0, _LTFRR,
+exports.LayerFailure$ = LayerFailure$;
+const ListTagsForResourceRequest$ = [3, n0, _LTFRR,
     0,
     [_rA],
     [0], 1
 ];
-exports.ListTagsForResourceResponse$ = [3, n0, _LTFRRi,
+exports.ListTagsForResourceRequest$ = ListTagsForResourceRequest$;
+const ListTagsForResourceResponse$ = [3, n0, _LTFRRi,
     0,
     [_t],
     [() => TagList]
 ];
-exports.PutImageRequest$ = [3, n0, _PIR,
+exports.ListTagsForResourceResponse$ = ListTagsForResourceResponse$;
+const PutImageRequest$ = [3, n0, _PIR,
     0,
     [_rN, _iM, _rI, _iMMT, _iTm, _iDm],
     [0, 0, 0, 0, 0, 0], 2
 ];
-exports.PutImageResponse$ = [3, n0, _PIRu,
+exports.PutImageRequest$ = PutImageRequest$;
+const PutImageResponse$ = [3, n0, _PIRu,
     0,
     [_i],
-    [() => exports.Image$]
+    [() => Image$]
 ];
-exports.PutRegistryCatalogDataRequest$ = [3, n0, _PRCDR,
+exports.PutImageResponse$ = PutImageResponse$;
+const PutRegistryCatalogDataRequest$ = [3, n0, _PRCDR,
     0,
     [_dN],
     [0]
 ];
-exports.PutRegistryCatalogDataResponse$ = [3, n0, _PRCDRu,
+exports.PutRegistryCatalogDataRequest$ = PutRegistryCatalogDataRequest$;
+const PutRegistryCatalogDataResponse$ = [3, n0, _PRCDRu,
     0,
     [_rCD],
-    [() => exports.RegistryCatalogData$], 1
+    [() => RegistryCatalogData$], 1
 ];
-exports.PutRepositoryCatalogDataRequest$ = [3, n0, _PRCDRut,
+exports.PutRegistryCatalogDataResponse$ = PutRegistryCatalogDataResponse$;
+const PutRepositoryCatalogDataRequest$ = [3, n0, _PRCDRut,
     0,
     [_rN, _cD, _rI],
-    [0, () => exports.RepositoryCatalogDataInput$, 0], 2
+    [0, () => RepositoryCatalogDataInput$, 0], 2
 ];
-exports.PutRepositoryCatalogDataResponse$ = [3, n0, _PRCDRute,
+exports.PutRepositoryCatalogDataRequest$ = PutRepositoryCatalogDataRequest$;
+const PutRepositoryCatalogDataResponse$ = [3, n0, _PRCDRute,
     0,
     [_cD],
-    [() => exports.RepositoryCatalogData$]
+    [() => RepositoryCatalogData$]
 ];
-exports.ReferencedImageDetail$ = [3, n0, _RID,
+exports.PutRepositoryCatalogDataResponse$ = PutRepositoryCatalogDataResponse$;
+const ReferencedImageDetail$ = [3, n0, _RID,
     0,
     [_iDm, _iSIB, _iPA, _iMMT, _aMT],
     [0, 1, 4, 0, 0]
 ];
-exports.Registry$ = [3, n0, _R,
+exports.ReferencedImageDetail$ = ReferencedImageDetail$;
+const Registry$ = [3, n0, _R,
     0,
     [_rI, _rAe, _rU, _v, _a],
     [0, 0, 0, 2, () => RegistryAliasList], 5
 ];
-exports.RegistryAlias$ = [3, n0, _RA,
+exports.Registry$ = Registry$;
+const RegistryAlias$ = [3, n0, _RA,
     0,
     [_n, _st, _pRA, _dRA],
     [0, 0, 2, 2], 4
 ];
-exports.RegistryCatalogData$ = [3, n0, _RCD,
+exports.RegistryAlias$ = RegistryAlias$;
+const RegistryCatalogData$ = [3, n0, _RCD,
     0,
     [_dN],
     [0]
 ];
-exports.Repository$ = [3, n0, _Re,
+exports.RegistryCatalogData$ = RegistryCatalogData$;
+const Repository$ = [3, n0, _Re,
     0,
     [_rAep, _rI, _rN, _rUe, _cA],
     [0, 0, 0, 0, 4]
 ];
-exports.RepositoryCatalogData$ = [3, n0, _RCDe,
+exports.Repository$ = Repository$;
+const RepositoryCatalogData$ = [3, n0, _RCDe,
     0,
     [_d, _ar, _oS, _lU, _aTb, _uT, _mC],
     [0, 64 | 0, 64 | 0, 0, 0, 0, 2]
 ];
-exports.RepositoryCatalogDataInput$ = [3, n0, _RCDI,
+exports.RepositoryCatalogData$ = RepositoryCatalogData$;
+const RepositoryCatalogDataInput$ = [3, n0, _RCDI,
     0,
     [_d, _ar, _oS, _lIB, _aTb, _uT],
     [0, 64 | 0, 64 | 0, 21, 0, 0]
 ];
-exports.SetRepositoryPolicyRequest$ = [3, n0, _SRPR,
+exports.RepositoryCatalogDataInput$ = RepositoryCatalogDataInput$;
+const SetRepositoryPolicyRequest$ = [3, n0, _SRPR,
     0,
     [_rN, _pT, _rI, _fo],
     [0, 0, 0, 2], 2
 ];
-exports.SetRepositoryPolicyResponse$ = [3, n0, _SRPRe,
+exports.SetRepositoryPolicyRequest$ = SetRepositoryPolicyRequest$;
+const SetRepositoryPolicyResponse$ = [3, n0, _SRPRe,
     0,
     [_rI, _rN, _pT],
     [0, 0, 0]
 ];
-exports.Tag$ = [3, n0, _T,
+exports.SetRepositoryPolicyResponse$ = SetRepositoryPolicyResponse$;
+const Tag$ = [3, n0, _T,
     0,
     [_K, _V],
     [0, 0]
 ];
-exports.TagResourceRequest$ = [3, n0, _TRR,
+exports.Tag$ = Tag$;
+const TagResourceRequest$ = [3, n0, _TRR,
     0,
     [_rA, _t],
     [0, () => TagList], 2
 ];
-exports.TagResourceResponse$ = [3, n0, _TRRa,
+exports.TagResourceRequest$ = TagResourceRequest$;
+const TagResourceResponse$ = [3, n0, _TRRa,
     0,
     [],
     []
 ];
-exports.UntagResourceRequest$ = [3, n0, _URR,
+exports.TagResourceResponse$ = TagResourceResponse$;
+const UntagResourceRequest$ = [3, n0, _URR,
     0,
     [_rA, _tK],
     [0, 64 | 0], 2
 ];
-exports.UntagResourceResponse$ = [3, n0, _URRn,
+exports.UntagResourceRequest$ = UntagResourceRequest$;
+const UntagResourceResponse$ = [3, n0, _URRn,
     0,
     [],
     []
 ];
-exports.UploadLayerPartRequest$ = [3, n0, _ULPR,
+exports.UntagResourceResponse$ = UntagResourceResponse$;
+const UploadLayerPartRequest$ = [3, n0, _ULPR,
     0,
     [_rN, _uI, _pFB, _pLB, _lPB, _rI],
     [0, 0, 1, 1, 21, 0], 5
 ];
-exports.UploadLayerPartResponse$ = [3, n0, _ULPRp,
+exports.UploadLayerPartRequest$ = UploadLayerPartRequest$;
+const UploadLayerPartResponse$ = [3, n0, _ULPRp,
     0,
     [_rI, _rN, _uI, _lBR],
     [0, 0, 0, 1]
 ];
+exports.UploadLayerPartResponse$ = UploadLayerPartResponse$;
 var ArchitectureList = (/* unused pure expression or super */ null && (64 | 0));
 var BatchedOperationLayerDigestList = (/* unused pure expression or super */ null && (64 | 0));
 var ImageDetailList = [1, n0, _IDL,
-    0, () => exports.ImageDetail$
+    0, () => ImageDetail$
 ];
 var ImageFailureList = [1, n0, _IFL,
-    0, () => exports.ImageFailure$
+    0, () => ImageFailure$
 ];
 var ImageIdentifierList = [1, n0, _IIL,
-    0, () => exports.ImageIdentifier$
+    0, () => ImageIdentifier$
 ];
 var ImageTagDetailList = [1, n0, _ITDL,
-    0, () => exports.ImageTagDetail$
+    0, () => ImageTagDetail$
 ];
 var ImageTagList = (/* unused pure expression or super */ null && (64 | 0));
 var LayerDigestList = (/* unused pure expression or super */ null && (64 | 0));
 var LayerFailureList = [1, n0, _LFL,
-    0, () => exports.LayerFailure$
+    0, () => LayerFailure$
 ];
 var LayerList = [1, n0, _LL,
-    0, () => exports.Layer$
+    0, () => Layer$
 ];
 var OperatingSystemList = (/* unused pure expression or super */ null && (64 | 0));
 var RegistryAliasList = [1, n0, _RAL,
-    0, () => exports.RegistryAlias$
+    0, () => RegistryAlias$
 ];
 var RegistryList = [1, n0, _RL,
-    0, () => exports.Registry$
+    0, () => Registry$
 ];
 var RepositoryList = [1, n0, _RLe,
-    0, () => exports.Repository$
+    0, () => Repository$
 ];
 var RepositoryNameList = (/* unused pure expression or super */ null && (64 | 0));
 var TagKeyList = (/* unused pure expression or super */ null && (64 | 0));
 var TagList = [1, n0, _TL,
-    0, () => exports.Tag$
+    0, () => Tag$
 ];
 exports.BatchCheckLayerAvailability$ = [9, n0, _BCLA,
-    0, () => exports.BatchCheckLayerAvailabilityRequest$, () => exports.BatchCheckLayerAvailabilityResponse$
+    0, () => BatchCheckLayerAvailabilityRequest$, () => BatchCheckLayerAvailabilityResponse$
 ];
 exports.BatchDeleteImage$ = [9, n0, _BDI,
-    0, () => exports.BatchDeleteImageRequest$, () => exports.BatchDeleteImageResponse$
+    0, () => BatchDeleteImageRequest$, () => BatchDeleteImageResponse$
 ];
 exports.CompleteLayerUpload$ = [9, n0, _CLU,
-    0, () => exports.CompleteLayerUploadRequest$, () => exports.CompleteLayerUploadResponse$
+    0, () => CompleteLayerUploadRequest$, () => CompleteLayerUploadResponse$
 ];
 exports.CreateRepository$ = [9, n0, _CR,
-    0, () => exports.CreateRepositoryRequest$, () => exports.CreateRepositoryResponse$
+    0, () => CreateRepositoryRequest$, () => CreateRepositoryResponse$
 ];
 exports.DeleteRepository$ = [9, n0, _DR,
-    0, () => exports.DeleteRepositoryRequest$, () => exports.DeleteRepositoryResponse$
+    0, () => DeleteRepositoryRequest$, () => DeleteRepositoryResponse$
 ];
 exports.DeleteRepositoryPolicy$ = [9, n0, _DRP,
-    0, () => exports.DeleteRepositoryPolicyRequest$, () => exports.DeleteRepositoryPolicyResponse$
+    0, () => DeleteRepositoryPolicyRequest$, () => DeleteRepositoryPolicyResponse$
 ];
 exports.DescribeImages$ = [9, n0, _DI,
-    0, () => exports.DescribeImagesRequest$, () => exports.DescribeImagesResponse$
+    0, () => DescribeImagesRequest$, () => DescribeImagesResponse$
 ];
 exports.DescribeImageTags$ = [9, n0, _DIT,
-    0, () => exports.DescribeImageTagsRequest$, () => exports.DescribeImageTagsResponse$
+    0, () => DescribeImageTagsRequest$, () => DescribeImageTagsResponse$
 ];
 exports.DescribeRegistries$ = [9, n0, _DRe,
-    0, () => exports.DescribeRegistriesRequest$, () => exports.DescribeRegistriesResponse$
+    0, () => DescribeRegistriesRequest$, () => DescribeRegistriesResponse$
 ];
 exports.DescribeRepositories$ = [9, n0, _DRes,
-    0, () => exports.DescribeRepositoriesRequest$, () => exports.DescribeRepositoriesResponse$
+    0, () => DescribeRepositoriesRequest$, () => DescribeRepositoriesResponse$
 ];
 exports.GetAuthorizationToken$ = [9, n0, _GAT,
-    0, () => exports.GetAuthorizationTokenRequest$, () => exports.GetAuthorizationTokenResponse$
+    0, () => GetAuthorizationTokenRequest$, () => GetAuthorizationTokenResponse$
 ];
 exports.GetRegistryCatalogData$ = [9, n0, _GRCD,
-    0, () => exports.GetRegistryCatalogDataRequest$, () => exports.GetRegistryCatalogDataResponse$
+    0, () => GetRegistryCatalogDataRequest$, () => GetRegistryCatalogDataResponse$
 ];
 exports.GetRepositoryCatalogData$ = [9, n0, _GRCDe,
-    0, () => exports.GetRepositoryCatalogDataRequest$, () => exports.GetRepositoryCatalogDataResponse$
+    0, () => GetRepositoryCatalogDataRequest$, () => GetRepositoryCatalogDataResponse$
 ];
 exports.GetRepositoryPolicy$ = [9, n0, _GRP,
-    0, () => exports.GetRepositoryPolicyRequest$, () => exports.GetRepositoryPolicyResponse$
+    0, () => GetRepositoryPolicyRequest$, () => GetRepositoryPolicyResponse$
 ];
 exports.InitiateLayerUpload$ = [9, n0, _ILU,
-    0, () => exports.InitiateLayerUploadRequest$, () => exports.InitiateLayerUploadResponse$
+    0, () => InitiateLayerUploadRequest$, () => InitiateLayerUploadResponse$
 ];
 exports.ListTagsForResource$ = [9, n0, _LTFR,
-    0, () => exports.ListTagsForResourceRequest$, () => exports.ListTagsForResourceResponse$
+    0, () => ListTagsForResourceRequest$, () => ListTagsForResourceResponse$
 ];
 exports.PutImage$ = [9, n0, _PI,
-    0, () => exports.PutImageRequest$, () => exports.PutImageResponse$
+    0, () => PutImageRequest$, () => PutImageResponse$
 ];
 exports.PutRegistryCatalogData$ = [9, n0, _PRCD,
-    0, () => exports.PutRegistryCatalogDataRequest$, () => exports.PutRegistryCatalogDataResponse$
+    0, () => PutRegistryCatalogDataRequest$, () => PutRegistryCatalogDataResponse$
 ];
 exports.PutRepositoryCatalogData$ = [9, n0, _PRCDu,
-    0, () => exports.PutRepositoryCatalogDataRequest$, () => exports.PutRepositoryCatalogDataResponse$
+    0, () => PutRepositoryCatalogDataRequest$, () => PutRepositoryCatalogDataResponse$
 ];
 exports.SetRepositoryPolicy$ = [9, n0, _SRP,
-    0, () => exports.SetRepositoryPolicyRequest$, () => exports.SetRepositoryPolicyResponse$
+    0, () => SetRepositoryPolicyRequest$, () => SetRepositoryPolicyResponse$
 ];
 exports.TagResource$ = [9, n0, _TR,
-    0, () => exports.TagResourceRequest$, () => exports.TagResourceResponse$
+    0, () => TagResourceRequest$, () => TagResourceResponse$
 ];
 exports.UntagResource$ = [9, n0, _UR,
-    0, () => exports.UntagResourceRequest$, () => exports.UntagResourceResponse$
+    0, () => UntagResourceRequest$, () => UntagResourceResponse$
 ];
 exports.UploadLayerPart$ = [9, n0, _ULP,
-    0, () => exports.UploadLayerPartRequest$, () => exports.UploadLayerPartResponse$
+    0, () => UploadLayerPartRequest$, () => UploadLayerPartResponse$
 ];
 
 
@@ -61005,7 +61015,7 @@ module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("util");
 /***/ 7643:
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/client-ecr-public","description":"AWS SDK for JavaScript Ecr Public Client for Node.js, Browser and React Native","version":"3.1065.0","scripts":{"build":"concurrently \'yarn:build:types\' \'yarn:build:es\' && yarn build:cjs","build:cjs":"node ../../scripts/compilation/inline","build:es":"tsc -p tsconfig.es.json","build:include:deps":"yarn g:turbo run build -F=\\"$npm_package_name\\"","build:types":"tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"premove dist-cjs dist-es dist-types tsconfig.cjs.tsbuildinfo tsconfig.es.tsbuildinfo tsconfig.types.tsbuildinfo","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service --solo ecr-public","test:index":"tsc --noEmit ./test/index-types.ts && node ./test/index-objects.spec.mjs"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"5.2.0","@aws-crypto/sha256-js":"5.2.0","@aws-sdk/core":"^3.974.20","@aws-sdk/credential-provider-node":"^3.972.54","@aws-sdk/types":"^3.973.12","@smithy/core":"^3.24.6","@smithy/fetch-http-handler":"^5.4.6","@smithy/node-http-handler":"^4.7.6","@smithy/types":"^4.14.3","tslib":"^2.6.2"},"devDependencies":{"@tsconfig/node20":"20.1.8","@types/node":"^20.14.8","concurrently":"7.0.0","downlevel-dts":"0.10.1","premove":"4.0.0","typescript":"~5.8.3"},"engines":{"node":">=20.0.0"},"typesVersions":{"<4.5":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/sdk-for-javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-ecr-public","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-ecr-public"}}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/client-ecr-public","description":"AWS SDK for JavaScript Ecr Public Client for Node.js, Browser and React Native","version":"3.1070.0","scripts":{"build":"concurrently \'yarn:build:types\' \'yarn:build:es\' && yarn build:cjs","build:cjs":"node ../../scripts/compilation/inline","build:es":"premove dist-es && tsc -p tsconfig.es.json","build:include:deps":"yarn g:turbo run build -F=\\"$npm_package_name\\"","build:types":"premove dist-types && tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"premove dist-cjs dist-es dist-types","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service","test:index":"tsc --noEmit ./test/index-types.ts && node ./test/index-objects.spec.mjs"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"5.2.0","@aws-crypto/sha256-js":"5.2.0","@aws-sdk/core":"^3.974.21","@aws-sdk/credential-provider-node":"^3.972.56","@aws-sdk/types":"^3.973.13","@smithy/core":"^3.24.6","@smithy/fetch-http-handler":"^5.4.6","@smithy/node-http-handler":"^4.7.6","@smithy/types":"^4.14.3","tslib":"^2.6.2"},"devDependencies":{"@tsconfig/node20":"20.1.8","@types/node":"^20.14.8","concurrently":"7.0.0","downlevel-dts":"0.10.1","premove":"4.0.0","typescript":"~5.8.3"},"engines":{"node":">=20.0.0"},"typesVersions":{"<4.5":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/sdk-for-javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-ecr-public","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-ecr-public"}}');
 
 /***/ }),
 
