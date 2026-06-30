@@ -1,435 +1,28 @@
 import { createRequire as __WEBPACK_EXTERNAL_createRequire } from "module";
 /******/ var __webpack_modules__ = ({
 
-/***/ 6863:
+/***/ 9821:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
+var __webpack_unused_export__;
+const { awsEndpointFunctions, emitWarningIfUnsupportedVersion: emitWarningIfUnsupportedVersion$1, createDefaultUserAgentProvider, NODE_APP_ID_CONFIG_OPTIONS, getAwsRegionExtensionConfiguration, resolveAwsRegionExtensionConfiguration, resolveUserAgentConfig, resolveHostHeaderConfig, getUserAgentPlugin, getHostHeaderPlugin, getLoggerPlugin, getRecursionDetectionPlugin } = __nccwpck_require__(5152);
+const { getHttpAuthSchemeEndpointRuleSetPlugin, DefaultIdentityProviderConfig, getHttpSigningPlugin, createPaginator } = __nccwpck_require__(402);
+const { normalizeProvider, getSmithyContext, ServiceException, NoOpLogger, emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode, getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, Command, createAggregatedClient } = __nccwpck_require__(2658);
+__webpack_unused_export__ = Command;
+__webpack_unused_export__ = Client;
+const { resolveDefaultsModeConfig, loadConfig, NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, NODE_REGION_CONFIG_OPTIONS, NODE_REGION_CONFIG_FILE_OPTIONS, resolveRegionConfig } = __nccwpck_require__(7291);
+const { BinaryDecisionDiagram, EndpointCache, decideEndpoint, customEndpointFunctions, resolveEndpointConfig, getEndpointPlugin } = __nccwpck_require__(2085);
+const { parseUrl, getHttpHandlerExtensionConfiguration, resolveHttpHandlerRuntimeConfig, getContentLengthPlugin } = __nccwpck_require__(3422);
+const { DEFAULT_RETRY_MODE, NODE_RETRY_MODE_CONFIG_OPTIONS, NODE_MAX_ATTEMPT_CONFIG_OPTIONS, resolveRetryConfig, getRetryPlugin } = __nccwpck_require__(3609);
+const { TypeRegistry, getSchemaSerdePlugin } = __nccwpck_require__(6890);
+const { resolveAwsSdkSigV4Config, AwsSdkSigV4Signer, NODE_AUTH_SCHEME_PREFERENCE_OPTIONS } = __nccwpck_require__(7523);
+const { defaultProvider } = __nccwpck_require__(5861);
+const { toUtf8, fromUtf8, toBase64, fromBase64, calculateBodyLength } = __nccwpck_require__(2430);
+const { streamCollector, NodeHttpHandler } = __nccwpck_require__(8834);
+const { AwsJson1_1Protocol } = __nccwpck_require__(7288);
+const { Sha256 } = __nccwpck_require__(9542);
 
-// Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.AwsCrc32 = void 0;
-var tslib_1 = __nccwpck_require__(1860);
-var util_1 = __nccwpck_require__(5667);
-var index_1 = __nccwpck_require__(2110);
-var AwsCrc32 = /** @class */ (function () {
-    function AwsCrc32() {
-        this.crc32 = new index_1.Crc32();
-    }
-    AwsCrc32.prototype.update = function (toHash) {
-        if ((0, util_1.isEmptyData)(toHash))
-            return;
-        this.crc32.update((0, util_1.convertToBuffer)(toHash));
-    };
-    AwsCrc32.prototype.digest = function () {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                return [2 /*return*/, (0, util_1.numToUint8)(this.crc32.digest())];
-            });
-        });
-    };
-    AwsCrc32.prototype.reset = function () {
-        this.crc32 = new index_1.Crc32();
-    };
-    return AwsCrc32;
-}());
-exports.AwsCrc32 = AwsCrc32;
-//# sourceMappingURL=aws_crc32.js.map
-
-/***/ }),
-
-/***/ 2110:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.AwsCrc32 = exports.Crc32 = exports.crc32 = void 0;
-var tslib_1 = __nccwpck_require__(1860);
-var util_1 = __nccwpck_require__(5667);
-function crc32(data) {
-    return new Crc32().update(data).digest();
-}
-exports.crc32 = crc32;
-var Crc32 = /** @class */ (function () {
-    function Crc32() {
-        this.checksum = 0xffffffff;
-    }
-    Crc32.prototype.update = function (data) {
-        var e_1, _a;
-        try {
-            for (var data_1 = tslib_1.__values(data), data_1_1 = data_1.next(); !data_1_1.done; data_1_1 = data_1.next()) {
-                var byte = data_1_1.value;
-                this.checksum =
-                    (this.checksum >>> 8) ^ lookupTable[(this.checksum ^ byte) & 0xff];
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (data_1_1 && !data_1_1.done && (_a = data_1.return)) _a.call(data_1);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-        return this;
-    };
-    Crc32.prototype.digest = function () {
-        return (this.checksum ^ 0xffffffff) >>> 0;
-    };
-    return Crc32;
-}());
-exports.Crc32 = Crc32;
-// prettier-ignore
-var a_lookUpTable = [
-    0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA,
-    0x076DC419, 0x706AF48F, 0xE963A535, 0x9E6495A3,
-    0x0EDB8832, 0x79DCB8A4, 0xE0D5E91E, 0x97D2D988,
-    0x09B64C2B, 0x7EB17CBD, 0xE7B82D07, 0x90BF1D91,
-    0x1DB71064, 0x6AB020F2, 0xF3B97148, 0x84BE41DE,
-    0x1ADAD47D, 0x6DDDE4EB, 0xF4D4B551, 0x83D385C7,
-    0x136C9856, 0x646BA8C0, 0xFD62F97A, 0x8A65C9EC,
-    0x14015C4F, 0x63066CD9, 0xFA0F3D63, 0x8D080DF5,
-    0x3B6E20C8, 0x4C69105E, 0xD56041E4, 0xA2677172,
-    0x3C03E4D1, 0x4B04D447, 0xD20D85FD, 0xA50AB56B,
-    0x35B5A8FA, 0x42B2986C, 0xDBBBC9D6, 0xACBCF940,
-    0x32D86CE3, 0x45DF5C75, 0xDCD60DCF, 0xABD13D59,
-    0x26D930AC, 0x51DE003A, 0xC8D75180, 0xBFD06116,
-    0x21B4F4B5, 0x56B3C423, 0xCFBA9599, 0xB8BDA50F,
-    0x2802B89E, 0x5F058808, 0xC60CD9B2, 0xB10BE924,
-    0x2F6F7C87, 0x58684C11, 0xC1611DAB, 0xB6662D3D,
-    0x76DC4190, 0x01DB7106, 0x98D220BC, 0xEFD5102A,
-    0x71B18589, 0x06B6B51F, 0x9FBFE4A5, 0xE8B8D433,
-    0x7807C9A2, 0x0F00F934, 0x9609A88E, 0xE10E9818,
-    0x7F6A0DBB, 0x086D3D2D, 0x91646C97, 0xE6635C01,
-    0x6B6B51F4, 0x1C6C6162, 0x856530D8, 0xF262004E,
-    0x6C0695ED, 0x1B01A57B, 0x8208F4C1, 0xF50FC457,
-    0x65B0D9C6, 0x12B7E950, 0x8BBEB8EA, 0xFCB9887C,
-    0x62DD1DDF, 0x15DA2D49, 0x8CD37CF3, 0xFBD44C65,
-    0x4DB26158, 0x3AB551CE, 0xA3BC0074, 0xD4BB30E2,
-    0x4ADFA541, 0x3DD895D7, 0xA4D1C46D, 0xD3D6F4FB,
-    0x4369E96A, 0x346ED9FC, 0xAD678846, 0xDA60B8D0,
-    0x44042D73, 0x33031DE5, 0xAA0A4C5F, 0xDD0D7CC9,
-    0x5005713C, 0x270241AA, 0xBE0B1010, 0xC90C2086,
-    0x5768B525, 0x206F85B3, 0xB966D409, 0xCE61E49F,
-    0x5EDEF90E, 0x29D9C998, 0xB0D09822, 0xC7D7A8B4,
-    0x59B33D17, 0x2EB40D81, 0xB7BD5C3B, 0xC0BA6CAD,
-    0xEDB88320, 0x9ABFB3B6, 0x03B6E20C, 0x74B1D29A,
-    0xEAD54739, 0x9DD277AF, 0x04DB2615, 0x73DC1683,
-    0xE3630B12, 0x94643B84, 0x0D6D6A3E, 0x7A6A5AA8,
-    0xE40ECF0B, 0x9309FF9D, 0x0A00AE27, 0x7D079EB1,
-    0xF00F9344, 0x8708A3D2, 0x1E01F268, 0x6906C2FE,
-    0xF762575D, 0x806567CB, 0x196C3671, 0x6E6B06E7,
-    0xFED41B76, 0x89D32BE0, 0x10DA7A5A, 0x67DD4ACC,
-    0xF9B9DF6F, 0x8EBEEFF9, 0x17B7BE43, 0x60B08ED5,
-    0xD6D6A3E8, 0xA1D1937E, 0x38D8C2C4, 0x4FDFF252,
-    0xD1BB67F1, 0xA6BC5767, 0x3FB506DD, 0x48B2364B,
-    0xD80D2BDA, 0xAF0A1B4C, 0x36034AF6, 0x41047A60,
-    0xDF60EFC3, 0xA867DF55, 0x316E8EEF, 0x4669BE79,
-    0xCB61B38C, 0xBC66831A, 0x256FD2A0, 0x5268E236,
-    0xCC0C7795, 0xBB0B4703, 0x220216B9, 0x5505262F,
-    0xC5BA3BBE, 0xB2BD0B28, 0x2BB45A92, 0x5CB36A04,
-    0xC2D7FFA7, 0xB5D0CF31, 0x2CD99E8B, 0x5BDEAE1D,
-    0x9B64C2B0, 0xEC63F226, 0x756AA39C, 0x026D930A,
-    0x9C0906A9, 0xEB0E363F, 0x72076785, 0x05005713,
-    0x95BF4A82, 0xE2B87A14, 0x7BB12BAE, 0x0CB61B38,
-    0x92D28E9B, 0xE5D5BE0D, 0x7CDCEFB7, 0x0BDBDF21,
-    0x86D3D2D4, 0xF1D4E242, 0x68DDB3F8, 0x1FDA836E,
-    0x81BE16CD, 0xF6B9265B, 0x6FB077E1, 0x18B74777,
-    0x88085AE6, 0xFF0F6A70, 0x66063BCA, 0x11010B5C,
-    0x8F659EFF, 0xF862AE69, 0x616BFFD3, 0x166CCF45,
-    0xA00AE278, 0xD70DD2EE, 0x4E048354, 0x3903B3C2,
-    0xA7672661, 0xD06016F7, 0x4969474D, 0x3E6E77DB,
-    0xAED16A4A, 0xD9D65ADC, 0x40DF0B66, 0x37D83BF0,
-    0xA9BCAE53, 0xDEBB9EC5, 0x47B2CF7F, 0x30B5FFE9,
-    0xBDBDF21C, 0xCABAC28A, 0x53B39330, 0x24B4A3A6,
-    0xBAD03605, 0xCDD70693, 0x54DE5729, 0x23D967BF,
-    0xB3667A2E, 0xC4614AB8, 0x5D681B02, 0x2A6F2B94,
-    0xB40BBE37, 0xC30C8EA1, 0x5A05DF1B, 0x2D02EF8D,
-];
-var lookupTable = (0, util_1.uint32ArrayFrom)(a_lookUpTable);
-var aws_crc32_1 = __nccwpck_require__(6863);
-Object.defineProperty(exports, "AwsCrc32", ({ enumerable: true, get: function () { return aws_crc32_1.AwsCrc32; } }));
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-
-/***/ 8056:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-// Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.convertToBuffer = void 0;
-var util_utf8_1 = __nccwpck_require__(7515);
-// Quick polyfill
-var fromUtf8 = typeof Buffer !== "undefined" && Buffer.from
-    ? function (input) { return Buffer.from(input, "utf8"); }
-    : util_utf8_1.fromUtf8;
-function convertToBuffer(data) {
-    // Already a Uint8, do nothing
-    if (data instanceof Uint8Array)
-        return data;
-    if (typeof data === "string") {
-        return fromUtf8(data);
-    }
-    if (ArrayBuffer.isView(data)) {
-        return new Uint8Array(data.buffer, data.byteOffset, data.byteLength / Uint8Array.BYTES_PER_ELEMENT);
-    }
-    return new Uint8Array(data);
-}
-exports.convertToBuffer = convertToBuffer;
-//# sourceMappingURL=convertToBuffer.js.map
-
-/***/ }),
-
-/***/ 5667:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-
-// Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.uint32ArrayFrom = exports.numToUint8 = exports.isEmptyData = exports.convertToBuffer = void 0;
-var convertToBuffer_1 = __nccwpck_require__(8056);
-Object.defineProperty(exports, "convertToBuffer", ({ enumerable: true, get: function () { return convertToBuffer_1.convertToBuffer; } }));
-var isEmptyData_1 = __nccwpck_require__(4658);
-Object.defineProperty(exports, "isEmptyData", ({ enumerable: true, get: function () { return isEmptyData_1.isEmptyData; } }));
-var numToUint8_1 = __nccwpck_require__(5436);
-Object.defineProperty(exports, "numToUint8", ({ enumerable: true, get: function () { return numToUint8_1.numToUint8; } }));
-var uint32ArrayFrom_1 = __nccwpck_require__(673);
-Object.defineProperty(exports, "uint32ArrayFrom", ({ enumerable: true, get: function () { return uint32ArrayFrom_1.uint32ArrayFrom; } }));
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-
-/***/ 4658:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-// Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.isEmptyData = void 0;
-function isEmptyData(data) {
-    if (typeof data === "string") {
-        return data.length === 0;
-    }
-    return data.byteLength === 0;
-}
-exports.isEmptyData = isEmptyData;
-//# sourceMappingURL=isEmptyData.js.map
-
-/***/ }),
-
-/***/ 5436:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-// Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.numToUint8 = void 0;
-function numToUint8(num) {
-    return new Uint8Array([
-        (num & 0xff000000) >> 24,
-        (num & 0x00ff0000) >> 16,
-        (num & 0x0000ff00) >> 8,
-        num & 0x000000ff,
-    ]);
-}
-exports.numToUint8 = numToUint8;
-//# sourceMappingURL=numToUint8.js.map
-
-/***/ }),
-
-/***/ 673:
-/***/ ((__unused_webpack_module, exports) => {
-
-
-// Copyright Amazon.com Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.uint32ArrayFrom = void 0;
-// IE 11 does not support Array.from, so we do it manually
-function uint32ArrayFrom(a_lookUpTable) {
-    if (!Uint32Array.from) {
-        var return_array = new Uint32Array(a_lookUpTable.length);
-        var a_index = 0;
-        while (a_index < a_lookUpTable.length) {
-            return_array[a_index] = a_lookUpTable[a_index];
-            a_index += 1;
-        }
-        return return_array;
-    }
-    return Uint32Array.from(a_lookUpTable);
-}
-exports.uint32ArrayFrom = uint32ArrayFrom;
-//# sourceMappingURL=uint32ArrayFrom.js.map
-
-/***/ }),
-
-/***/ 8756:
-/***/ ((module) => {
-
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// src/index.ts
-var src_exports = {};
-__export(src_exports, {
-  isArrayBuffer: () => isArrayBuffer
-});
-module.exports = __toCommonJS(src_exports);
-var isArrayBuffer = /* @__PURE__ */ __name((arg) => typeof ArrayBuffer === "function" && arg instanceof ArrayBuffer || Object.prototype.toString.call(arg) === "[object ArrayBuffer]", "isArrayBuffer");
-// Annotate the CommonJS export names for ESM import in node:
-
-0 && (0);
-
-
-
-/***/ }),
-
-/***/ 9077:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// src/index.ts
-var src_exports = {};
-__export(src_exports, {
-  fromArrayBuffer: () => fromArrayBuffer,
-  fromString: () => fromString
-});
-module.exports = __toCommonJS(src_exports);
-var import_is_array_buffer = __nccwpck_require__(8756);
-var import_buffer = __nccwpck_require__(181);
-var fromArrayBuffer = /* @__PURE__ */ __name((input, offset = 0, length = input.byteLength - offset) => {
-  if (!(0, import_is_array_buffer.isArrayBuffer)(input)) {
-    throw new TypeError(`The "input" argument must be ArrayBuffer. Received type ${typeof input} (${input})`);
-  }
-  return import_buffer.Buffer.from(input, offset, length);
-}, "fromArrayBuffer");
-var fromString = /* @__PURE__ */ __name((input, encoding) => {
-  if (typeof input !== "string") {
-    throw new TypeError(`The "input" argument must be of type string. Received type ${typeof input} (${input})`);
-  }
-  return encoding ? import_buffer.Buffer.from(input, encoding) : import_buffer.Buffer.from(input);
-}, "fromString");
-// Annotate the CommonJS export names for ESM import in node:
-
-0 && (0);
-
-
-
-/***/ }),
-
-/***/ 7515:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// src/index.ts
-var src_exports = {};
-__export(src_exports, {
-  fromUtf8: () => fromUtf8,
-  toUint8Array: () => toUint8Array,
-  toUtf8: () => toUtf8
-});
-module.exports = __toCommonJS(src_exports);
-
-// src/fromUtf8.ts
-var import_util_buffer_from = __nccwpck_require__(9077);
-var fromUtf8 = /* @__PURE__ */ __name((input) => {
-  const buf = (0, import_util_buffer_from.fromString)(input, "utf8");
-  return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength / Uint8Array.BYTES_PER_ELEMENT);
-}, "fromUtf8");
-
-// src/toUint8Array.ts
-var toUint8Array = /* @__PURE__ */ __name((data) => {
-  if (typeof data === "string") {
-    return fromUtf8(data);
-  }
-  if (ArrayBuffer.isView(data)) {
-    return new Uint8Array(data.buffer, data.byteOffset, data.byteLength / Uint8Array.BYTES_PER_ELEMENT);
-  }
-  return new Uint8Array(data);
-}, "toUint8Array");
-
-// src/toUtf8.ts
-
-var toUtf8 = /* @__PURE__ */ __name((input) => {
-  if (typeof input === "string") {
-    return input;
-  }
-  if (typeof input !== "object" || typeof input.byteOffset !== "number" || typeof input.byteLength !== "number") {
-    throw new Error("@smithy/util-utf8: toUtf8 encoder function only accepts string | Uint8Array.");
-  }
-  return (0, import_util_buffer_from.fromArrayBuffer)(input.buffer, input.byteOffset, input.byteLength).toString("utf8");
-}, "toUtf8");
-// Annotate the CommonJS export names for ESM import in node:
-
-0 && (0);
-
-
-
-/***/ }),
-
-/***/ 3182:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-const { resolveAwsSdkSigV4Config } = __nccwpck_require__(7523);
-const { getSmithyContext, normalizeProvider } = __nccwpck_require__(2658);
-exports.defaultECRPUBLICHttpAuthSchemeParametersProvider = async (config, context, input) => {
+const defaultECRPUBLICHttpAuthSchemeParametersProvider = async (config, context, input) => {
     return {
         operation: getSmithyContext(context).operation,
         region: await normalizeProvider(config.region)() || (() => {
@@ -452,7 +45,7 @@ function createAwsAuthSigv4HttpAuthOption(authParameters) {
         }),
     };
 }
-exports.defaultECRPUBLICHttpAuthSchemeProvider = (authParameters) => {
+const defaultECRPUBLICHttpAuthSchemeProvider = (authParameters) => {
     const options = [];
     switch (authParameters.operation) {
         default: {
@@ -461,20 +54,31 @@ exports.defaultECRPUBLICHttpAuthSchemeProvider = (authParameters) => {
     }
     return options;
 };
-exports.resolveHttpAuthSchemeConfig = (config) => {
+const resolveHttpAuthSchemeConfig = (config) => {
     const config_0 = resolveAwsSdkSigV4Config(config);
     return Object.assign(config_0, {
         authSchemePreference: normalizeProvider(config.authSchemePreference ?? []),
     });
 };
 
+const resolveClientEndpointParameters = (options) => {
+    return Object.assign(options, {
+        useDualstackEndpoint: options.useDualstackEndpoint ?? false,
+        useFipsEndpoint: options.useFipsEndpoint ?? false,
+        defaultSigningName: "ecr-public",
+    });
+};
+const commonParams = {
+    UseFIPS: { type: "builtInParams", name: "useFipsEndpoint" },
+    Endpoint: { type: "builtInParams", name: "endpoint" },
+    Region: { type: "builtInParams", name: "region" },
+    UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
+};
 
-/***/ }),
+var version = "3.1076.0";
+var packageInfo = {
+	version: version};
 
-/***/ 7925:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-const { BinaryDecisionDiagram } = __nccwpck_require__(2085);
 const k = "ref";
 const a = -1, b = true, c = "isSet", d = "PartitionResult", e = "booleanEquals", f = "getAttr", g = { [k]: "Endpoint" }, h = { [k]: d }, i = {}, j = [{ [k]: "Region" }];
 const _data = {
@@ -522,22 +126,13 @@ const nodes = new Int32Array([
     3, r + 1, 14,
     4, r + 2, r + 3,
 ]);
-exports.bdd = BinaryDecisionDiagram.from(nodes, root, _data.conditions, _data.results);
+const bdd = BinaryDecisionDiagram.from(nodes, root, _data.conditions, _data.results);
 
-
-/***/ }),
-
-/***/ 6072:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-const { awsEndpointFunctions } = __nccwpck_require__(5152);
-const { customEndpointFunctions, decideEndpoint, EndpointCache } = __nccwpck_require__(2085);
-const { bdd } = __nccwpck_require__(7925);
 const cache = new EndpointCache({
     size: 50,
     params: ["Endpoint", "Region", "UseDualStack", "UseFIPS"],
 });
-exports.defaultEndpointResolver = (endpointParams, context = {}) => {
+const defaultEndpointResolver = (endpointParams, context = {}) => {
     return cache.get(endpointParams, () => decideEndpoint(bdd, {
         endpointParams: endpointParams,
         logger: context.logger,
@@ -545,43 +140,1132 @@ exports.defaultEndpointResolver = (endpointParams, context = {}) => {
 };
 customEndpointFunctions.aws = awsEndpointFunctions;
 
+class ECRPUBLICServiceException extends ServiceException {
+    constructor(options) {
+        super(options);
+        Object.setPrototypeOf(this, ECRPUBLICServiceException.prototype);
+    }
+}
 
-/***/ }),
+class InvalidParameterException extends ECRPUBLICServiceException {
+    name = "InvalidParameterException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "InvalidParameterException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, InvalidParameterException.prototype);
+    }
+}
+class RegistryNotFoundException extends ECRPUBLICServiceException {
+    name = "RegistryNotFoundException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "RegistryNotFoundException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, RegistryNotFoundException.prototype);
+    }
+}
+class RepositoryNotFoundException extends ECRPUBLICServiceException {
+    name = "RepositoryNotFoundException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "RepositoryNotFoundException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, RepositoryNotFoundException.prototype);
+    }
+}
+class ServerException extends ECRPUBLICServiceException {
+    name = "ServerException";
+    $fault = "server";
+    constructor(opts) {
+        super({
+            name: "ServerException",
+            $fault: "server",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, ServerException.prototype);
+    }
+}
+class UnsupportedCommandException extends ECRPUBLICServiceException {
+    name = "UnsupportedCommandException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "UnsupportedCommandException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, UnsupportedCommandException.prototype);
+    }
+}
+class EmptyUploadException extends ECRPUBLICServiceException {
+    name = "EmptyUploadException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "EmptyUploadException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, EmptyUploadException.prototype);
+    }
+}
+class InvalidLayerException extends ECRPUBLICServiceException {
+    name = "InvalidLayerException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "InvalidLayerException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, InvalidLayerException.prototype);
+    }
+}
+class LayerAlreadyExistsException extends ECRPUBLICServiceException {
+    name = "LayerAlreadyExistsException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "LayerAlreadyExistsException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, LayerAlreadyExistsException.prototype);
+    }
+}
+class LayerPartTooSmallException extends ECRPUBLICServiceException {
+    name = "LayerPartTooSmallException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "LayerPartTooSmallException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, LayerPartTooSmallException.prototype);
+    }
+}
+class UploadNotFoundException extends ECRPUBLICServiceException {
+    name = "UploadNotFoundException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "UploadNotFoundException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, UploadNotFoundException.prototype);
+    }
+}
+class InvalidTagParameterException extends ECRPUBLICServiceException {
+    name = "InvalidTagParameterException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "InvalidTagParameterException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, InvalidTagParameterException.prototype);
+    }
+}
+class LimitExceededException extends ECRPUBLICServiceException {
+    name = "LimitExceededException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "LimitExceededException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, LimitExceededException.prototype);
+    }
+}
+class RepositoryAlreadyExistsException extends ECRPUBLICServiceException {
+    name = "RepositoryAlreadyExistsException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "RepositoryAlreadyExistsException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, RepositoryAlreadyExistsException.prototype);
+    }
+}
+class TooManyTagsException extends ECRPUBLICServiceException {
+    name = "TooManyTagsException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "TooManyTagsException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, TooManyTagsException.prototype);
+    }
+}
+class RepositoryNotEmptyException extends ECRPUBLICServiceException {
+    name = "RepositoryNotEmptyException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "RepositoryNotEmptyException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, RepositoryNotEmptyException.prototype);
+    }
+}
+class RepositoryPolicyNotFoundException extends ECRPUBLICServiceException {
+    name = "RepositoryPolicyNotFoundException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "RepositoryPolicyNotFoundException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, RepositoryPolicyNotFoundException.prototype);
+    }
+}
+class ImageNotFoundException extends ECRPUBLICServiceException {
+    name = "ImageNotFoundException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "ImageNotFoundException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, ImageNotFoundException.prototype);
+    }
+}
+class RepositoryCatalogDataNotFoundException extends ECRPUBLICServiceException {
+    name = "RepositoryCatalogDataNotFoundException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "RepositoryCatalogDataNotFoundException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, RepositoryCatalogDataNotFoundException.prototype);
+    }
+}
+class ImageAlreadyExistsException extends ECRPUBLICServiceException {
+    name = "ImageAlreadyExistsException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "ImageAlreadyExistsException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, ImageAlreadyExistsException.prototype);
+    }
+}
+class ImageDigestDoesNotMatchException extends ECRPUBLICServiceException {
+    name = "ImageDigestDoesNotMatchException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "ImageDigestDoesNotMatchException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, ImageDigestDoesNotMatchException.prototype);
+    }
+}
+class ImageTagAlreadyExistsException extends ECRPUBLICServiceException {
+    name = "ImageTagAlreadyExistsException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "ImageTagAlreadyExistsException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, ImageTagAlreadyExistsException.prototype);
+    }
+}
+class InvalidLayerPartException extends ECRPUBLICServiceException {
+    name = "InvalidLayerPartException";
+    $fault = "client";
+    registryId;
+    repositoryName;
+    uploadId;
+    lastValidByteReceived;
+    constructor(opts) {
+        super({
+            name: "InvalidLayerPartException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, InvalidLayerPartException.prototype);
+        this.registryId = opts.registryId;
+        this.repositoryName = opts.repositoryName;
+        this.uploadId = opts.uploadId;
+        this.lastValidByteReceived = opts.lastValidByteReceived;
+    }
+}
+class LayersNotFoundException extends ECRPUBLICServiceException {
+    name = "LayersNotFoundException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "LayersNotFoundException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, LayersNotFoundException.prototype);
+    }
+}
+class ReferencedImagesNotFoundException extends ECRPUBLICServiceException {
+    name = "ReferencedImagesNotFoundException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "ReferencedImagesNotFoundException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, ReferencedImagesNotFoundException.prototype);
+    }
+}
 
-/***/ 9821:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+const _AD = "AuthorizationData";
+const _BCLA = "BatchCheckLayerAvailability";
+const _BCLAR = "BatchCheckLayerAvailabilityRequest";
+const _BCLARa = "BatchCheckLayerAvailabilityResponse";
+const _BDI = "BatchDeleteImage";
+const _BDIR = "BatchDeleteImageRequest";
+const _BDIRa = "BatchDeleteImageResponse";
+const _CLU = "CompleteLayerUpload";
+const _CLUR = "CompleteLayerUploadRequest";
+const _CLURo = "CompleteLayerUploadResponse";
+const _CR = "CreateRepository";
+const _CRR = "CreateRepositoryRequest";
+const _CRRr = "CreateRepositoryResponse";
+const _DI = "DescribeImages";
+const _DIR = "DescribeImagesRequest";
+const _DIRe = "DescribeImagesResponse";
+const _DIT = "DescribeImageTags";
+const _DITR = "DescribeImageTagsRequest";
+const _DITRe = "DescribeImageTagsResponse";
+const _DR = "DeleteRepository";
+const _DRP = "DeleteRepositoryPolicy";
+const _DRPR = "DeleteRepositoryPolicyRequest";
+const _DRPRe = "DeleteRepositoryPolicyResponse";
+const _DRR = "DeleteRepositoryRequest";
+const _DRRe = "DeleteRepositoryResponse";
+const _DRRes = "DescribeRegistriesRequest";
+const _DRResc = "DescribeRegistriesResponse";
+const _DRRescr = "DescribeRepositoriesRequest";
+const _DRRescri = "DescribeRepositoriesResponse";
+const _DRe = "DescribeRegistries";
+const _DRes = "DescribeRepositories";
+const _EUE = "EmptyUploadException";
+const _GAT = "GetAuthorizationToken";
+const _GATR = "GetAuthorizationTokenRequest";
+const _GATRe = "GetAuthorizationTokenResponse";
+const _GRCD = "GetRegistryCatalogData";
+const _GRCDR = "GetRegistryCatalogDataRequest";
+const _GRCDRe = "GetRegistryCatalogDataResponse";
+const _GRCDRet = "GetRepositoryCatalogDataRequest";
+const _GRCDRete = "GetRepositoryCatalogDataResponse";
+const _GRCDe = "GetRepositoryCatalogData";
+const _GRP = "GetRepositoryPolicy";
+const _GRPR = "GetRepositoryPolicyRequest";
+const _GRPRe = "GetRepositoryPolicyResponse";
+const _I = "Image";
+const _IAEE = "ImageAlreadyExistsException";
+const _ID = "ImageDetail";
+const _IDDNME = "ImageDigestDoesNotMatchException";
+const _IDL = "ImageDetailList";
+const _IF = "ImageFailure";
+const _IFL = "ImageFailureList";
+const _II = "ImageIdentifier";
+const _IIL = "ImageIdentifierList";
+const _ILE = "InvalidLayerException";
+const _ILPE = "InvalidLayerPartException";
+const _ILU = "InitiateLayerUpload";
+const _ILUR = "InitiateLayerUploadRequest";
+const _ILURn = "InitiateLayerUploadResponse";
+const _INFE = "ImageNotFoundException";
+const _IPE = "InvalidParameterException";
+const _ITAEE = "ImageTagAlreadyExistsException";
+const _ITD = "ImageTagDetail";
+const _ITDL = "ImageTagDetailList";
+const _ITPE = "InvalidTagParameterException";
+const _K = "Key";
+const _L = "Layer";
+const _LAEE = "LayerAlreadyExistsException";
+const _LEE = "LimitExceededException";
+const _LF = "LayerFailure";
+const _LFL = "LayerFailureList";
+const _LL = "LayerList";
+const _LNFE = "LayersNotFoundException";
+const _LPTSE = "LayerPartTooSmallException";
+const _LTFR = "ListTagsForResource";
+const _LTFRR = "ListTagsForResourceRequest";
+const _LTFRRi = "ListTagsForResourceResponse";
+const _PI = "PutImage";
+const _PIR = "PutImageRequest";
+const _PIRu = "PutImageResponse";
+const _PRCD = "PutRegistryCatalogData";
+const _PRCDR = "PutRegistryCatalogDataRequest";
+const _PRCDRu = "PutRegistryCatalogDataResponse";
+const _PRCDRut = "PutRepositoryCatalogDataRequest";
+const _PRCDRute = "PutRepositoryCatalogDataResponse";
+const _PRCDu = "PutRepositoryCatalogData";
+const _R = "Registry";
+const _RA = "RegistryAlias";
+const _RAEE = "RepositoryAlreadyExistsException";
+const _RAL = "RegistryAliasList";
+const _RCD = "RegistryCatalogData";
+const _RCDI = "RepositoryCatalogDataInput";
+const _RCDNFE = "RepositoryCatalogDataNotFoundException";
+const _RCDe = "RepositoryCatalogData";
+const _RID = "ReferencedImageDetail";
+const _RINFE = "ReferencedImagesNotFoundException";
+const _RL = "RegistryList";
+const _RLe = "RepositoryList";
+const _RNEE = "RepositoryNotEmptyException";
+const _RNFE = "RegistryNotFoundException";
+const _RNFEe = "RepositoryNotFoundException";
+const _RPNFE = "RepositoryPolicyNotFoundException";
+const _Re = "Repository";
+const _SE = "ServerException";
+const _SRP = "SetRepositoryPolicy";
+const _SRPR = "SetRepositoryPolicyRequest";
+const _SRPRe = "SetRepositoryPolicyResponse";
+const _T = "Tag";
+const _TL = "TagList";
+const _TMTE = "TooManyTagsException";
+const _TR = "TagResource";
+const _TRR = "TagResourceRequest";
+const _TRRa = "TagResourceResponse";
+const _UCE = "UnsupportedCommandException";
+const _ULP = "UploadLayerPart";
+const _ULPR = "UploadLayerPartRequest";
+const _ULPRp = "UploadLayerPartResponse";
+const _UNFE = "UploadNotFoundException";
+const _UR = "UntagResource";
+const _URR = "UntagResourceRequest";
+const _URRn = "UntagResourceResponse";
+const _V = "Value";
+const _a = "aliases";
+const _aD = "authorizationData";
+const _aMT = "artifactMediaType";
+const _aT = "authorizationToken";
+const _aTb = "aboutText";
+const _ar = "architectures";
+const _c = "client";
+const _cA = "createdAt";
+const _cD = "catalogData";
+const _d = "description";
+const _dN = "displayName";
+const _dRA = "defaultRegistryAlias";
+const _e = "error";
+const _eA = "expiresAt";
+const _f = "failures";
+const _fC = "failureCode";
+const _fR = "failureReason";
+const _fo = "force";
+const _i = "image";
+const _iD = "imageDetails";
+const _iDm = "imageDigest";
+const _iDma = "imageDetail";
+const _iI = "imageIds";
+const _iIm = "imageId";
+const _iM = "imageManifest";
+const _iMMT = "imageManifestMediaType";
+const _iPA = "imagePushedAt";
+const _iSIB = "imageSizeInBytes";
+const _iT = "imageTags";
+const _iTD = "imageTagDetails";
+const _iTm = "imageTag";
+const _l = "layers";
+const _lA = "layerAvailability";
+const _lBR = "lastByteReceived";
+const _lD = "layerDigests";
+const _lDa = "layerDigest";
+const _lIB = "logoImageBlob";
+const _lPB = "layerPartBlob";
+const _lS = "layerSize";
+const _lU = "logoUrl";
+const _lVBR = "lastValidByteReceived";
+const _m = "message";
+const _mC = "marketplaceCertified";
+const _mR = "maxResults";
+const _mT = "mediaType";
+const _n = "name";
+const _nT = "nextToken";
+const _oS = "operatingSystems";
+const _pFB = "partFirstByte";
+const _pLB = "partLastByte";
+const _pRA = "primaryRegistryAlias";
+const _pS = "partSize";
+const _pT = "policyText";
+const _r = "repository";
+const _rA = "resourceArn";
+const _rAe = "registryArn";
+const _rAep = "repositoryArn";
+const _rCD = "registryCatalogData";
+const _rI = "registryId";
+const _rN = "repositoryName";
+const _rNe = "repositoryNames";
+const _rU = "registryUri";
+const _rUe = "repositoryUri";
+const _re = "registries";
+const _rep = "repositories";
+const _s = "smithy.ts.sdk.synthetic.com.amazonaws.ecrpublic";
+const _se = "server";
+const _st = "status";
+const _t = "tags";
+const _tK = "tagKeys";
+const _uI = "uploadId";
+const _uT = "usageText";
+const _v = "verified";
+const n0 = "com.amazonaws.ecrpublic";
+const _s_registry = TypeRegistry.for(_s);
+var ECRPUBLICServiceException$ = [-3, _s, "ECRPUBLICServiceException", 0, [], []];
+_s_registry.registerError(ECRPUBLICServiceException$, ECRPUBLICServiceException);
+const n0_registry = TypeRegistry.for(n0);
+var EmptyUploadException$ = [-3, n0, _EUE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(EmptyUploadException$, EmptyUploadException);
+var ImageAlreadyExistsException$ = [-3, n0, _IAEE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(ImageAlreadyExistsException$, ImageAlreadyExistsException);
+var ImageDigestDoesNotMatchException$ = [-3, n0, _IDDNME,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(ImageDigestDoesNotMatchException$, ImageDigestDoesNotMatchException);
+var ImageNotFoundException$ = [-3, n0, _INFE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(ImageNotFoundException$, ImageNotFoundException);
+var ImageTagAlreadyExistsException$ = [-3, n0, _ITAEE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(ImageTagAlreadyExistsException$, ImageTagAlreadyExistsException);
+var InvalidLayerException$ = [-3, n0, _ILE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(InvalidLayerException$, InvalidLayerException);
+var InvalidLayerPartException$ = [-3, n0, _ILPE,
+    { [_e]: _c },
+    [_rI, _rN, _uI, _lVBR, _m],
+    [0, 0, 0, 1, 0]
+];
+n0_registry.registerError(InvalidLayerPartException$, InvalidLayerPartException);
+var InvalidParameterException$ = [-3, n0, _IPE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(InvalidParameterException$, InvalidParameterException);
+var InvalidTagParameterException$ = [-3, n0, _ITPE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(InvalidTagParameterException$, InvalidTagParameterException);
+var LayerAlreadyExistsException$ = [-3, n0, _LAEE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(LayerAlreadyExistsException$, LayerAlreadyExistsException);
+var LayerPartTooSmallException$ = [-3, n0, _LPTSE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(LayerPartTooSmallException$, LayerPartTooSmallException);
+var LayersNotFoundException$ = [-3, n0, _LNFE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(LayersNotFoundException$, LayersNotFoundException);
+var LimitExceededException$ = [-3, n0, _LEE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(LimitExceededException$, LimitExceededException);
+var ReferencedImagesNotFoundException$ = [-3, n0, _RINFE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(ReferencedImagesNotFoundException$, ReferencedImagesNotFoundException);
+var RegistryNotFoundException$ = [-3, n0, _RNFE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(RegistryNotFoundException$, RegistryNotFoundException);
+var RepositoryAlreadyExistsException$ = [-3, n0, _RAEE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(RepositoryAlreadyExistsException$, RepositoryAlreadyExistsException);
+var RepositoryCatalogDataNotFoundException$ = [-3, n0, _RCDNFE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(RepositoryCatalogDataNotFoundException$, RepositoryCatalogDataNotFoundException);
+var RepositoryNotEmptyException$ = [-3, n0, _RNEE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(RepositoryNotEmptyException$, RepositoryNotEmptyException);
+var RepositoryNotFoundException$ = [-3, n0, _RNFEe,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(RepositoryNotFoundException$, RepositoryNotFoundException);
+var RepositoryPolicyNotFoundException$ = [-3, n0, _RPNFE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(RepositoryPolicyNotFoundException$, RepositoryPolicyNotFoundException);
+var ServerException$ = [-3, n0, _SE,
+    { [_e]: _se },
+    [_m],
+    [0]
+];
+n0_registry.registerError(ServerException$, ServerException);
+var TooManyTagsException$ = [-3, n0, _TMTE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(TooManyTagsException$, TooManyTagsException);
+var UnsupportedCommandException$ = [-3, n0, _UCE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(UnsupportedCommandException$, UnsupportedCommandException);
+var UploadNotFoundException$ = [-3, n0, _UNFE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(UploadNotFoundException$, UploadNotFoundException);
+const errorTypeRegistries = [
+    _s_registry,
+    n0_registry,
+];
+var AuthorizationData$ = [3, n0, _AD,
+    0,
+    [_aT, _eA],
+    [0, 4]
+];
+var BatchCheckLayerAvailabilityRequest$ = [3, n0, _BCLAR,
+    0,
+    [_rN, _lD, _rI],
+    [0, 64 | 0, 0], 2
+];
+var BatchCheckLayerAvailabilityResponse$ = [3, n0, _BCLARa,
+    0,
+    [_l, _f],
+    [() => LayerList, () => LayerFailureList]
+];
+var BatchDeleteImageRequest$ = [3, n0, _BDIR,
+    0,
+    [_rN, _iI, _rI],
+    [0, () => ImageIdentifierList, 0], 2
+];
+var BatchDeleteImageResponse$ = [3, n0, _BDIRa,
+    0,
+    [_iI, _f],
+    [() => ImageIdentifierList, () => ImageFailureList]
+];
+var CompleteLayerUploadRequest$ = [3, n0, _CLUR,
+    0,
+    [_rN, _uI, _lD, _rI],
+    [0, 0, 64 | 0, 0], 3
+];
+var CompleteLayerUploadResponse$ = [3, n0, _CLURo,
+    0,
+    [_rI, _rN, _uI, _lDa],
+    [0, 0, 0, 0]
+];
+var CreateRepositoryRequest$ = [3, n0, _CRR,
+    0,
+    [_rN, _cD, _t],
+    [0, () => RepositoryCatalogDataInput$, () => TagList], 1
+];
+var CreateRepositoryResponse$ = [3, n0, _CRRr,
+    0,
+    [_r, _cD],
+    [() => Repository$, () => RepositoryCatalogData$]
+];
+var DeleteRepositoryPolicyRequest$ = [3, n0, _DRPR,
+    0,
+    [_rN, _rI],
+    [0, 0], 1
+];
+var DeleteRepositoryPolicyResponse$ = [3, n0, _DRPRe,
+    0,
+    [_rI, _rN, _pT],
+    [0, 0, 0]
+];
+var DeleteRepositoryRequest$ = [3, n0, _DRR,
+    0,
+    [_rN, _rI, _fo],
+    [0, 0, 2], 1
+];
+var DeleteRepositoryResponse$ = [3, n0, _DRRe,
+    0,
+    [_r],
+    [() => Repository$]
+];
+var DescribeImagesRequest$ = [3, n0, _DIR,
+    0,
+    [_rN, _rI, _iI, _nT, _mR],
+    [0, 0, () => ImageIdentifierList, 0, 1], 1
+];
+var DescribeImagesResponse$ = [3, n0, _DIRe,
+    0,
+    [_iD, _nT],
+    [() => ImageDetailList, 0]
+];
+var DescribeImageTagsRequest$ = [3, n0, _DITR,
+    0,
+    [_rN, _rI, _nT, _mR],
+    [0, 0, 0, 1], 1
+];
+var DescribeImageTagsResponse$ = [3, n0, _DITRe,
+    0,
+    [_iTD, _nT],
+    [() => ImageTagDetailList, 0]
+];
+var DescribeRegistriesRequest$ = [3, n0, _DRRes,
+    0,
+    [_nT, _mR],
+    [0, 1]
+];
+var DescribeRegistriesResponse$ = [3, n0, _DRResc,
+    0,
+    [_re, _nT],
+    [() => RegistryList, 0], 1
+];
+var DescribeRepositoriesRequest$ = [3, n0, _DRRescr,
+    0,
+    [_rI, _rNe, _nT, _mR],
+    [0, 64 | 0, 0, 1]
+];
+var DescribeRepositoriesResponse$ = [3, n0, _DRRescri,
+    0,
+    [_rep, _nT],
+    [() => RepositoryList, 0]
+];
+var GetAuthorizationTokenRequest$ = [3, n0, _GATR,
+    0,
+    [],
+    []
+];
+var GetAuthorizationTokenResponse$ = [3, n0, _GATRe,
+    0,
+    [_aD],
+    [() => AuthorizationData$]
+];
+var GetRegistryCatalogDataRequest$ = [3, n0, _GRCDR,
+    0,
+    [],
+    []
+];
+var GetRegistryCatalogDataResponse$ = [3, n0, _GRCDRe,
+    0,
+    [_rCD],
+    [() => RegistryCatalogData$], 1
+];
+var GetRepositoryCatalogDataRequest$ = [3, n0, _GRCDRet,
+    0,
+    [_rN, _rI],
+    [0, 0], 1
+];
+var GetRepositoryCatalogDataResponse$ = [3, n0, _GRCDRete,
+    0,
+    [_cD],
+    [() => RepositoryCatalogData$]
+];
+var GetRepositoryPolicyRequest$ = [3, n0, _GRPR,
+    0,
+    [_rN, _rI],
+    [0, 0], 1
+];
+var GetRepositoryPolicyResponse$ = [3, n0, _GRPRe,
+    0,
+    [_rI, _rN, _pT],
+    [0, 0, 0]
+];
+var Image$ = [3, n0, _I,
+    0,
+    [_rI, _rN, _iIm, _iM, _iMMT],
+    [0, 0, () => ImageIdentifier$, 0, 0]
+];
+var ImageDetail$ = [3, n0, _ID,
+    0,
+    [_rI, _rN, _iDm, _iT, _iSIB, _iPA, _iMMT, _aMT],
+    [0, 0, 0, 64 | 0, 1, 4, 0, 0]
+];
+var ImageFailure$ = [3, n0, _IF,
+    0,
+    [_iIm, _fC, _fR],
+    [() => ImageIdentifier$, 0, 0]
+];
+var ImageIdentifier$ = [3, n0, _II,
+    0,
+    [_iDm, _iTm],
+    [0, 0]
+];
+var ImageTagDetail$ = [3, n0, _ITD,
+    0,
+    [_iTm, _cA, _iDma],
+    [0, 4, () => ReferencedImageDetail$]
+];
+var InitiateLayerUploadRequest$ = [3, n0, _ILUR,
+    0,
+    [_rN, _rI],
+    [0, 0], 1
+];
+var InitiateLayerUploadResponse$ = [3, n0, _ILURn,
+    0,
+    [_uI, _pS],
+    [0, 1]
+];
+var Layer$ = [3, n0, _L,
+    0,
+    [_lDa, _lA, _lS, _mT],
+    [0, 0, 1, 0]
+];
+var LayerFailure$ = [3, n0, _LF,
+    0,
+    [_lDa, _fC, _fR],
+    [0, 0, 0]
+];
+var ListTagsForResourceRequest$ = [3, n0, _LTFRR,
+    0,
+    [_rA],
+    [0], 1
+];
+var ListTagsForResourceResponse$ = [3, n0, _LTFRRi,
+    0,
+    [_t],
+    [() => TagList]
+];
+var PutImageRequest$ = [3, n0, _PIR,
+    0,
+    [_rN, _iM, _rI, _iMMT, _iTm, _iDm],
+    [0, 0, 0, 0, 0, 0], 2
+];
+var PutImageResponse$ = [3, n0, _PIRu,
+    0,
+    [_i],
+    [() => Image$]
+];
+var PutRegistryCatalogDataRequest$ = [3, n0, _PRCDR,
+    0,
+    [_dN],
+    [0]
+];
+var PutRegistryCatalogDataResponse$ = [3, n0, _PRCDRu,
+    0,
+    [_rCD],
+    [() => RegistryCatalogData$], 1
+];
+var PutRepositoryCatalogDataRequest$ = [3, n0, _PRCDRut,
+    0,
+    [_rN, _cD, _rI],
+    [0, () => RepositoryCatalogDataInput$, 0], 2
+];
+var PutRepositoryCatalogDataResponse$ = [3, n0, _PRCDRute,
+    0,
+    [_cD],
+    [() => RepositoryCatalogData$]
+];
+var ReferencedImageDetail$ = [3, n0, _RID,
+    0,
+    [_iDm, _iSIB, _iPA, _iMMT, _aMT],
+    [0, 1, 4, 0, 0]
+];
+var Registry$ = [3, n0, _R,
+    0,
+    [_rI, _rAe, _rU, _v, _a],
+    [0, 0, 0, 2, () => RegistryAliasList], 5
+];
+var RegistryAlias$ = [3, n0, _RA,
+    0,
+    [_n, _st, _pRA, _dRA],
+    [0, 0, 2, 2], 4
+];
+var RegistryCatalogData$ = [3, n0, _RCD,
+    0,
+    [_dN],
+    [0]
+];
+var Repository$ = [3, n0, _Re,
+    0,
+    [_rAep, _rI, _rN, _rUe, _cA],
+    [0, 0, 0, 0, 4]
+];
+var RepositoryCatalogData$ = [3, n0, _RCDe,
+    0,
+    [_d, _ar, _oS, _lU, _aTb, _uT, _mC],
+    [0, 64 | 0, 64 | 0, 0, 0, 0, 2]
+];
+var RepositoryCatalogDataInput$ = [3, n0, _RCDI,
+    0,
+    [_d, _ar, _oS, _lIB, _aTb, _uT],
+    [0, 64 | 0, 64 | 0, 21, 0, 0]
+];
+var SetRepositoryPolicyRequest$ = [3, n0, _SRPR,
+    0,
+    [_rN, _pT, _rI, _fo],
+    [0, 0, 0, 2], 2
+];
+var SetRepositoryPolicyResponse$ = [3, n0, _SRPRe,
+    0,
+    [_rI, _rN, _pT],
+    [0, 0, 0]
+];
+var Tag$ = [3, n0, _T,
+    0,
+    [_K, _V],
+    [0, 0]
+];
+var TagResourceRequest$ = [3, n0, _TRR,
+    0,
+    [_rA, _t],
+    [0, () => TagList], 2
+];
+var TagResourceResponse$ = [3, n0, _TRRa,
+    0,
+    [],
+    []
+];
+var UntagResourceRequest$ = [3, n0, _URR,
+    0,
+    [_rA, _tK],
+    [0, 64 | 0], 2
+];
+var UntagResourceResponse$ = [3, n0, _URRn,
+    0,
+    [],
+    []
+];
+var UploadLayerPartRequest$ = [3, n0, _ULPR,
+    0,
+    [_rN, _uI, _pFB, _pLB, _lPB, _rI],
+    [0, 0, 1, 1, 21, 0], 5
+];
+var UploadLayerPartResponse$ = [3, n0, _ULPRp,
+    0,
+    [_rI, _rN, _uI, _lBR],
+    [0, 0, 0, 1]
+];
+var ImageDetailList = [1, n0, _IDL,
+    0, () => ImageDetail$
+];
+var ImageFailureList = [1, n0, _IFL,
+    0, () => ImageFailure$
+];
+var ImageIdentifierList = [1, n0, _IIL,
+    0, () => ImageIdentifier$
+];
+var ImageTagDetailList = [1, n0, _ITDL,
+    0, () => ImageTagDetail$
+];
+var LayerFailureList = [1, n0, _LFL,
+    0, () => LayerFailure$
+];
+var LayerList = [1, n0, _LL,
+    0, () => Layer$
+];
+var RegistryAliasList = [1, n0, _RAL,
+    0, () => RegistryAlias$
+];
+var RegistryList = [1, n0, _RL,
+    0, () => Registry$
+];
+var RepositoryList = [1, n0, _RLe,
+    0, () => Repository$
+];
+var TagList = [1, n0, _TL,
+    0, () => Tag$
+];
+var BatchCheckLayerAvailability$ = [9, n0, _BCLA,
+    0, () => BatchCheckLayerAvailabilityRequest$, () => BatchCheckLayerAvailabilityResponse$
+];
+var BatchDeleteImage$ = [9, n0, _BDI,
+    0, () => BatchDeleteImageRequest$, () => BatchDeleteImageResponse$
+];
+var CompleteLayerUpload$ = [9, n0, _CLU,
+    0, () => CompleteLayerUploadRequest$, () => CompleteLayerUploadResponse$
+];
+var CreateRepository$ = [9, n0, _CR,
+    0, () => CreateRepositoryRequest$, () => CreateRepositoryResponse$
+];
+var DeleteRepository$ = [9, n0, _DR,
+    0, () => DeleteRepositoryRequest$, () => DeleteRepositoryResponse$
+];
+var DeleteRepositoryPolicy$ = [9, n0, _DRP,
+    0, () => DeleteRepositoryPolicyRequest$, () => DeleteRepositoryPolicyResponse$
+];
+var DescribeImages$ = [9, n0, _DI,
+    0, () => DescribeImagesRequest$, () => DescribeImagesResponse$
+];
+var DescribeImageTags$ = [9, n0, _DIT,
+    0, () => DescribeImageTagsRequest$, () => DescribeImageTagsResponse$
+];
+var DescribeRegistries$ = [9, n0, _DRe,
+    0, () => DescribeRegistriesRequest$, () => DescribeRegistriesResponse$
+];
+var DescribeRepositories$ = [9, n0, _DRes,
+    0, () => DescribeRepositoriesRequest$, () => DescribeRepositoriesResponse$
+];
+var GetAuthorizationToken$ = [9, n0, _GAT,
+    0, () => GetAuthorizationTokenRequest$, () => GetAuthorizationTokenResponse$
+];
+var GetRegistryCatalogData$ = [9, n0, _GRCD,
+    0, () => GetRegistryCatalogDataRequest$, () => GetRegistryCatalogDataResponse$
+];
+var GetRepositoryCatalogData$ = [9, n0, _GRCDe,
+    0, () => GetRepositoryCatalogDataRequest$, () => GetRepositoryCatalogDataResponse$
+];
+var GetRepositoryPolicy$ = [9, n0, _GRP,
+    0, () => GetRepositoryPolicyRequest$, () => GetRepositoryPolicyResponse$
+];
+var InitiateLayerUpload$ = [9, n0, _ILU,
+    0, () => InitiateLayerUploadRequest$, () => InitiateLayerUploadResponse$
+];
+var ListTagsForResource$ = [9, n0, _LTFR,
+    0, () => ListTagsForResourceRequest$, () => ListTagsForResourceResponse$
+];
+var PutImage$ = [9, n0, _PI,
+    0, () => PutImageRequest$, () => PutImageResponse$
+];
+var PutRegistryCatalogData$ = [9, n0, _PRCD,
+    0, () => PutRegistryCatalogDataRequest$, () => PutRegistryCatalogDataResponse$
+];
+var PutRepositoryCatalogData$ = [9, n0, _PRCDu,
+    0, () => PutRepositoryCatalogDataRequest$, () => PutRepositoryCatalogDataResponse$
+];
+var SetRepositoryPolicy$ = [9, n0, _SRP,
+    0, () => SetRepositoryPolicyRequest$, () => SetRepositoryPolicyResponse$
+];
+var TagResource$ = [9, n0, _TR,
+    0, () => TagResourceRequest$, () => TagResourceResponse$
+];
+var UntagResource$ = [9, n0, _UR,
+    0, () => UntagResourceRequest$, () => UntagResourceResponse$
+];
+var UploadLayerPart$ = [9, n0, _ULP,
+    0, () => UploadLayerPartRequest$, () => UploadLayerPartResponse$
+];
 
-var __exportStar = (m, e) => { Object.assign(e, m); };
-const { getAwsRegionExtensionConfiguration, resolveAwsRegionExtensionConfiguration, resolveUserAgentConfig, resolveHostHeaderConfig, getUserAgentPlugin, getHostHeaderPlugin, getLoggerPlugin, getRecursionDetectionPlugin } = __nccwpck_require__(5152);
-const { getHttpAuthSchemeEndpointRuleSetPlugin, DefaultIdentityProviderConfig, getHttpSigningPlugin, createPaginator } = __nccwpck_require__(402);
-const { getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, Command, createAggregatedClient } = __nccwpck_require__(2658);
-exports.$Command = Command;
-exports.__Client = Client;
-const { resolveRegionConfig } = __nccwpck_require__(7291);
-const { resolveEndpointConfig, getEndpointPlugin } = __nccwpck_require__(2085);
-const { getHttpHandlerExtensionConfiguration, resolveHttpHandlerRuntimeConfig, getContentLengthPlugin } = __nccwpck_require__(3422);
-const { resolveRetryConfig, getRetryPlugin } = __nccwpck_require__(3609);
-const { getSchemaSerdePlugin } = __nccwpck_require__(6890);
-const { resolveHttpAuthSchemeConfig, defaultECRPUBLICHttpAuthSchemeParametersProvider } = __nccwpck_require__(3182);
-const { getRuntimeConfig } = __nccwpck_require__(8199);
-const { BatchCheckLayerAvailability$, BatchDeleteImage$, CompleteLayerUpload$, CreateRepository$, DeleteRepository$, DeleteRepositoryPolicy$, DescribeImages$, DescribeImageTags$, DescribeRegistries$, DescribeRepositories$, GetAuthorizationToken$, GetRegistryCatalogData$, GetRepositoryCatalogData$, GetRepositoryPolicy$, InitiateLayerUpload$, ListTagsForResource$, PutImage$, PutRegistryCatalogData$, PutRepositoryCatalogData$, SetRepositoryPolicy$, TagResource$, UntagResource$, UploadLayerPart$ } = __nccwpck_require__(3917);
-__exportStar(__nccwpck_require__(3917), exports);
-__exportStar(__nccwpck_require__(977), exports);
-const { ECRPUBLICServiceException } = __nccwpck_require__(3303);
-exports.ECRPUBLICServiceException = ECRPUBLICServiceException;
-
-const resolveClientEndpointParameters = (options) => {
-    return Object.assign(options, {
-        useDualstackEndpoint: options.useDualstackEndpoint ?? false,
-        useFipsEndpoint: options.useFipsEndpoint ?? false,
-        defaultSigningName: "ecr-public",
-    });
+const getRuntimeConfig$1 = (config) => {
+    return {
+        apiVersion: "2020-10-30",
+        base64Decoder: config?.base64Decoder ?? fromBase64,
+        base64Encoder: config?.base64Encoder ?? toBase64,
+        disableHostPrefix: config?.disableHostPrefix ?? false,
+        endpointProvider: config?.endpointProvider ?? defaultEndpointResolver,
+        extensions: config?.extensions ?? [],
+        httpAuthSchemeProvider: config?.httpAuthSchemeProvider ?? defaultECRPUBLICHttpAuthSchemeProvider,
+        httpAuthSchemes: config?.httpAuthSchemes ?? [
+            {
+                schemeId: "aws.auth#sigv4",
+                identityProvider: (ipc) => ipc.getIdentityProvider("aws.auth#sigv4"),
+                signer: new AwsSdkSigV4Signer(),
+            },
+        ],
+        logger: config?.logger ?? new NoOpLogger(),
+        protocol: config?.protocol ?? AwsJson1_1Protocol,
+        protocolSettings: config?.protocolSettings ?? {
+            defaultNamespace: "com.amazonaws.ecrpublic",
+            errorTypeRegistries,
+            xmlNamespace: "http://ecr-public.amazonaws.com/doc/2020-12-02/",
+            version: "2020-10-30",
+            serviceTarget: "SpencerFrontendService",
+        },
+        serviceId: config?.serviceId ?? "ECR PUBLIC",
+        sha256: config?.sha256 ?? Sha256,
+        urlParser: config?.urlParser ?? parseUrl,
+        utf8Decoder: config?.utf8Decoder ?? fromUtf8,
+        utf8Encoder: config?.utf8Encoder ?? toUtf8,
+    };
 };
-const commonParams = {
-    UseFIPS: { type: "builtInParams", name: "useFipsEndpoint" },
-    Endpoint: { type: "builtInParams", name: "endpoint" },
-    Region: { type: "builtInParams", name: "region" },
-    UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
+
+const getRuntimeConfig = (config) => {
+    emitWarningIfUnsupportedVersion(process.version);
+    const defaultsMode = resolveDefaultsModeConfig(config);
+    const defaultConfigProvider = () => defaultsMode().then(loadConfigsForDefaultMode);
+    const clientSharedValues = getRuntimeConfig$1(config);
+    emitWarningIfUnsupportedVersion$1(process.version);
+    const loaderConfig = {
+        profile: config?.profile,
+        logger: clientSharedValues.logger,
+    };
+    return {
+        ...clientSharedValues,
+        ...config,
+        runtime: "node",
+        defaultsMode,
+        authSchemePreference: config?.authSchemePreference ?? loadConfig(NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
+        bodyLengthChecker: config?.bodyLengthChecker ?? calculateBodyLength,
+        credentialDefaultProvider: config?.credentialDefaultProvider ?? defaultProvider,
+        defaultUserAgentProvider: config?.defaultUserAgentProvider ?? createDefaultUserAgentProvider({ serviceId: clientSharedValues.serviceId, clientVersion: packageInfo.version }),
+        maxAttempts: config?.maxAttempts ?? loadConfig(NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config),
+        region: config?.region ?? loadConfig(NODE_REGION_CONFIG_OPTIONS, { ...NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
+        requestHandler: NodeHttpHandler.create(config?.requestHandler ?? defaultConfigProvider),
+        retryMode: config?.retryMode ??
+            loadConfig({
+                ...NODE_RETRY_MODE_CONFIG_OPTIONS,
+                default: async () => (await defaultConfigProvider()).retryMode || DEFAULT_RETRY_MODE,
+            }, config),
+        streamCollector: config?.streamCollector ?? streamCollector,
+        useDualstackEndpoint: config?.useDualstackEndpoint ?? loadConfig(NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
+        useFipsEndpoint: config?.useFipsEndpoint ?? loadConfig(NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
+        userAgentAppId: config?.userAgentAppId ?? loadConfig(NODE_APP_ID_CONFIG_OPTIONS, loaderConfig),
+    };
 };
 
 const getHttpAuthExtensionConfiguration = (runtimeConfig) => {
@@ -1006,1316 +1690,175 @@ const RegistryAliasStatus = {
     REJECTED: "REJECTED",
 };
 
-exports.BatchCheckLayerAvailabilityCommand = BatchCheckLayerAvailabilityCommand;
-exports.BatchDeleteImageCommand = BatchDeleteImageCommand;
-exports.CompleteLayerUploadCommand = CompleteLayerUploadCommand;
-exports.CreateRepositoryCommand = CreateRepositoryCommand;
-exports.DeleteRepositoryCommand = DeleteRepositoryCommand;
-exports.DeleteRepositoryPolicyCommand = DeleteRepositoryPolicyCommand;
-exports.DescribeImageTagsCommand = DescribeImageTagsCommand;
-exports.DescribeImagesCommand = DescribeImagesCommand;
-exports.DescribeRegistriesCommand = DescribeRegistriesCommand;
-exports.DescribeRepositoriesCommand = DescribeRepositoriesCommand;
-exports.ECRPUBLIC = ECRPUBLIC;
-exports.ECRPUBLICClient = ECRPUBLICClient;
-exports.GetAuthorizationTokenCommand = GetAuthorizationTokenCommand;
-exports.GetRegistryCatalogDataCommand = GetRegistryCatalogDataCommand;
-exports.GetRepositoryCatalogDataCommand = GetRepositoryCatalogDataCommand;
-exports.GetRepositoryPolicyCommand = GetRepositoryPolicyCommand;
-exports.ImageFailureCode = ImageFailureCode;
-exports.InitiateLayerUploadCommand = InitiateLayerUploadCommand;
-exports.LayerAvailability = LayerAvailability;
-exports.LayerFailureCode = LayerFailureCode;
-exports.ListTagsForResourceCommand = ListTagsForResourceCommand;
-exports.PutImageCommand = PutImageCommand;
-exports.PutRegistryCatalogDataCommand = PutRegistryCatalogDataCommand;
-exports.PutRepositoryCatalogDataCommand = PutRepositoryCatalogDataCommand;
-exports.RegistryAliasStatus = RegistryAliasStatus;
-exports.SetRepositoryPolicyCommand = SetRepositoryPolicyCommand;
-exports.TagResourceCommand = TagResourceCommand;
-exports.UntagResourceCommand = UntagResourceCommand;
-exports.UploadLayerPartCommand = UploadLayerPartCommand;
-exports.paginateDescribeImageTags = paginateDescribeImageTags;
-exports.paginateDescribeImages = paginateDescribeImages;
-exports.paginateDescribeRegistries = paginateDescribeRegistries;
-exports.paginateDescribeRepositories = paginateDescribeRepositories;
-
-
-/***/ }),
-
-/***/ 3303:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-const { ServiceException: __ServiceException } = __nccwpck_require__(2658);
-exports.__ServiceException = __ServiceException;
-exports.ECRPUBLICServiceException = class ECRPUBLICServiceException extends __ServiceException {
-    constructor(options) {
-        super(options);
-        Object.setPrototypeOf(this, ECRPUBLICServiceException.prototype);
-    }
-};
-
-
-/***/ }),
-
-/***/ 977:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-const { ECRPUBLICServiceException: __BaseException } = __nccwpck_require__(3303);
-exports.InvalidParameterException = class InvalidParameterException extends __BaseException {
-    name = "InvalidParameterException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "InvalidParameterException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, InvalidParameterException.prototype);
-    }
-};
-exports.RegistryNotFoundException = class RegistryNotFoundException extends __BaseException {
-    name = "RegistryNotFoundException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "RegistryNotFoundException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, RegistryNotFoundException.prototype);
-    }
-};
-exports.RepositoryNotFoundException = class RepositoryNotFoundException extends __BaseException {
-    name = "RepositoryNotFoundException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "RepositoryNotFoundException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, RepositoryNotFoundException.prototype);
-    }
-};
-exports.ServerException = class ServerException extends __BaseException {
-    name = "ServerException";
-    $fault = "server";
-    constructor(opts) {
-        super({
-            name: "ServerException",
-            $fault: "server",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, ServerException.prototype);
-    }
-};
-exports.UnsupportedCommandException = class UnsupportedCommandException extends __BaseException {
-    name = "UnsupportedCommandException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "UnsupportedCommandException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, UnsupportedCommandException.prototype);
-    }
-};
-exports.EmptyUploadException = class EmptyUploadException extends __BaseException {
-    name = "EmptyUploadException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "EmptyUploadException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, EmptyUploadException.prototype);
-    }
-};
-exports.InvalidLayerException = class InvalidLayerException extends __BaseException {
-    name = "InvalidLayerException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "InvalidLayerException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, InvalidLayerException.prototype);
-    }
-};
-exports.LayerAlreadyExistsException = class LayerAlreadyExistsException extends __BaseException {
-    name = "LayerAlreadyExistsException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "LayerAlreadyExistsException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, LayerAlreadyExistsException.prototype);
-    }
-};
-exports.LayerPartTooSmallException = class LayerPartTooSmallException extends __BaseException {
-    name = "LayerPartTooSmallException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "LayerPartTooSmallException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, LayerPartTooSmallException.prototype);
-    }
-};
-exports.UploadNotFoundException = class UploadNotFoundException extends __BaseException {
-    name = "UploadNotFoundException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "UploadNotFoundException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, UploadNotFoundException.prototype);
-    }
-};
-exports.InvalidTagParameterException = class InvalidTagParameterException extends __BaseException {
-    name = "InvalidTagParameterException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "InvalidTagParameterException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, InvalidTagParameterException.prototype);
-    }
-};
-exports.LimitExceededException = class LimitExceededException extends __BaseException {
-    name = "LimitExceededException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "LimitExceededException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, LimitExceededException.prototype);
-    }
-};
-exports.RepositoryAlreadyExistsException = class RepositoryAlreadyExistsException extends __BaseException {
-    name = "RepositoryAlreadyExistsException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "RepositoryAlreadyExistsException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, RepositoryAlreadyExistsException.prototype);
-    }
-};
-exports.TooManyTagsException = class TooManyTagsException extends __BaseException {
-    name = "TooManyTagsException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "TooManyTagsException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, TooManyTagsException.prototype);
-    }
-};
-exports.RepositoryNotEmptyException = class RepositoryNotEmptyException extends __BaseException {
-    name = "RepositoryNotEmptyException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "RepositoryNotEmptyException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, RepositoryNotEmptyException.prototype);
-    }
-};
-exports.RepositoryPolicyNotFoundException = class RepositoryPolicyNotFoundException extends __BaseException {
-    name = "RepositoryPolicyNotFoundException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "RepositoryPolicyNotFoundException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, RepositoryPolicyNotFoundException.prototype);
-    }
-};
-exports.ImageNotFoundException = class ImageNotFoundException extends __BaseException {
-    name = "ImageNotFoundException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "ImageNotFoundException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, ImageNotFoundException.prototype);
-    }
-};
-exports.RepositoryCatalogDataNotFoundException = class RepositoryCatalogDataNotFoundException extends __BaseException {
-    name = "RepositoryCatalogDataNotFoundException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "RepositoryCatalogDataNotFoundException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, RepositoryCatalogDataNotFoundException.prototype);
-    }
-};
-exports.ImageAlreadyExistsException = class ImageAlreadyExistsException extends __BaseException {
-    name = "ImageAlreadyExistsException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "ImageAlreadyExistsException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, ImageAlreadyExistsException.prototype);
-    }
-};
-exports.ImageDigestDoesNotMatchException = class ImageDigestDoesNotMatchException extends __BaseException {
-    name = "ImageDigestDoesNotMatchException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "ImageDigestDoesNotMatchException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, ImageDigestDoesNotMatchException.prototype);
-    }
-};
-exports.ImageTagAlreadyExistsException = class ImageTagAlreadyExistsException extends __BaseException {
-    name = "ImageTagAlreadyExistsException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "ImageTagAlreadyExistsException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, ImageTagAlreadyExistsException.prototype);
-    }
-};
-exports.InvalidLayerPartException = class InvalidLayerPartException extends __BaseException {
-    name = "InvalidLayerPartException";
-    $fault = "client";
-    registryId;
-    repositoryName;
-    uploadId;
-    lastValidByteReceived;
-    constructor(opts) {
-        super({
-            name: "InvalidLayerPartException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, InvalidLayerPartException.prototype);
-        this.registryId = opts.registryId;
-        this.repositoryName = opts.repositoryName;
-        this.uploadId = opts.uploadId;
-        this.lastValidByteReceived = opts.lastValidByteReceived;
-    }
-};
-exports.LayersNotFoundException = class LayersNotFoundException extends __BaseException {
-    name = "LayersNotFoundException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "LayersNotFoundException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, LayersNotFoundException.prototype);
-    }
-};
-exports.ReferencedImagesNotFoundException = class ReferencedImagesNotFoundException extends __BaseException {
-    name = "ReferencedImagesNotFoundException";
-    $fault = "client";
-    constructor(opts) {
-        super({
-            name: "ReferencedImagesNotFoundException",
-            $fault: "client",
-            ...opts,
-        });
-        Object.setPrototypeOf(this, ReferencedImagesNotFoundException.prototype);
-    }
-};
-
-
-/***/ }),
-
-/***/ 8199:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-const packageInfo = __nccwpck_require__(7643);
-const { createDefaultUserAgentProvider, emitWarningIfUnsupportedVersion: awsCheckVersion, NODE_APP_ID_CONFIG_OPTIONS } = __nccwpck_require__(5152);
-const { NODE_AUTH_SCHEME_PREFERENCE_OPTIONS } = __nccwpck_require__(7523);
-const { defaultProvider: credentialDefaultProvider } = __nccwpck_require__(5861);
-const { emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode } = __nccwpck_require__(2658);
-const { loadConfig: loadNodeConfig, NODE_REGION_CONFIG_FILE_OPTIONS, NODE_REGION_CONFIG_OPTIONS, NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, resolveDefaultsModeConfig } = __nccwpck_require__(7291);
-const { DEFAULT_RETRY_MODE, NODE_MAX_ATTEMPT_CONFIG_OPTIONS, NODE_RETRY_MODE_CONFIG_OPTIONS } = __nccwpck_require__(3609);
-const { calculateBodyLength, Hash } = __nccwpck_require__(2430);
-const { NodeHttpHandler: RequestHandler, streamCollector } = __nccwpck_require__(8834);
-const { getRuntimeConfig: getSharedRuntimeConfig } = __nccwpck_require__(2180);
-const getRuntimeConfig = (config) => {
-    emitWarningIfUnsupportedVersion(process.version);
-    const defaultsMode = resolveDefaultsModeConfig(config);
-    const defaultConfigProvider = () => defaultsMode().then(loadConfigsForDefaultMode);
-    const clientSharedValues = getSharedRuntimeConfig(config);
-    awsCheckVersion(process.version);
-    const loaderConfig = {
-        profile: config?.profile,
-        logger: clientSharedValues.logger,
-    };
-    return {
-        ...clientSharedValues,
-        ...config,
-        runtime: "node",
-        defaultsMode,
-        authSchemePreference: config?.authSchemePreference ?? loadNodeConfig(NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
-        bodyLengthChecker: config?.bodyLengthChecker ?? calculateBodyLength,
-        credentialDefaultProvider: config?.credentialDefaultProvider ?? credentialDefaultProvider,
-        defaultUserAgentProvider: config?.defaultUserAgentProvider ?? createDefaultUserAgentProvider({ serviceId: clientSharedValues.serviceId, clientVersion: packageInfo.version }),
-        maxAttempts: config?.maxAttempts ?? loadNodeConfig(NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config),
-        region: config?.region ?? loadNodeConfig(NODE_REGION_CONFIG_OPTIONS, { ...NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
-        requestHandler: RequestHandler.create(config?.requestHandler ?? defaultConfigProvider),
-        retryMode: config?.retryMode ??
-            loadNodeConfig({
-                ...NODE_RETRY_MODE_CONFIG_OPTIONS,
-                default: async () => (await defaultConfigProvider()).retryMode || DEFAULT_RETRY_MODE,
-            }, config),
-        sha256: config?.sha256 ?? Hash.bind(null, "sha256"),
-        streamCollector: config?.streamCollector ?? streamCollector,
-        useDualstackEndpoint: config?.useDualstackEndpoint ?? loadNodeConfig(NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
-        useFipsEndpoint: config?.useFipsEndpoint ?? loadNodeConfig(NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
-        userAgentAppId: config?.userAgentAppId ?? loadNodeConfig(NODE_APP_ID_CONFIG_OPTIONS, loaderConfig),
-    };
-};
-exports.getRuntimeConfig = getRuntimeConfig;
-
-
-/***/ }),
-
-/***/ 2180:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-const { AwsSdkSigV4Signer } = __nccwpck_require__(7523);
-const { AwsJson1_1Protocol } = __nccwpck_require__(7288);
-const { NoOpLogger } = __nccwpck_require__(2658);
-const { parseUrl } = __nccwpck_require__(3422);
-const { fromBase64, fromUtf8, toBase64, toUtf8 } = __nccwpck_require__(2430);
-const { defaultECRPUBLICHttpAuthSchemeProvider } = __nccwpck_require__(3182);
-const { defaultEndpointResolver } = __nccwpck_require__(6072);
-const { errorTypeRegistries } = __nccwpck_require__(3917);
-exports.getRuntimeConfig = (config) => {
-    return {
-        apiVersion: "2020-10-30",
-        base64Decoder: config?.base64Decoder ?? fromBase64,
-        base64Encoder: config?.base64Encoder ?? toBase64,
-        disableHostPrefix: config?.disableHostPrefix ?? false,
-        endpointProvider: config?.endpointProvider ?? defaultEndpointResolver,
-        extensions: config?.extensions ?? [],
-        httpAuthSchemeProvider: config?.httpAuthSchemeProvider ?? defaultECRPUBLICHttpAuthSchemeProvider,
-        httpAuthSchemes: config?.httpAuthSchemes ?? [
-            {
-                schemeId: "aws.auth#sigv4",
-                identityProvider: (ipc) => ipc.getIdentityProvider("aws.auth#sigv4"),
-                signer: new AwsSdkSigV4Signer(),
-            },
-        ],
-        logger: config?.logger ?? new NoOpLogger(),
-        protocol: config?.protocol ?? AwsJson1_1Protocol,
-        protocolSettings: config?.protocolSettings ?? {
-            defaultNamespace: "com.amazonaws.ecrpublic",
-            errorTypeRegistries,
-            xmlNamespace: "http://ecr-public.amazonaws.com/doc/2020-12-02/",
-            version: "2020-10-30",
-            serviceTarget: "SpencerFrontendService",
-        },
-        serviceId: config?.serviceId ?? "ECR PUBLIC",
-        urlParser: config?.urlParser ?? parseUrl,
-        utf8Decoder: config?.utf8Decoder ?? fromUtf8,
-        utf8Encoder: config?.utf8Encoder ?? toUtf8,
-    };
-};
-
-
-/***/ }),
-
-/***/ 3917:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-const _AD = "AuthorizationData";
-const _BCLA = "BatchCheckLayerAvailability";
-const _BCLAR = "BatchCheckLayerAvailabilityRequest";
-const _BCLARa = "BatchCheckLayerAvailabilityResponse";
-const _BDI = "BatchDeleteImage";
-const _BDIR = "BatchDeleteImageRequest";
-const _BDIRa = "BatchDeleteImageResponse";
-const _CLU = "CompleteLayerUpload";
-const _CLUR = "CompleteLayerUploadRequest";
-const _CLURo = "CompleteLayerUploadResponse";
-const _CR = "CreateRepository";
-const _CRR = "CreateRepositoryRequest";
-const _CRRr = "CreateRepositoryResponse";
-const _DI = "DescribeImages";
-const _DIR = "DescribeImagesRequest";
-const _DIRe = "DescribeImagesResponse";
-const _DIT = "DescribeImageTags";
-const _DITR = "DescribeImageTagsRequest";
-const _DITRe = "DescribeImageTagsResponse";
-const _DR = "DeleteRepository";
-const _DRP = "DeleteRepositoryPolicy";
-const _DRPR = "DeleteRepositoryPolicyRequest";
-const _DRPRe = "DeleteRepositoryPolicyResponse";
-const _DRR = "DeleteRepositoryRequest";
-const _DRRe = "DeleteRepositoryResponse";
-const _DRRes = "DescribeRegistriesRequest";
-const _DRResc = "DescribeRegistriesResponse";
-const _DRRescr = "DescribeRepositoriesRequest";
-const _DRRescri = "DescribeRepositoriesResponse";
-const _DRe = "DescribeRegistries";
-const _DRes = "DescribeRepositories";
-const _EUE = "EmptyUploadException";
-const _GAT = "GetAuthorizationToken";
-const _GATR = "GetAuthorizationTokenRequest";
-const _GATRe = "GetAuthorizationTokenResponse";
-const _GRCD = "GetRegistryCatalogData";
-const _GRCDR = "GetRegistryCatalogDataRequest";
-const _GRCDRe = "GetRegistryCatalogDataResponse";
-const _GRCDRet = "GetRepositoryCatalogDataRequest";
-const _GRCDRete = "GetRepositoryCatalogDataResponse";
-const _GRCDe = "GetRepositoryCatalogData";
-const _GRP = "GetRepositoryPolicy";
-const _GRPR = "GetRepositoryPolicyRequest";
-const _GRPRe = "GetRepositoryPolicyResponse";
-const _I = "Image";
-const _IAEE = "ImageAlreadyExistsException";
-const _ID = "ImageDetail";
-const _IDDNME = "ImageDigestDoesNotMatchException";
-const _IDL = "ImageDetailList";
-const _IF = "ImageFailure";
-const _IFL = "ImageFailureList";
-const _II = "ImageIdentifier";
-const _IIL = "ImageIdentifierList";
-const _ILE = "InvalidLayerException";
-const _ILPE = "InvalidLayerPartException";
-const _ILU = "InitiateLayerUpload";
-const _ILUR = "InitiateLayerUploadRequest";
-const _ILURn = "InitiateLayerUploadResponse";
-const _INFE = "ImageNotFoundException";
-const _IPE = "InvalidParameterException";
-const _ITAEE = "ImageTagAlreadyExistsException";
-const _ITD = "ImageTagDetail";
-const _ITDL = "ImageTagDetailList";
-const _ITPE = "InvalidTagParameterException";
-const _K = "Key";
-const _L = "Layer";
-const _LAEE = "LayerAlreadyExistsException";
-const _LEE = "LimitExceededException";
-const _LF = "LayerFailure";
-const _LFL = "LayerFailureList";
-const _LL = "LayerList";
-const _LNFE = "LayersNotFoundException";
-const _LPTSE = "LayerPartTooSmallException";
-const _LTFR = "ListTagsForResource";
-const _LTFRR = "ListTagsForResourceRequest";
-const _LTFRRi = "ListTagsForResourceResponse";
-const _PI = "PutImage";
-const _PIR = "PutImageRequest";
-const _PIRu = "PutImageResponse";
-const _PRCD = "PutRegistryCatalogData";
-const _PRCDR = "PutRegistryCatalogDataRequest";
-const _PRCDRu = "PutRegistryCatalogDataResponse";
-const _PRCDRut = "PutRepositoryCatalogDataRequest";
-const _PRCDRute = "PutRepositoryCatalogDataResponse";
-const _PRCDu = "PutRepositoryCatalogData";
-const _R = "Registry";
-const _RA = "RegistryAlias";
-const _RAEE = "RepositoryAlreadyExistsException";
-const _RAL = "RegistryAliasList";
-const _RCD = "RegistryCatalogData";
-const _RCDI = "RepositoryCatalogDataInput";
-const _RCDNFE = "RepositoryCatalogDataNotFoundException";
-const _RCDe = "RepositoryCatalogData";
-const _RID = "ReferencedImageDetail";
-const _RINFE = "ReferencedImagesNotFoundException";
-const _RL = "RegistryList";
-const _RLe = "RepositoryList";
-const _RNEE = "RepositoryNotEmptyException";
-const _RNFE = "RegistryNotFoundException";
-const _RNFEe = "RepositoryNotFoundException";
-const _RPNFE = "RepositoryPolicyNotFoundException";
-const _Re = "Repository";
-const _SE = "ServerException";
-const _SRP = "SetRepositoryPolicy";
-const _SRPR = "SetRepositoryPolicyRequest";
-const _SRPRe = "SetRepositoryPolicyResponse";
-const _T = "Tag";
-const _TL = "TagList";
-const _TMTE = "TooManyTagsException";
-const _TR = "TagResource";
-const _TRR = "TagResourceRequest";
-const _TRRa = "TagResourceResponse";
-const _UCE = "UnsupportedCommandException";
-const _ULP = "UploadLayerPart";
-const _ULPR = "UploadLayerPartRequest";
-const _ULPRp = "UploadLayerPartResponse";
-const _UNFE = "UploadNotFoundException";
-const _UR = "UntagResource";
-const _URR = "UntagResourceRequest";
-const _URRn = "UntagResourceResponse";
-const _V = "Value";
-const _a = "aliases";
-const _aD = "authorizationData";
-const _aMT = "artifactMediaType";
-const _aT = "authorizationToken";
-const _aTb = "aboutText";
-const _ar = "architectures";
-const _c = "client";
-const _cA = "createdAt";
-const _cD = "catalogData";
-const _d = "description";
-const _dN = "displayName";
-const _dRA = "defaultRegistryAlias";
-const _e = "error";
-const _eA = "expiresAt";
-const _f = "failures";
-const _fC = "failureCode";
-const _fR = "failureReason";
-const _fo = "force";
-const _i = "image";
-const _iD = "imageDetails";
-const _iDm = "imageDigest";
-const _iDma = "imageDetail";
-const _iI = "imageIds";
-const _iIm = "imageId";
-const _iM = "imageManifest";
-const _iMMT = "imageManifestMediaType";
-const _iPA = "imagePushedAt";
-const _iSIB = "imageSizeInBytes";
-const _iT = "imageTags";
-const _iTD = "imageTagDetails";
-const _iTm = "imageTag";
-const _l = "layers";
-const _lA = "layerAvailability";
-const _lBR = "lastByteReceived";
-const _lD = "layerDigests";
-const _lDa = "layerDigest";
-const _lIB = "logoImageBlob";
-const _lPB = "layerPartBlob";
-const _lS = "layerSize";
-const _lU = "logoUrl";
-const _lVBR = "lastValidByteReceived";
-const _m = "message";
-const _mC = "marketplaceCertified";
-const _mR = "maxResults";
-const _mT = "mediaType";
-const _n = "name";
-const _nT = "nextToken";
-const _oS = "operatingSystems";
-const _pFB = "partFirstByte";
-const _pLB = "partLastByte";
-const _pRA = "primaryRegistryAlias";
-const _pS = "partSize";
-const _pT = "policyText";
-const _r = "repository";
-const _rA = "resourceArn";
-const _rAe = "registryArn";
-const _rAep = "repositoryArn";
-const _rCD = "registryCatalogData";
-const _rI = "registryId";
-const _rN = "repositoryName";
-const _rNe = "repositoryNames";
-const _rU = "registryUri";
-const _rUe = "repositoryUri";
-const _re = "registries";
-const _rep = "repositories";
-const _s = "smithy.ts.sdk.synthetic.com.amazonaws.ecrpublic";
-const _se = "server";
-const _st = "status";
-const _t = "tags";
-const _tK = "tagKeys";
-const _uI = "uploadId";
-const _uT = "usageText";
-const _v = "verified";
-const n0 = "com.amazonaws.ecrpublic";
-const { TypeRegistry } = __nccwpck_require__(6890);
-const { ECRPUBLICServiceException } = __nccwpck_require__(3303);
-const { EmptyUploadException, ImageAlreadyExistsException, ImageDigestDoesNotMatchException, ImageNotFoundException, ImageTagAlreadyExistsException, InvalidLayerException, InvalidLayerPartException, InvalidParameterException, InvalidTagParameterException, LayerAlreadyExistsException, LayerPartTooSmallException, LayersNotFoundException, LimitExceededException, ReferencedImagesNotFoundException, RegistryNotFoundException, RepositoryAlreadyExistsException, RepositoryCatalogDataNotFoundException, RepositoryNotEmptyException, RepositoryNotFoundException, RepositoryPolicyNotFoundException, ServerException, TooManyTagsException, UnsupportedCommandException, UploadNotFoundException } = __nccwpck_require__(977);
-const _s_registry = TypeRegistry.for(_s);
-const ECRPUBLICServiceException$ = [-3, _s, "ECRPUBLICServiceException", 0, [], []];
-exports.ECRPUBLICServiceException$ = ECRPUBLICServiceException$;
-_s_registry.registerError(ECRPUBLICServiceException$, ECRPUBLICServiceException);
-const n0_registry = TypeRegistry.for(n0);
-const EmptyUploadException$ = [-3, n0, _EUE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.EmptyUploadException$ = EmptyUploadException$;
-n0_registry.registerError(EmptyUploadException$, EmptyUploadException);
-const ImageAlreadyExistsException$ = [-3, n0, _IAEE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.ImageAlreadyExistsException$ = ImageAlreadyExistsException$;
-n0_registry.registerError(ImageAlreadyExistsException$, ImageAlreadyExistsException);
-const ImageDigestDoesNotMatchException$ = [-3, n0, _IDDNME,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.ImageDigestDoesNotMatchException$ = ImageDigestDoesNotMatchException$;
-n0_registry.registerError(ImageDigestDoesNotMatchException$, ImageDigestDoesNotMatchException);
-const ImageNotFoundException$ = [-3, n0, _INFE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.ImageNotFoundException$ = ImageNotFoundException$;
-n0_registry.registerError(ImageNotFoundException$, ImageNotFoundException);
-const ImageTagAlreadyExistsException$ = [-3, n0, _ITAEE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.ImageTagAlreadyExistsException$ = ImageTagAlreadyExistsException$;
-n0_registry.registerError(ImageTagAlreadyExistsException$, ImageTagAlreadyExistsException);
-const InvalidLayerException$ = [-3, n0, _ILE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.InvalidLayerException$ = InvalidLayerException$;
-n0_registry.registerError(InvalidLayerException$, InvalidLayerException);
-const InvalidLayerPartException$ = [-3, n0, _ILPE,
-    { [_e]: _c },
-    [_rI, _rN, _uI, _lVBR, _m],
-    [0, 0, 0, 1, 0]
-];
-exports.InvalidLayerPartException$ = InvalidLayerPartException$;
-n0_registry.registerError(InvalidLayerPartException$, InvalidLayerPartException);
-const InvalidParameterException$ = [-3, n0, _IPE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.InvalidParameterException$ = InvalidParameterException$;
-n0_registry.registerError(InvalidParameterException$, InvalidParameterException);
-const InvalidTagParameterException$ = [-3, n0, _ITPE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.InvalidTagParameterException$ = InvalidTagParameterException$;
-n0_registry.registerError(InvalidTagParameterException$, InvalidTagParameterException);
-const LayerAlreadyExistsException$ = [-3, n0, _LAEE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.LayerAlreadyExistsException$ = LayerAlreadyExistsException$;
-n0_registry.registerError(LayerAlreadyExistsException$, LayerAlreadyExistsException);
-const LayerPartTooSmallException$ = [-3, n0, _LPTSE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.LayerPartTooSmallException$ = LayerPartTooSmallException$;
-n0_registry.registerError(LayerPartTooSmallException$, LayerPartTooSmallException);
-const LayersNotFoundException$ = [-3, n0, _LNFE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.LayersNotFoundException$ = LayersNotFoundException$;
-n0_registry.registerError(LayersNotFoundException$, LayersNotFoundException);
-const LimitExceededException$ = [-3, n0, _LEE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.LimitExceededException$ = LimitExceededException$;
-n0_registry.registerError(LimitExceededException$, LimitExceededException);
-const ReferencedImagesNotFoundException$ = [-3, n0, _RINFE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.ReferencedImagesNotFoundException$ = ReferencedImagesNotFoundException$;
-n0_registry.registerError(ReferencedImagesNotFoundException$, ReferencedImagesNotFoundException);
-const RegistryNotFoundException$ = [-3, n0, _RNFE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.RegistryNotFoundException$ = RegistryNotFoundException$;
-n0_registry.registerError(RegistryNotFoundException$, RegistryNotFoundException);
-const RepositoryAlreadyExistsException$ = [-3, n0, _RAEE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.RepositoryAlreadyExistsException$ = RepositoryAlreadyExistsException$;
-n0_registry.registerError(RepositoryAlreadyExistsException$, RepositoryAlreadyExistsException);
-const RepositoryCatalogDataNotFoundException$ = [-3, n0, _RCDNFE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.RepositoryCatalogDataNotFoundException$ = RepositoryCatalogDataNotFoundException$;
-n0_registry.registerError(RepositoryCatalogDataNotFoundException$, RepositoryCatalogDataNotFoundException);
-const RepositoryNotEmptyException$ = [-3, n0, _RNEE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.RepositoryNotEmptyException$ = RepositoryNotEmptyException$;
-n0_registry.registerError(RepositoryNotEmptyException$, RepositoryNotEmptyException);
-const RepositoryNotFoundException$ = [-3, n0, _RNFEe,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.RepositoryNotFoundException$ = RepositoryNotFoundException$;
-n0_registry.registerError(RepositoryNotFoundException$, RepositoryNotFoundException);
-const RepositoryPolicyNotFoundException$ = [-3, n0, _RPNFE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.RepositoryPolicyNotFoundException$ = RepositoryPolicyNotFoundException$;
-n0_registry.registerError(RepositoryPolicyNotFoundException$, RepositoryPolicyNotFoundException);
-const ServerException$ = [-3, n0, _SE,
-    { [_e]: _se },
-    [_m],
-    [0]
-];
-exports.ServerException$ = ServerException$;
-n0_registry.registerError(ServerException$, ServerException);
-const TooManyTagsException$ = [-3, n0, _TMTE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.TooManyTagsException$ = TooManyTagsException$;
-n0_registry.registerError(TooManyTagsException$, TooManyTagsException);
-const UnsupportedCommandException$ = [-3, n0, _UCE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.UnsupportedCommandException$ = UnsupportedCommandException$;
-n0_registry.registerError(UnsupportedCommandException$, UnsupportedCommandException);
-const UploadNotFoundException$ = [-3, n0, _UNFE,
-    { [_e]: _c },
-    [_m],
-    [0]
-];
-exports.UploadNotFoundException$ = UploadNotFoundException$;
-n0_registry.registerError(UploadNotFoundException$, UploadNotFoundException);
-exports.errorTypeRegistries = [
-    _s_registry,
-    n0_registry,
-];
-const AuthorizationData$ = [3, n0, _AD,
-    0,
-    [_aT, _eA],
-    [0, 4]
-];
-exports.AuthorizationData$ = AuthorizationData$;
-const BatchCheckLayerAvailabilityRequest$ = [3, n0, _BCLAR,
-    0,
-    [_rN, _lD, _rI],
-    [0, 64 | 0, 0], 2
-];
-exports.BatchCheckLayerAvailabilityRequest$ = BatchCheckLayerAvailabilityRequest$;
-const BatchCheckLayerAvailabilityResponse$ = [3, n0, _BCLARa,
-    0,
-    [_l, _f],
-    [() => LayerList, () => LayerFailureList]
-];
-exports.BatchCheckLayerAvailabilityResponse$ = BatchCheckLayerAvailabilityResponse$;
-const BatchDeleteImageRequest$ = [3, n0, _BDIR,
-    0,
-    [_rN, _iI, _rI],
-    [0, () => ImageIdentifierList, 0], 2
-];
-exports.BatchDeleteImageRequest$ = BatchDeleteImageRequest$;
-const BatchDeleteImageResponse$ = [3, n0, _BDIRa,
-    0,
-    [_iI, _f],
-    [() => ImageIdentifierList, () => ImageFailureList]
-];
-exports.BatchDeleteImageResponse$ = BatchDeleteImageResponse$;
-const CompleteLayerUploadRequest$ = [3, n0, _CLUR,
-    0,
-    [_rN, _uI, _lD, _rI],
-    [0, 0, 64 | 0, 0], 3
-];
-exports.CompleteLayerUploadRequest$ = CompleteLayerUploadRequest$;
-const CompleteLayerUploadResponse$ = [3, n0, _CLURo,
-    0,
-    [_rI, _rN, _uI, _lDa],
-    [0, 0, 0, 0]
-];
-exports.CompleteLayerUploadResponse$ = CompleteLayerUploadResponse$;
-const CreateRepositoryRequest$ = [3, n0, _CRR,
-    0,
-    [_rN, _cD, _t],
-    [0, () => RepositoryCatalogDataInput$, () => TagList], 1
-];
-exports.CreateRepositoryRequest$ = CreateRepositoryRequest$;
-const CreateRepositoryResponse$ = [3, n0, _CRRr,
-    0,
-    [_r, _cD],
-    [() => Repository$, () => RepositoryCatalogData$]
-];
-exports.CreateRepositoryResponse$ = CreateRepositoryResponse$;
-const DeleteRepositoryPolicyRequest$ = [3, n0, _DRPR,
-    0,
-    [_rN, _rI],
-    [0, 0], 1
-];
-exports.DeleteRepositoryPolicyRequest$ = DeleteRepositoryPolicyRequest$;
-const DeleteRepositoryPolicyResponse$ = [3, n0, _DRPRe,
-    0,
-    [_rI, _rN, _pT],
-    [0, 0, 0]
-];
-exports.DeleteRepositoryPolicyResponse$ = DeleteRepositoryPolicyResponse$;
-const DeleteRepositoryRequest$ = [3, n0, _DRR,
-    0,
-    [_rN, _rI, _fo],
-    [0, 0, 2], 1
-];
-exports.DeleteRepositoryRequest$ = DeleteRepositoryRequest$;
-const DeleteRepositoryResponse$ = [3, n0, _DRRe,
-    0,
-    [_r],
-    [() => Repository$]
-];
-exports.DeleteRepositoryResponse$ = DeleteRepositoryResponse$;
-const DescribeImagesRequest$ = [3, n0, _DIR,
-    0,
-    [_rN, _rI, _iI, _nT, _mR],
-    [0, 0, () => ImageIdentifierList, 0, 1], 1
-];
-exports.DescribeImagesRequest$ = DescribeImagesRequest$;
-const DescribeImagesResponse$ = [3, n0, _DIRe,
-    0,
-    [_iD, _nT],
-    [() => ImageDetailList, 0]
-];
-exports.DescribeImagesResponse$ = DescribeImagesResponse$;
-const DescribeImageTagsRequest$ = [3, n0, _DITR,
-    0,
-    [_rN, _rI, _nT, _mR],
-    [0, 0, 0, 1], 1
-];
-exports.DescribeImageTagsRequest$ = DescribeImageTagsRequest$;
-const DescribeImageTagsResponse$ = [3, n0, _DITRe,
-    0,
-    [_iTD, _nT],
-    [() => ImageTagDetailList, 0]
-];
-exports.DescribeImageTagsResponse$ = DescribeImageTagsResponse$;
-const DescribeRegistriesRequest$ = [3, n0, _DRRes,
-    0,
-    [_nT, _mR],
-    [0, 1]
-];
-exports.DescribeRegistriesRequest$ = DescribeRegistriesRequest$;
-const DescribeRegistriesResponse$ = [3, n0, _DRResc,
-    0,
-    [_re, _nT],
-    [() => RegistryList, 0], 1
-];
-exports.DescribeRegistriesResponse$ = DescribeRegistriesResponse$;
-const DescribeRepositoriesRequest$ = [3, n0, _DRRescr,
-    0,
-    [_rI, _rNe, _nT, _mR],
-    [0, 64 | 0, 0, 1]
-];
-exports.DescribeRepositoriesRequest$ = DescribeRepositoriesRequest$;
-const DescribeRepositoriesResponse$ = [3, n0, _DRRescri,
-    0,
-    [_rep, _nT],
-    [() => RepositoryList, 0]
-];
-exports.DescribeRepositoriesResponse$ = DescribeRepositoriesResponse$;
-const GetAuthorizationTokenRequest$ = [3, n0, _GATR,
-    0,
-    [],
-    []
-];
-exports.GetAuthorizationTokenRequest$ = GetAuthorizationTokenRequest$;
-const GetAuthorizationTokenResponse$ = [3, n0, _GATRe,
-    0,
-    [_aD],
-    [() => AuthorizationData$]
-];
-exports.GetAuthorizationTokenResponse$ = GetAuthorizationTokenResponse$;
-const GetRegistryCatalogDataRequest$ = [3, n0, _GRCDR,
-    0,
-    [],
-    []
-];
-exports.GetRegistryCatalogDataRequest$ = GetRegistryCatalogDataRequest$;
-const GetRegistryCatalogDataResponse$ = [3, n0, _GRCDRe,
-    0,
-    [_rCD],
-    [() => RegistryCatalogData$], 1
-];
-exports.GetRegistryCatalogDataResponse$ = GetRegistryCatalogDataResponse$;
-const GetRepositoryCatalogDataRequest$ = [3, n0, _GRCDRet,
-    0,
-    [_rN, _rI],
-    [0, 0], 1
-];
-exports.GetRepositoryCatalogDataRequest$ = GetRepositoryCatalogDataRequest$;
-const GetRepositoryCatalogDataResponse$ = [3, n0, _GRCDRete,
-    0,
-    [_cD],
-    [() => RepositoryCatalogData$]
-];
-exports.GetRepositoryCatalogDataResponse$ = GetRepositoryCatalogDataResponse$;
-const GetRepositoryPolicyRequest$ = [3, n0, _GRPR,
-    0,
-    [_rN, _rI],
-    [0, 0], 1
-];
-exports.GetRepositoryPolicyRequest$ = GetRepositoryPolicyRequest$;
-const GetRepositoryPolicyResponse$ = [3, n0, _GRPRe,
-    0,
-    [_rI, _rN, _pT],
-    [0, 0, 0]
-];
-exports.GetRepositoryPolicyResponse$ = GetRepositoryPolicyResponse$;
-const Image$ = [3, n0, _I,
-    0,
-    [_rI, _rN, _iIm, _iM, _iMMT],
-    [0, 0, () => ImageIdentifier$, 0, 0]
-];
-exports.Image$ = Image$;
-const ImageDetail$ = [3, n0, _ID,
-    0,
-    [_rI, _rN, _iDm, _iT, _iSIB, _iPA, _iMMT, _aMT],
-    [0, 0, 0, 64 | 0, 1, 4, 0, 0]
-];
-exports.ImageDetail$ = ImageDetail$;
-const ImageFailure$ = [3, n0, _IF,
-    0,
-    [_iIm, _fC, _fR],
-    [() => ImageIdentifier$, 0, 0]
-];
-exports.ImageFailure$ = ImageFailure$;
-const ImageIdentifier$ = [3, n0, _II,
-    0,
-    [_iDm, _iTm],
-    [0, 0]
-];
-exports.ImageIdentifier$ = ImageIdentifier$;
-const ImageTagDetail$ = [3, n0, _ITD,
-    0,
-    [_iTm, _cA, _iDma],
-    [0, 4, () => ReferencedImageDetail$]
-];
-exports.ImageTagDetail$ = ImageTagDetail$;
-const InitiateLayerUploadRequest$ = [3, n0, _ILUR,
-    0,
-    [_rN, _rI],
-    [0, 0], 1
-];
-exports.InitiateLayerUploadRequest$ = InitiateLayerUploadRequest$;
-const InitiateLayerUploadResponse$ = [3, n0, _ILURn,
-    0,
-    [_uI, _pS],
-    [0, 1]
-];
-exports.InitiateLayerUploadResponse$ = InitiateLayerUploadResponse$;
-const Layer$ = [3, n0, _L,
-    0,
-    [_lDa, _lA, _lS, _mT],
-    [0, 0, 1, 0]
-];
-exports.Layer$ = Layer$;
-const LayerFailure$ = [3, n0, _LF,
-    0,
-    [_lDa, _fC, _fR],
-    [0, 0, 0]
-];
-exports.LayerFailure$ = LayerFailure$;
-const ListTagsForResourceRequest$ = [3, n0, _LTFRR,
-    0,
-    [_rA],
-    [0], 1
-];
-exports.ListTagsForResourceRequest$ = ListTagsForResourceRequest$;
-const ListTagsForResourceResponse$ = [3, n0, _LTFRRi,
-    0,
-    [_t],
-    [() => TagList]
-];
-exports.ListTagsForResourceResponse$ = ListTagsForResourceResponse$;
-const PutImageRequest$ = [3, n0, _PIR,
-    0,
-    [_rN, _iM, _rI, _iMMT, _iTm, _iDm],
-    [0, 0, 0, 0, 0, 0], 2
-];
-exports.PutImageRequest$ = PutImageRequest$;
-const PutImageResponse$ = [3, n0, _PIRu,
-    0,
-    [_i],
-    [() => Image$]
-];
-exports.PutImageResponse$ = PutImageResponse$;
-const PutRegistryCatalogDataRequest$ = [3, n0, _PRCDR,
-    0,
-    [_dN],
-    [0]
-];
-exports.PutRegistryCatalogDataRequest$ = PutRegistryCatalogDataRequest$;
-const PutRegistryCatalogDataResponse$ = [3, n0, _PRCDRu,
-    0,
-    [_rCD],
-    [() => RegistryCatalogData$], 1
-];
-exports.PutRegistryCatalogDataResponse$ = PutRegistryCatalogDataResponse$;
-const PutRepositoryCatalogDataRequest$ = [3, n0, _PRCDRut,
-    0,
-    [_rN, _cD, _rI],
-    [0, () => RepositoryCatalogDataInput$, 0], 2
-];
-exports.PutRepositoryCatalogDataRequest$ = PutRepositoryCatalogDataRequest$;
-const PutRepositoryCatalogDataResponse$ = [3, n0, _PRCDRute,
-    0,
-    [_cD],
-    [() => RepositoryCatalogData$]
-];
-exports.PutRepositoryCatalogDataResponse$ = PutRepositoryCatalogDataResponse$;
-const ReferencedImageDetail$ = [3, n0, _RID,
-    0,
-    [_iDm, _iSIB, _iPA, _iMMT, _aMT],
-    [0, 1, 4, 0, 0]
-];
-exports.ReferencedImageDetail$ = ReferencedImageDetail$;
-const Registry$ = [3, n0, _R,
-    0,
-    [_rI, _rAe, _rU, _v, _a],
-    [0, 0, 0, 2, () => RegistryAliasList], 5
-];
-exports.Registry$ = Registry$;
-const RegistryAlias$ = [3, n0, _RA,
-    0,
-    [_n, _st, _pRA, _dRA],
-    [0, 0, 2, 2], 4
-];
-exports.RegistryAlias$ = RegistryAlias$;
-const RegistryCatalogData$ = [3, n0, _RCD,
-    0,
-    [_dN],
-    [0]
-];
-exports.RegistryCatalogData$ = RegistryCatalogData$;
-const Repository$ = [3, n0, _Re,
-    0,
-    [_rAep, _rI, _rN, _rUe, _cA],
-    [0, 0, 0, 0, 4]
-];
-exports.Repository$ = Repository$;
-const RepositoryCatalogData$ = [3, n0, _RCDe,
-    0,
-    [_d, _ar, _oS, _lU, _aTb, _uT, _mC],
-    [0, 64 | 0, 64 | 0, 0, 0, 0, 2]
-];
-exports.RepositoryCatalogData$ = RepositoryCatalogData$;
-const RepositoryCatalogDataInput$ = [3, n0, _RCDI,
-    0,
-    [_d, _ar, _oS, _lIB, _aTb, _uT],
-    [0, 64 | 0, 64 | 0, 21, 0, 0]
-];
-exports.RepositoryCatalogDataInput$ = RepositoryCatalogDataInput$;
-const SetRepositoryPolicyRequest$ = [3, n0, _SRPR,
-    0,
-    [_rN, _pT, _rI, _fo],
-    [0, 0, 0, 2], 2
-];
-exports.SetRepositoryPolicyRequest$ = SetRepositoryPolicyRequest$;
-const SetRepositoryPolicyResponse$ = [3, n0, _SRPRe,
-    0,
-    [_rI, _rN, _pT],
-    [0, 0, 0]
-];
-exports.SetRepositoryPolicyResponse$ = SetRepositoryPolicyResponse$;
-const Tag$ = [3, n0, _T,
-    0,
-    [_K, _V],
-    [0, 0]
-];
-exports.Tag$ = Tag$;
-const TagResourceRequest$ = [3, n0, _TRR,
-    0,
-    [_rA, _t],
-    [0, () => TagList], 2
-];
-exports.TagResourceRequest$ = TagResourceRequest$;
-const TagResourceResponse$ = [3, n0, _TRRa,
-    0,
-    [],
-    []
-];
-exports.TagResourceResponse$ = TagResourceResponse$;
-const UntagResourceRequest$ = [3, n0, _URR,
-    0,
-    [_rA, _tK],
-    [0, 64 | 0], 2
-];
-exports.UntagResourceRequest$ = UntagResourceRequest$;
-const UntagResourceResponse$ = [3, n0, _URRn,
-    0,
-    [],
-    []
-];
-exports.UntagResourceResponse$ = UntagResourceResponse$;
-const UploadLayerPartRequest$ = [3, n0, _ULPR,
-    0,
-    [_rN, _uI, _pFB, _pLB, _lPB, _rI],
-    [0, 0, 1, 1, 21, 0], 5
-];
-exports.UploadLayerPartRequest$ = UploadLayerPartRequest$;
-const UploadLayerPartResponse$ = [3, n0, _ULPRp,
-    0,
-    [_rI, _rN, _uI, _lBR],
-    [0, 0, 0, 1]
-];
-exports.UploadLayerPartResponse$ = UploadLayerPartResponse$;
-var ArchitectureList = (/* unused pure expression or super */ null && (64 | 0));
-var BatchedOperationLayerDigestList = (/* unused pure expression or super */ null && (64 | 0));
-var ImageDetailList = [1, n0, _IDL,
-    0, () => ImageDetail$
-];
-var ImageFailureList = [1, n0, _IFL,
-    0, () => ImageFailure$
-];
-var ImageIdentifierList = [1, n0, _IIL,
-    0, () => ImageIdentifier$
-];
-var ImageTagDetailList = [1, n0, _ITDL,
-    0, () => ImageTagDetail$
-];
-var ImageTagList = (/* unused pure expression or super */ null && (64 | 0));
-var LayerDigestList = (/* unused pure expression or super */ null && (64 | 0));
-var LayerFailureList = [1, n0, _LFL,
-    0, () => LayerFailure$
-];
-var LayerList = [1, n0, _LL,
-    0, () => Layer$
-];
-var OperatingSystemList = (/* unused pure expression or super */ null && (64 | 0));
-var RegistryAliasList = [1, n0, _RAL,
-    0, () => RegistryAlias$
-];
-var RegistryList = [1, n0, _RL,
-    0, () => Registry$
-];
-var RepositoryList = [1, n0, _RLe,
-    0, () => Repository$
-];
-var RepositoryNameList = (/* unused pure expression or super */ null && (64 | 0));
-var TagKeyList = (/* unused pure expression or super */ null && (64 | 0));
-var TagList = [1, n0, _TL,
-    0, () => Tag$
-];
-exports.BatchCheckLayerAvailability$ = [9, n0, _BCLA,
-    0, () => BatchCheckLayerAvailabilityRequest$, () => BatchCheckLayerAvailabilityResponse$
-];
-exports.BatchDeleteImage$ = [9, n0, _BDI,
-    0, () => BatchDeleteImageRequest$, () => BatchDeleteImageResponse$
-];
-exports.CompleteLayerUpload$ = [9, n0, _CLU,
-    0, () => CompleteLayerUploadRequest$, () => CompleteLayerUploadResponse$
-];
-exports.CreateRepository$ = [9, n0, _CR,
-    0, () => CreateRepositoryRequest$, () => CreateRepositoryResponse$
-];
-exports.DeleteRepository$ = [9, n0, _DR,
-    0, () => DeleteRepositoryRequest$, () => DeleteRepositoryResponse$
-];
-exports.DeleteRepositoryPolicy$ = [9, n0, _DRP,
-    0, () => DeleteRepositoryPolicyRequest$, () => DeleteRepositoryPolicyResponse$
-];
-exports.DescribeImages$ = [9, n0, _DI,
-    0, () => DescribeImagesRequest$, () => DescribeImagesResponse$
-];
-exports.DescribeImageTags$ = [9, n0, _DIT,
-    0, () => DescribeImageTagsRequest$, () => DescribeImageTagsResponse$
-];
-exports.DescribeRegistries$ = [9, n0, _DRe,
-    0, () => DescribeRegistriesRequest$, () => DescribeRegistriesResponse$
-];
-exports.DescribeRepositories$ = [9, n0, _DRes,
-    0, () => DescribeRepositoriesRequest$, () => DescribeRepositoriesResponse$
-];
-exports.GetAuthorizationToken$ = [9, n0, _GAT,
-    0, () => GetAuthorizationTokenRequest$, () => GetAuthorizationTokenResponse$
-];
-exports.GetRegistryCatalogData$ = [9, n0, _GRCD,
-    0, () => GetRegistryCatalogDataRequest$, () => GetRegistryCatalogDataResponse$
-];
-exports.GetRepositoryCatalogData$ = [9, n0, _GRCDe,
-    0, () => GetRepositoryCatalogDataRequest$, () => GetRepositoryCatalogDataResponse$
-];
-exports.GetRepositoryPolicy$ = [9, n0, _GRP,
-    0, () => GetRepositoryPolicyRequest$, () => GetRepositoryPolicyResponse$
-];
-exports.InitiateLayerUpload$ = [9, n0, _ILU,
-    0, () => InitiateLayerUploadRequest$, () => InitiateLayerUploadResponse$
-];
-exports.ListTagsForResource$ = [9, n0, _LTFR,
-    0, () => ListTagsForResourceRequest$, () => ListTagsForResourceResponse$
-];
-exports.PutImage$ = [9, n0, _PI,
-    0, () => PutImageRequest$, () => PutImageResponse$
-];
-exports.PutRegistryCatalogData$ = [9, n0, _PRCD,
-    0, () => PutRegistryCatalogDataRequest$, () => PutRegistryCatalogDataResponse$
-];
-exports.PutRepositoryCatalogData$ = [9, n0, _PRCDu,
-    0, () => PutRepositoryCatalogDataRequest$, () => PutRepositoryCatalogDataResponse$
-];
-exports.SetRepositoryPolicy$ = [9, n0, _SRP,
-    0, () => SetRepositoryPolicyRequest$, () => SetRepositoryPolicyResponse$
-];
-exports.TagResource$ = [9, n0, _TR,
-    0, () => TagResourceRequest$, () => TagResourceResponse$
-];
-exports.UntagResource$ = [9, n0, _UR,
-    0, () => UntagResourceRequest$, () => UntagResourceResponse$
-];
-exports.UploadLayerPart$ = [9, n0, _ULP,
-    0, () => UploadLayerPartRequest$, () => UploadLayerPartResponse$
-];
+__webpack_unused_export__ = AuthorizationData$;
+__webpack_unused_export__ = BatchCheckLayerAvailability$;
+__webpack_unused_export__ = BatchCheckLayerAvailabilityCommand;
+__webpack_unused_export__ = BatchCheckLayerAvailabilityRequest$;
+__webpack_unused_export__ = BatchCheckLayerAvailabilityResponse$;
+__webpack_unused_export__ = BatchDeleteImage$;
+__webpack_unused_export__ = BatchDeleteImageCommand;
+__webpack_unused_export__ = BatchDeleteImageRequest$;
+__webpack_unused_export__ = BatchDeleteImageResponse$;
+__webpack_unused_export__ = CompleteLayerUpload$;
+__webpack_unused_export__ = CompleteLayerUploadCommand;
+__webpack_unused_export__ = CompleteLayerUploadRequest$;
+__webpack_unused_export__ = CompleteLayerUploadResponse$;
+__webpack_unused_export__ = CreateRepository$;
+__webpack_unused_export__ = CreateRepositoryCommand;
+__webpack_unused_export__ = CreateRepositoryRequest$;
+__webpack_unused_export__ = CreateRepositoryResponse$;
+__webpack_unused_export__ = DeleteRepository$;
+__webpack_unused_export__ = DeleteRepositoryCommand;
+__webpack_unused_export__ = DeleteRepositoryPolicy$;
+__webpack_unused_export__ = DeleteRepositoryPolicyCommand;
+__webpack_unused_export__ = DeleteRepositoryPolicyRequest$;
+__webpack_unused_export__ = DeleteRepositoryPolicyResponse$;
+__webpack_unused_export__ = DeleteRepositoryRequest$;
+__webpack_unused_export__ = DeleteRepositoryResponse$;
+__webpack_unused_export__ = DescribeImageTags$;
+__webpack_unused_export__ = DescribeImageTagsCommand;
+__webpack_unused_export__ = DescribeImageTagsRequest$;
+__webpack_unused_export__ = DescribeImageTagsResponse$;
+__webpack_unused_export__ = DescribeImages$;
+__webpack_unused_export__ = DescribeImagesCommand;
+__webpack_unused_export__ = DescribeImagesRequest$;
+__webpack_unused_export__ = DescribeImagesResponse$;
+__webpack_unused_export__ = DescribeRegistries$;
+__webpack_unused_export__ = DescribeRegistriesCommand;
+__webpack_unused_export__ = DescribeRegistriesRequest$;
+__webpack_unused_export__ = DescribeRegistriesResponse$;
+__webpack_unused_export__ = DescribeRepositories$;
+__webpack_unused_export__ = DescribeRepositoriesCommand;
+__webpack_unused_export__ = DescribeRepositoriesRequest$;
+__webpack_unused_export__ = DescribeRepositoriesResponse$;
+__webpack_unused_export__ = ECRPUBLIC;
+exports.Rr = ECRPUBLICClient;
+__webpack_unused_export__ = ECRPUBLICServiceException;
+__webpack_unused_export__ = ECRPUBLICServiceException$;
+__webpack_unused_export__ = EmptyUploadException;
+__webpack_unused_export__ = EmptyUploadException$;
+__webpack_unused_export__ = GetAuthorizationToken$;
+exports.Eu = GetAuthorizationTokenCommand;
+__webpack_unused_export__ = GetAuthorizationTokenRequest$;
+__webpack_unused_export__ = GetAuthorizationTokenResponse$;
+__webpack_unused_export__ = GetRegistryCatalogData$;
+__webpack_unused_export__ = GetRegistryCatalogDataCommand;
+__webpack_unused_export__ = GetRegistryCatalogDataRequest$;
+__webpack_unused_export__ = GetRegistryCatalogDataResponse$;
+__webpack_unused_export__ = GetRepositoryCatalogData$;
+__webpack_unused_export__ = GetRepositoryCatalogDataCommand;
+__webpack_unused_export__ = GetRepositoryCatalogDataRequest$;
+__webpack_unused_export__ = GetRepositoryCatalogDataResponse$;
+__webpack_unused_export__ = GetRepositoryPolicy$;
+__webpack_unused_export__ = GetRepositoryPolicyCommand;
+__webpack_unused_export__ = GetRepositoryPolicyRequest$;
+__webpack_unused_export__ = GetRepositoryPolicyResponse$;
+__webpack_unused_export__ = Image$;
+__webpack_unused_export__ = ImageAlreadyExistsException;
+__webpack_unused_export__ = ImageAlreadyExistsException$;
+__webpack_unused_export__ = ImageDetail$;
+__webpack_unused_export__ = ImageDigestDoesNotMatchException;
+__webpack_unused_export__ = ImageDigestDoesNotMatchException$;
+__webpack_unused_export__ = ImageFailure$;
+__webpack_unused_export__ = ImageFailureCode;
+__webpack_unused_export__ = ImageIdentifier$;
+__webpack_unused_export__ = ImageNotFoundException;
+__webpack_unused_export__ = ImageNotFoundException$;
+__webpack_unused_export__ = ImageTagAlreadyExistsException;
+__webpack_unused_export__ = ImageTagAlreadyExistsException$;
+__webpack_unused_export__ = ImageTagDetail$;
+__webpack_unused_export__ = InitiateLayerUpload$;
+__webpack_unused_export__ = InitiateLayerUploadCommand;
+__webpack_unused_export__ = InitiateLayerUploadRequest$;
+__webpack_unused_export__ = InitiateLayerUploadResponse$;
+__webpack_unused_export__ = InvalidLayerException;
+__webpack_unused_export__ = InvalidLayerException$;
+__webpack_unused_export__ = InvalidLayerPartException;
+__webpack_unused_export__ = InvalidLayerPartException$;
+__webpack_unused_export__ = InvalidParameterException;
+__webpack_unused_export__ = InvalidParameterException$;
+__webpack_unused_export__ = InvalidTagParameterException;
+__webpack_unused_export__ = InvalidTagParameterException$;
+__webpack_unused_export__ = Layer$;
+__webpack_unused_export__ = LayerAlreadyExistsException;
+__webpack_unused_export__ = LayerAlreadyExistsException$;
+__webpack_unused_export__ = LayerAvailability;
+__webpack_unused_export__ = LayerFailure$;
+__webpack_unused_export__ = LayerFailureCode;
+__webpack_unused_export__ = LayerPartTooSmallException;
+__webpack_unused_export__ = LayerPartTooSmallException$;
+__webpack_unused_export__ = LayersNotFoundException;
+__webpack_unused_export__ = LayersNotFoundException$;
+__webpack_unused_export__ = LimitExceededException;
+__webpack_unused_export__ = LimitExceededException$;
+__webpack_unused_export__ = ListTagsForResource$;
+__webpack_unused_export__ = ListTagsForResourceCommand;
+__webpack_unused_export__ = ListTagsForResourceRequest$;
+__webpack_unused_export__ = ListTagsForResourceResponse$;
+__webpack_unused_export__ = PutImage$;
+__webpack_unused_export__ = PutImageCommand;
+__webpack_unused_export__ = PutImageRequest$;
+__webpack_unused_export__ = PutImageResponse$;
+__webpack_unused_export__ = PutRegistryCatalogData$;
+__webpack_unused_export__ = PutRegistryCatalogDataCommand;
+__webpack_unused_export__ = PutRegistryCatalogDataRequest$;
+__webpack_unused_export__ = PutRegistryCatalogDataResponse$;
+__webpack_unused_export__ = PutRepositoryCatalogData$;
+__webpack_unused_export__ = PutRepositoryCatalogDataCommand;
+__webpack_unused_export__ = PutRepositoryCatalogDataRequest$;
+__webpack_unused_export__ = PutRepositoryCatalogDataResponse$;
+__webpack_unused_export__ = ReferencedImageDetail$;
+__webpack_unused_export__ = ReferencedImagesNotFoundException;
+__webpack_unused_export__ = ReferencedImagesNotFoundException$;
+__webpack_unused_export__ = Registry$;
+__webpack_unused_export__ = RegistryAlias$;
+__webpack_unused_export__ = RegistryAliasStatus;
+__webpack_unused_export__ = RegistryCatalogData$;
+__webpack_unused_export__ = RegistryNotFoundException;
+__webpack_unused_export__ = RegistryNotFoundException$;
+__webpack_unused_export__ = Repository$;
+__webpack_unused_export__ = RepositoryAlreadyExistsException;
+__webpack_unused_export__ = RepositoryAlreadyExistsException$;
+__webpack_unused_export__ = RepositoryCatalogData$;
+__webpack_unused_export__ = RepositoryCatalogDataInput$;
+__webpack_unused_export__ = RepositoryCatalogDataNotFoundException;
+__webpack_unused_export__ = RepositoryCatalogDataNotFoundException$;
+__webpack_unused_export__ = RepositoryNotEmptyException;
+__webpack_unused_export__ = RepositoryNotEmptyException$;
+__webpack_unused_export__ = RepositoryNotFoundException;
+__webpack_unused_export__ = RepositoryNotFoundException$;
+__webpack_unused_export__ = RepositoryPolicyNotFoundException;
+__webpack_unused_export__ = RepositoryPolicyNotFoundException$;
+__webpack_unused_export__ = ServerException;
+__webpack_unused_export__ = ServerException$;
+__webpack_unused_export__ = SetRepositoryPolicy$;
+__webpack_unused_export__ = SetRepositoryPolicyCommand;
+__webpack_unused_export__ = SetRepositoryPolicyRequest$;
+__webpack_unused_export__ = SetRepositoryPolicyResponse$;
+__webpack_unused_export__ = Tag$;
+__webpack_unused_export__ = TagResource$;
+__webpack_unused_export__ = TagResourceCommand;
+__webpack_unused_export__ = TagResourceRequest$;
+__webpack_unused_export__ = TagResourceResponse$;
+__webpack_unused_export__ = TooManyTagsException;
+__webpack_unused_export__ = TooManyTagsException$;
+__webpack_unused_export__ = UnsupportedCommandException;
+__webpack_unused_export__ = UnsupportedCommandException$;
+__webpack_unused_export__ = UntagResource$;
+__webpack_unused_export__ = UntagResourceCommand;
+__webpack_unused_export__ = UntagResourceRequest$;
+__webpack_unused_export__ = UntagResourceResponse$;
+__webpack_unused_export__ = UploadLayerPart$;
+__webpack_unused_export__ = UploadLayerPartCommand;
+__webpack_unused_export__ = UploadLayerPartRequest$;
+__webpack_unused_export__ = UploadLayerPartResponse$;
+__webpack_unused_export__ = UploadNotFoundException;
+__webpack_unused_export__ = UploadNotFoundException$;
+__webpack_unused_export__ = errorTypeRegistries;
+__webpack_unused_export__ = paginateDescribeImageTags;
+__webpack_unused_export__ = paginateDescribeImages;
+__webpack_unused_export__ = paginateDescribeRegistries;
+__webpack_unused_export__ = paginateDescribeRepositories;
 
 
 /***/ }),
@@ -2323,12 +1866,12 @@ exports.UploadLayerPart$ = [9, n0, _ULP,
 /***/ 8834:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-
-
-var node_https = __nccwpck_require__(4708);
-var protocols = __nccwpck_require__(3422);
-var node_stream = __nccwpck_require__(7075);
-var http2 = __nccwpck_require__(2467);
+const { buildQueryString, HttpResponse } = __nccwpck_require__(3422);
+const node_https = __nccwpck_require__(4708);
+const { Readable } = __nccwpck_require__(7075);
+const http2 = __nccwpck_require__(2467);
+const { streamCollector } = __nccwpck_require__(2430);
+exports.streamCollector = streamCollector;
 
 function buildAbortError(abortSignal) {
     const reason = abortSignal && typeof abortSignal === "object" && "reason" in abortSignal
@@ -2500,7 +2043,7 @@ async function writeRequestBody(httpRequest, request, maxContinueTimeoutMs = MIN
     }
 }
 function writeBody(httpRequest, body) {
-    if (body instanceof node_stream.Readable) {
+    if (body instanceof Readable) {
         body.pipe(httpRequest);
         return;
     }
@@ -2636,7 +2179,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             socketWarningTimeoutId = timing.setTimeout(() => {
                 this.socketWarningTimestamp = NodeHttpHandler.checkSocketUsage(agent, this.socketWarningTimestamp, config.logger);
             }, config.socketAcquisitionWarningTimeout ?? (config.requestTimeout ?? 2000) + (config.connectionTimeout ?? 1000));
-            const queryString = request.query ? protocols.buildQueryString(request.query) : "";
+            const queryString = request.query ? buildQueryString(request.query) : "";
             let auth = undefined;
             if (request.username != null || request.password != null) {
                 const username = request.username ?? "";
@@ -2668,7 +2211,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             };
             const requestFunc = isSSL ? node_https.request : hRequest;
             const req = requestFunc(nodeHttpsOptions, (res) => {
-                const httpResponse = new protocols.HttpResponse({
+                const httpResponse = new HttpResponse({
                     statusCode: res.statusCode || -1,
                     reason: res.statusMessage,
                     headers: getTransformedHeaders(res.headers),
@@ -2739,7 +2282,8 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             socketAcquisitionWarningTimeout,
             throwOnRequestTimeout,
             httpAgentProvider: async () => {
-                const { Agent, request } = await Promise.resolve(/* import() */).then(__nccwpck_require__.t.bind(__nccwpck_require__, 7067, 23));
+                const node_http = __nccwpck_require__(7067);
+                const { Agent, request } = node_http.default ?? node_http;
                 hRequest = request;
                 hAgent = Agent;
                 if (httpAgent instanceof hAgent || typeof httpAgent?.destroy === "function") {
@@ -2991,6 +2535,7 @@ class NodeHttp2ConnectionManager {
     }
 }
 
+const { constants } = http2;
 class NodeHttp2Handler {
     config;
     configProvider;
@@ -3075,7 +2620,7 @@ class NodeHttp2Handler {
                 fulfilled = true;
                 reject(err);
             };
-            const queryString = query ? protocols.buildQueryString(query) : "";
+            const queryString = query ? buildQueryString(query) : "";
             let path = request.path;
             if (queryString) {
                 path += `?${queryString}`;
@@ -3085,8 +2630,8 @@ class NodeHttp2Handler {
             }
             const clientHttp2Stream = session.request({
                 ...request.headers,
-                [http2.constants.HTTP2_HEADER_PATH]: path,
-                [http2.constants.HTTP2_HEADER_METHOD]: method,
+                [constants.HTTP2_HEADER_PATH]: path,
+                [constants.HTTP2_HEADER_METHOD]: method,
             });
             if (effectiveRequestTimeout) {
                 clientHttp2Stream.setTimeout(effectiveRequestTimeout, () => {
@@ -3119,7 +2664,7 @@ class NodeHttp2Handler {
                 rejectWithDestroy(new Error(`HTTP/2 stream is abnormally aborted in mid-communication with result code ${clientHttp2Stream.rstCode}.`));
             });
             clientHttp2Stream.on("response", (headers) => {
-                const httpResponse = new protocols.HttpResponse({
+                const httpResponse = new HttpResponse({
                     statusCode: headers[":status"] ?? -1,
                     headers: getTransformedHeaders(headers),
                     body: clientHttp2Stream,
@@ -3158,59 +2703,9 @@ class NodeHttp2Handler {
     }
 }
 
-class Collector extends node_stream.Writable {
-    bufferedBytes = [];
-    _write(chunk, encoding, callback) {
-        this.bufferedBytes.push(chunk);
-        callback();
-    }
-}
-
-const streamCollector = (stream) => {
-    if (isReadableStreamInstance(stream)) {
-        return collectReadableStream(stream);
-    }
-    return new Promise((resolve, reject) => {
-        const collector = new Collector();
-        stream.pipe(collector);
-        stream.on("error", (err) => {
-            collector.end();
-            reject(err);
-        });
-        collector.on("error", reject);
-        collector.on("finish", function () {
-            const bytes = new Uint8Array(Buffer.concat(this.bufferedBytes));
-            resolve(bytes);
-        });
-    });
-};
-const isReadableStreamInstance = (stream) => typeof ReadableStream === "function" && stream instanceof ReadableStream;
-async function collectReadableStream(stream) {
-    const chunks = [];
-    const reader = stream.getReader();
-    let isDone = false;
-    let length = 0;
-    while (!isDone) {
-        const { done, value } = await reader.read();
-        if (value) {
-            chunks.push(value);
-            length += value.length;
-        }
-        isDone = done;
-    }
-    const collected = new Uint8Array(length);
-    let offset = 0;
-    for (const chunk of chunks) {
-        collected.set(chunk, offset);
-        offset += chunk.length;
-    }
-    return collected;
-}
-
 exports.DEFAULT_REQUEST_TIMEOUT = DEFAULT_REQUEST_TIMEOUT;
 exports.NodeHttp2Handler = NodeHttp2Handler;
 exports.NodeHttpHandler = NodeHttpHandler;
-exports.streamCollector = streamCollector;
 
 
 /***/ }),
@@ -11945,16 +11440,20 @@ exports.fromEnv = fromEnv;
 
 /***/ }),
 
-/***/ 1509:
+/***/ 8605:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
+const { setCredentialFeature } = __nccwpck_require__(5152);
 const { CredentialsProviderError } = __nccwpck_require__(7291);
-const LOOPBACK_CIDR_IPv4 = "127.0.0.0/8";
-const LOOPBACK_CIDR_IPv6 = "::1/128";
+const { NodeHttpHandler } = __nccwpck_require__(2402);
+const fs = __nccwpck_require__(1455);
+const { HttpRequest } = __nccwpck_require__(3422);
+const { sdkStreamMixin, parseRfc3339DateTime } = __nccwpck_require__(2430);
+
 const ECS_CONTAINER_HOST = "169.254.170.2";
 const EKS_CONTAINER_HOST_IPv4 = "169.254.170.23";
 const EKS_CONTAINER_HOST_IPv6 = "[fd00:ec2::23]";
-exports.checkUrl = (url, logger) => {
+const checkUrl = (url, logger) => {
     if (url.protocol === "https:") {
         return;
     }
@@ -11991,25 +11490,72 @@ exports.checkUrl = (url, logger) => {
   - EKS container host 169.254.170.23 or [fd00:ec2::23]`, { logger });
 };
 
+function createGetRequest(url) {
+    return new HttpRequest({
+        protocol: url.protocol,
+        hostname: url.hostname,
+        port: Number(url.port),
+        path: url.pathname,
+        query: Array.from(url.searchParams.entries()).reduce((acc, [k, v]) => {
+            acc[k] = v;
+            return acc;
+        }, {}),
+        fragment: url.hash,
+    });
+}
+async function getCredentials(response, logger) {
+    const stream = sdkStreamMixin(response.body);
+    const str = await stream.transformToString();
+    if (response.statusCode === 200) {
+        const parsed = JSON.parse(str);
+        if (typeof parsed.AccessKeyId !== "string" ||
+            typeof parsed.SecretAccessKey !== "string" ||
+            typeof parsed.Token !== "string" ||
+            typeof parsed.Expiration !== "string") {
+            throw new CredentialsProviderError("HTTP credential provider response not of the required format, an object matching: " +
+                "{ AccessKeyId: string, SecretAccessKey: string, Token: string, Expiration: string(rfc3339) }", { logger });
+        }
+        return {
+            accessKeyId: parsed.AccessKeyId,
+            secretAccessKey: parsed.SecretAccessKey,
+            sessionToken: parsed.Token,
+            expiration: parseRfc3339DateTime(parsed.Expiration),
+        };
+    }
+    if (response.statusCode >= 400 && response.statusCode < 500) {
+        let parsedBody = {};
+        try {
+            parsedBody = JSON.parse(str);
+        }
+        catch (e) { }
+        throw Object.assign(new CredentialsProviderError(`Server responded with status: ${response.statusCode}`, { logger }), {
+            Code: parsedBody.Code,
+            Message: parsedBody.Message,
+        });
+    }
+    throw new CredentialsProviderError(`Server responded with status: ${response.statusCode}`, { logger });
+}
 
-/***/ }),
+const retryWrapper = (toRetry, maxRetries, delayMs) => {
+    return async () => {
+        for (let i = 0; i < maxRetries; ++i) {
+            try {
+                return await toRetry();
+            }
+            catch (e) {
+                await new Promise((resolve) => setTimeout(resolve, delayMs));
+            }
+        }
+        return await toRetry();
+    };
+};
 
-/***/ 8712:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-const { setCredentialFeature } = __nccwpck_require__(5152);
-const { CredentialsProviderError } = __nccwpck_require__(7291);
-const { NodeHttpHandler } = __nccwpck_require__(2402);
-const fs = __nccwpck_require__(1455);
-const { checkUrl } = __nccwpck_require__(1509);
-const { createGetRequest, getCredentials } = __nccwpck_require__(8914);
-const { retryWrapper } = __nccwpck_require__(1122);
 const AWS_CONTAINER_CREDENTIALS_RELATIVE_URI = "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI";
 const DEFAULT_LINK_LOCAL_HOST = "http://169.254.170.2";
 const AWS_CONTAINER_CREDENTIALS_FULL_URI = "AWS_CONTAINER_CREDENTIALS_FULL_URI";
 const AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE = "AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE";
 const AWS_CONTAINER_AUTHORIZATION_TOKEN = "AWS_CONTAINER_AUTHORIZATION_TOKEN";
-exports.fromHttp = (options = {}) => {
+const fromHttp = (options = {}) => {
     options.logger?.debug("@aws-sdk/credential-provider-http - fromHttp");
     let host;
     const relative = options.awsContainerCredentialsRelativeUri ?? process.env[AWS_CONTAINER_CREDENTIALS_RELATIVE_URI];
@@ -12069,89 +11615,6 @@ Set AWS_CONTAINER_CREDENTIALS_FULL_URI or AWS_CONTAINER_CREDENTIALS_RELATIVE_URI
     };
 };
 
-
-/***/ }),
-
-/***/ 8914:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-const { CredentialsProviderError } = __nccwpck_require__(7291);
-const { HttpRequest } = __nccwpck_require__(3422);
-const { parseRfc3339DateTime } = __nccwpck_require__(2430);
-const { sdkStreamMixin } = __nccwpck_require__(2430);
-exports.createGetRequest = function createGetRequest(url) {
-    return new HttpRequest({
-        protocol: url.protocol,
-        hostname: url.hostname,
-        port: Number(url.port),
-        path: url.pathname,
-        query: Array.from(url.searchParams.entries()).reduce((acc, [k, v]) => {
-            acc[k] = v;
-            return acc;
-        }, {}),
-        fragment: url.hash,
-    });
-};
-exports.getCredentials = async function getCredentials(response, logger) {
-    const stream = sdkStreamMixin(response.body);
-    const str = await stream.transformToString();
-    if (response.statusCode === 200) {
-        const parsed = JSON.parse(str);
-        if (typeof parsed.AccessKeyId !== "string" ||
-            typeof parsed.SecretAccessKey !== "string" ||
-            typeof parsed.Token !== "string" ||
-            typeof parsed.Expiration !== "string") {
-            throw new CredentialsProviderError("HTTP credential provider response not of the required format, an object matching: " +
-                "{ AccessKeyId: string, SecretAccessKey: string, Token: string, Expiration: string(rfc3339) }", { logger });
-        }
-        return {
-            accessKeyId: parsed.AccessKeyId,
-            secretAccessKey: parsed.SecretAccessKey,
-            sessionToken: parsed.Token,
-            expiration: parseRfc3339DateTime(parsed.Expiration),
-        };
-    }
-    if (response.statusCode >= 400 && response.statusCode < 500) {
-        let parsedBody = {};
-        try {
-            parsedBody = JSON.parse(str);
-        }
-        catch (e) { }
-        throw Object.assign(new CredentialsProviderError(`Server responded with status: ${response.statusCode}`, { logger }), {
-            Code: parsedBody.Code,
-            Message: parsedBody.Message,
-        });
-    }
-    throw new CredentialsProviderError(`Server responded with status: ${response.statusCode}`, { logger });
-};
-
-
-/***/ }),
-
-/***/ 1122:
-/***/ ((__unused_webpack_module, exports) => {
-
-exports.retryWrapper = (toRetry, maxRetries, delayMs) => {
-    return async () => {
-        for (let i = 0; i < maxRetries; ++i) {
-            try {
-                return await toRetry();
-            }
-            catch (e) {
-                await new Promise((resolve) => setTimeout(resolve, delayMs));
-            }
-        }
-        return await toRetry();
-    };
-};
-
-
-/***/ }),
-
-/***/ 8605:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-const { fromHttp } = __nccwpck_require__(8712);
 exports.fromHttp = fromHttp;
 
 
@@ -12160,12 +11623,12 @@ exports.fromHttp = fromHttp;
 /***/ 2402:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-
-
-var node_https = __nccwpck_require__(4708);
-var protocols = __nccwpck_require__(3422);
-var node_stream = __nccwpck_require__(7075);
-var http2 = __nccwpck_require__(2467);
+const { buildQueryString, HttpResponse } = __nccwpck_require__(3422);
+const node_https = __nccwpck_require__(4708);
+const { Readable } = __nccwpck_require__(7075);
+const http2 = __nccwpck_require__(2467);
+const { streamCollector } = __nccwpck_require__(2430);
+exports.streamCollector = streamCollector;
 
 function buildAbortError(abortSignal) {
     const reason = abortSignal && typeof abortSignal === "object" && "reason" in abortSignal
@@ -12337,7 +11800,7 @@ async function writeRequestBody(httpRequest, request, maxContinueTimeoutMs = MIN
     }
 }
 function writeBody(httpRequest, body) {
-    if (body instanceof node_stream.Readable) {
+    if (body instanceof Readable) {
         body.pipe(httpRequest);
         return;
     }
@@ -12473,7 +11936,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             socketWarningTimeoutId = timing.setTimeout(() => {
                 this.socketWarningTimestamp = NodeHttpHandler.checkSocketUsage(agent, this.socketWarningTimestamp, config.logger);
             }, config.socketAcquisitionWarningTimeout ?? (config.requestTimeout ?? 2000) + (config.connectionTimeout ?? 1000));
-            const queryString = request.query ? protocols.buildQueryString(request.query) : "";
+            const queryString = request.query ? buildQueryString(request.query) : "";
             let auth = undefined;
             if (request.username != null || request.password != null) {
                 const username = request.username ?? "";
@@ -12505,7 +11968,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             };
             const requestFunc = isSSL ? node_https.request : hRequest;
             const req = requestFunc(nodeHttpsOptions, (res) => {
-                const httpResponse = new protocols.HttpResponse({
+                const httpResponse = new HttpResponse({
                     statusCode: res.statusCode || -1,
                     reason: res.statusMessage,
                     headers: getTransformedHeaders(res.headers),
@@ -12576,7 +12039,8 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             socketAcquisitionWarningTimeout,
             throwOnRequestTimeout,
             httpAgentProvider: async () => {
-                const { Agent, request } = await Promise.resolve(/* import() */).then(__nccwpck_require__.t.bind(__nccwpck_require__, 7067, 23));
+                const node_http = __nccwpck_require__(7067);
+                const { Agent, request } = node_http.default ?? node_http;
                 hRequest = request;
                 hAgent = Agent;
                 if (httpAgent instanceof hAgent || typeof httpAgent?.destroy === "function") {
@@ -12828,6 +12292,7 @@ class NodeHttp2ConnectionManager {
     }
 }
 
+const { constants } = http2;
 class NodeHttp2Handler {
     config;
     configProvider;
@@ -12912,7 +12377,7 @@ class NodeHttp2Handler {
                 fulfilled = true;
                 reject(err);
             };
-            const queryString = query ? protocols.buildQueryString(query) : "";
+            const queryString = query ? buildQueryString(query) : "";
             let path = request.path;
             if (queryString) {
                 path += `?${queryString}`;
@@ -12922,8 +12387,8 @@ class NodeHttp2Handler {
             }
             const clientHttp2Stream = session.request({
                 ...request.headers,
-                [http2.constants.HTTP2_HEADER_PATH]: path,
-                [http2.constants.HTTP2_HEADER_METHOD]: method,
+                [constants.HTTP2_HEADER_PATH]: path,
+                [constants.HTTP2_HEADER_METHOD]: method,
             });
             if (effectiveRequestTimeout) {
                 clientHttp2Stream.setTimeout(effectiveRequestTimeout, () => {
@@ -12956,7 +12421,7 @@ class NodeHttp2Handler {
                 rejectWithDestroy(new Error(`HTTP/2 stream is abnormally aborted in mid-communication with result code ${clientHttp2Stream.rstCode}.`));
             });
             clientHttp2Stream.on("response", (headers) => {
-                const httpResponse = new protocols.HttpResponse({
+                const httpResponse = new HttpResponse({
                     statusCode: headers[":status"] ?? -1,
                     headers: getTransformedHeaders(headers),
                     body: clientHttp2Stream,
@@ -12995,59 +12460,9 @@ class NodeHttp2Handler {
     }
 }
 
-class Collector extends node_stream.Writable {
-    bufferedBytes = [];
-    _write(chunk, encoding, callback) {
-        this.bufferedBytes.push(chunk);
-        callback();
-    }
-}
-
-const streamCollector = (stream) => {
-    if (isReadableStreamInstance(stream)) {
-        return collectReadableStream(stream);
-    }
-    return new Promise((resolve, reject) => {
-        const collector = new Collector();
-        stream.pipe(collector);
-        stream.on("error", (err) => {
-            collector.end();
-            reject(err);
-        });
-        collector.on("error", reject);
-        collector.on("finish", function () {
-            const bytes = new Uint8Array(Buffer.concat(this.bufferedBytes));
-            resolve(bytes);
-        });
-    });
-};
-const isReadableStreamInstance = (stream) => typeof ReadableStream === "function" && stream instanceof ReadableStream;
-async function collectReadableStream(stream) {
-    const chunks = [];
-    const reader = stream.getReader();
-    let isDone = false;
-    let length = 0;
-    while (!isDone) {
-        const { done, value } = await reader.read();
-        if (value) {
-            chunks.push(value);
-            length += value.length;
-        }
-        isDone = done;
-    }
-    const collected = new Uint8Array(length);
-    let offset = 0;
-    for (const chunk of chunks) {
-        collected.set(chunk, offset);
-        offset += chunk.length;
-    }
-    return collected;
-}
-
 exports.DEFAULT_REQUEST_TIMEOUT = DEFAULT_REQUEST_TIMEOUT;
 exports.NodeHttp2Handler = NodeHttp2Handler;
 exports.NodeHttpHandler = NodeHttpHandler;
-exports.streamCollector = streamCollector;
 
 
 /***/ }),
@@ -14041,46 +13456,14 @@ exports.SSOClient = SSOClient;
 
 /***/ }),
 
-/***/ 8079:
+/***/ 9956:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 const { setCredentialFeature } = __nccwpck_require__(5152);
 const { CredentialsProviderError, externalDataInterceptor } = __nccwpck_require__(7291);
 const { readFileSync } = __nccwpck_require__(3024);
-const { fromWebToken } = __nccwpck_require__(4453);
-const ENV_TOKEN_FILE = "AWS_WEB_IDENTITY_TOKEN_FILE";
-const ENV_ROLE_ARN = "AWS_ROLE_ARN";
-const ENV_ROLE_SESSION_NAME = "AWS_ROLE_SESSION_NAME";
-exports.fromTokenFile = (init = {}) => async (awsIdentityProperties) => {
-    init.logger?.debug("@aws-sdk/credential-provider-web-identity - fromTokenFile");
-    const webIdentityTokenFile = init?.webIdentityTokenFile ?? process.env[ENV_TOKEN_FILE];
-    const roleArn = init?.roleArn ?? process.env[ENV_ROLE_ARN];
-    const roleSessionName = init?.roleSessionName ?? process.env[ENV_ROLE_SESSION_NAME];
-    if (!webIdentityTokenFile || !roleArn) {
-        throw new CredentialsProviderError("Web identity configuration not specified", {
-            logger: init.logger,
-        });
-    }
-    const credentials = await fromWebToken({
-        ...init,
-        webIdentityToken: externalDataInterceptor?.getTokenRecord?.()[webIdentityTokenFile] ??
-            readFileSync(webIdentityTokenFile, { encoding: "ascii" }),
-        roleArn,
-        roleSessionName,
-    })(awsIdentityProperties);
-    if (webIdentityTokenFile === process.env[ENV_TOKEN_FILE]) {
-        setCredentialFeature(credentials, "CREDENTIALS_ENV_VARS_STS_WEB_ID_TOKEN", "h");
-    }
-    return credentials;
-};
 
-
-/***/ }),
-
-/***/ 4453:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-exports.fromWebToken = (init) => async (awsIdentityProperties) => {
+const fromWebToken = (init) => async (awsIdentityProperties) => {
     init.logger?.debug("@aws-sdk/credential-provider-web-identity - fromWebToken");
     const { roleArn, roleSessionName, webIdentityToken, providerId, policyArns, policy, durationSeconds } = init;
     let { roleAssumerWithWebIdentity } = init;
@@ -14106,15 +13489,34 @@ exports.fromWebToken = (init) => async (awsIdentityProperties) => {
     });
 };
 
+const ENV_TOKEN_FILE = "AWS_WEB_IDENTITY_TOKEN_FILE";
+const ENV_ROLE_ARN = "AWS_ROLE_ARN";
+const ENV_ROLE_SESSION_NAME = "AWS_ROLE_SESSION_NAME";
+const fromTokenFile = (init = {}) => async (awsIdentityProperties) => {
+    init.logger?.debug("@aws-sdk/credential-provider-web-identity - fromTokenFile");
+    const webIdentityTokenFile = init?.webIdentityTokenFile ?? process.env[ENV_TOKEN_FILE];
+    const roleArn = init?.roleArn ?? process.env[ENV_ROLE_ARN];
+    const roleSessionName = init?.roleSessionName ?? process.env[ENV_ROLE_SESSION_NAME];
+    if (!webIdentityTokenFile || !roleArn) {
+        throw new CredentialsProviderError("Web identity configuration not specified", {
+            logger: init.logger,
+        });
+    }
+    const credentials = await fromWebToken({
+        ...init,
+        webIdentityToken: externalDataInterceptor?.getTokenRecord?.()[webIdentityTokenFile] ??
+            readFileSync(webIdentityTokenFile, { encoding: "ascii" }),
+        roleArn,
+        roleSessionName,
+    })(awsIdentityProperties);
+    if (webIdentityTokenFile === process.env[ENV_TOKEN_FILE]) {
+        setCredentialFeature(credentials, "CREDENTIALS_ENV_VARS_STS_WEB_ID_TOKEN", "h");
+    }
+    return credentials;
+};
 
-/***/ }),
-
-/***/ 9956:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-var __exportStar = (m, e) => { Object.assign(e, m); };
-__exportStar(__nccwpck_require__(8079), exports);
-__exportStar(__nccwpck_require__(4453), exports);
+exports.fromTokenFile = fromTokenFile;
+exports.fromWebToken = fromWebToken;
 
 
 /***/ }),
@@ -14502,9 +13904,10 @@ const { parseUrl, getHttpHandlerExtensionConfiguration, resolveHttpHandlerRuntim
 const { DEFAULT_RETRY_MODE, NODE_RETRY_MODE_CONFIG_OPTIONS, NODE_MAX_ATTEMPT_CONFIG_OPTIONS, resolveRetryConfig, getRetryPlugin } = __nccwpck_require__(3609);
 const { TypeRegistry, getSchemaSerdePlugin } = __nccwpck_require__(6890);
 const { resolveAwsSdkSigV4Config, AwsSdkSigV4Signer, NODE_AUTH_SCHEME_PREFERENCE_OPTIONS } = __nccwpck_require__(7523);
-const { toUtf8, fromUtf8, toBase64, fromBase64, Hash, calculateBodyLength } = __nccwpck_require__(2430);
+const { toUtf8, fromUtf8, toBase64, fromBase64, calculateBodyLength } = __nccwpck_require__(2430);
 const { streamCollector, NodeHttpHandler } = __nccwpck_require__(2764);
 const { AwsJson1_1Protocol } = __nccwpck_require__(7288);
+const { Sha256 } = __nccwpck_require__(9542);
 
 const defaultCognitoIdentityHttpAuthSchemeParametersProvider = async (config, context, input) => {
     return {
@@ -14572,7 +13975,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.22";
+var version = "3.997.24";
 var packageInfo = {
 	version: version};
 
@@ -14933,6 +14336,7 @@ const getRuntimeConfig$1 = (config) => {
             serviceTarget: "AWSCognitoIdentityService",
         },
         serviceId: config?.serviceId ?? "Cognito Identity",
+        sha256: config?.sha256 ?? Sha256,
         urlParser: config?.urlParser ?? parseUrl,
         utf8Decoder: config?.utf8Decoder ?? fromUtf8,
         utf8Encoder: config?.utf8Encoder ?? toUtf8,
@@ -14965,7 +14369,6 @@ const getRuntimeConfig = (config) => {
                 ...NODE_RETRY_MODE_CONFIG_OPTIONS,
                 default: async () => (await defaultConfigProvider()).retryMode || DEFAULT_RETRY_MODE,
             }, config),
-        sha256: config?.sha256 ?? Hash.bind(null, "sha256"),
         streamCollector: config?.streamCollector ?? streamCollector,
         useDualstackEndpoint: config?.useDualstackEndpoint ?? loadConfig(NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
         useFipsEndpoint: config?.useFipsEndpoint ?? loadConfig(NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
@@ -15135,9 +14538,10 @@ const { parseUrl, getHttpHandlerExtensionConfiguration, resolveHttpHandlerRuntim
 const { DEFAULT_RETRY_MODE, NODE_RETRY_MODE_CONFIG_OPTIONS, NODE_MAX_ATTEMPT_CONFIG_OPTIONS, resolveRetryConfig, getRetryPlugin } = __nccwpck_require__(3609);
 const { TypeRegistry, getSchemaSerdePlugin } = __nccwpck_require__(6890);
 const { resolveAwsSdkSigV4Config, AwsSdkSigV4Signer, NODE_AUTH_SCHEME_PREFERENCE_OPTIONS } = __nccwpck_require__(7523);
-const { toUtf8, fromUtf8, toBase64, fromBase64, Hash, calculateBodyLength } = __nccwpck_require__(2430);
+const { toUtf8, fromUtf8, toBase64, fromBase64, calculateBodyLength } = __nccwpck_require__(2430);
 const { streamCollector, NodeHttpHandler } = __nccwpck_require__(2764);
 const { AwsRestJsonProtocol } = __nccwpck_require__(7288);
+const { Sha256 } = __nccwpck_require__(9542);
 
 const defaultSigninHttpAuthSchemeParametersProvider = async (config, context, input) => {
     return {
@@ -15201,7 +14605,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.22";
+var version = "3.997.24";
 var packageInfo = {
 	version: version};
 
@@ -15498,6 +14902,7 @@ const getRuntimeConfig$1 = (config) => {
             serviceTarget: "Signin",
         },
         serviceId: config?.serviceId ?? "Signin",
+        sha256: config?.sha256 ?? Sha256,
         urlParser: config?.urlParser ?? parseUrl,
         utf8Decoder: config?.utf8Decoder ?? fromUtf8,
         utf8Encoder: config?.utf8Encoder ?? toUtf8,
@@ -15530,7 +14935,6 @@ const getRuntimeConfig = (config) => {
                 ...NODE_RETRY_MODE_CONFIG_OPTIONS,
                 default: async () => (await defaultConfigProvider()).retryMode || DEFAULT_RETRY_MODE,
             }, config),
-        sha256: config?.sha256 ?? Hash.bind(null, "sha256"),
         streamCollector: config?.streamCollector ?? streamCollector,
         useDualstackEndpoint: config?.useDualstackEndpoint ?? loadConfig(NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
         useFipsEndpoint: config?.useFipsEndpoint ?? loadConfig(NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
@@ -15691,9 +15095,10 @@ const { parseUrl, getHttpHandlerExtensionConfiguration, resolveHttpHandlerRuntim
 const { DEFAULT_RETRY_MODE, NODE_RETRY_MODE_CONFIG_OPTIONS, NODE_MAX_ATTEMPT_CONFIG_OPTIONS, resolveRetryConfig, getRetryPlugin } = __nccwpck_require__(3609);
 const { TypeRegistry, getSchemaSerdePlugin } = __nccwpck_require__(6890);
 const { resolveAwsSdkSigV4Config, AwsSdkSigV4Signer, NODE_AUTH_SCHEME_PREFERENCE_OPTIONS } = __nccwpck_require__(7523);
-const { toUtf8, fromUtf8, toBase64, fromBase64, Hash, calculateBodyLength } = __nccwpck_require__(2430);
+const { toUtf8, fromUtf8, toBase64, fromBase64, calculateBodyLength } = __nccwpck_require__(2430);
 const { streamCollector, NodeHttpHandler } = __nccwpck_require__(2764);
 const { AwsRestJsonProtocol } = __nccwpck_require__(7288);
+const { Sha256 } = __nccwpck_require__(9542);
 
 const defaultSSOOIDCHttpAuthSchemeParametersProvider = async (config, context, input) => {
     return {
@@ -15757,7 +15162,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.22";
+var version = "3.997.24";
 var packageInfo = {
 	version: version};
 
@@ -16174,6 +15579,7 @@ const getRuntimeConfig$1 = (config) => {
             serviceTarget: "AWSSSOOIDCService",
         },
         serviceId: config?.serviceId ?? "SSO OIDC",
+        sha256: config?.sha256 ?? Sha256,
         urlParser: config?.urlParser ?? parseUrl,
         utf8Decoder: config?.utf8Decoder ?? fromUtf8,
         utf8Encoder: config?.utf8Encoder ?? toUtf8,
@@ -16206,7 +15612,6 @@ const getRuntimeConfig = (config) => {
                 ...NODE_RETRY_MODE_CONFIG_OPTIONS,
                 default: async () => (await defaultConfigProvider()).retryMode || DEFAULT_RETRY_MODE,
             }, config),
-        sha256: config?.sha256 ?? Hash.bind(null, "sha256"),
         streamCollector: config?.streamCollector ?? streamCollector,
         useDualstackEndpoint: config?.useDualstackEndpoint ?? loadConfig(NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
         useFipsEndpoint: config?.useFipsEndpoint ?? loadConfig(NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
@@ -16374,9 +15779,10 @@ const { parseUrl, getHttpHandlerExtensionConfiguration, resolveHttpHandlerRuntim
 const { DEFAULT_RETRY_MODE, NODE_RETRY_MODE_CONFIG_OPTIONS, NODE_MAX_ATTEMPT_CONFIG_OPTIONS, resolveRetryConfig, getRetryPlugin } = __nccwpck_require__(3609);
 const { TypeRegistry, getSchemaSerdePlugin } = __nccwpck_require__(6890);
 const { resolveAwsSdkSigV4Config, AwsSdkSigV4Signer, NODE_AUTH_SCHEME_PREFERENCE_OPTIONS } = __nccwpck_require__(7523);
-const { toUtf8, fromUtf8, toBase64, fromBase64, Hash, calculateBodyLength } = __nccwpck_require__(2430);
+const { toUtf8, fromUtf8, toBase64, fromBase64, calculateBodyLength } = __nccwpck_require__(2430);
 const { streamCollector, NodeHttpHandler } = __nccwpck_require__(2764);
 const { AwsRestJsonProtocol } = __nccwpck_require__(7288);
+const { Sha256 } = __nccwpck_require__(9542);
 
 const defaultSSOHttpAuthSchemeParametersProvider = async (config, context, input) => {
     return {
@@ -16440,7 +15846,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.22";
+var version = "3.997.24";
 var packageInfo = {
 	version: version};
 
@@ -16676,6 +16082,7 @@ const getRuntimeConfig$1 = (config) => {
             serviceTarget: "SWBPortalService",
         },
         serviceId: config?.serviceId ?? "SSO",
+        sha256: config?.sha256 ?? Sha256,
         urlParser: config?.urlParser ?? parseUrl,
         utf8Decoder: config?.utf8Decoder ?? fromUtf8,
         utf8Encoder: config?.utf8Encoder ?? toUtf8,
@@ -16708,7 +16115,6 @@ const getRuntimeConfig = (config) => {
                 ...NODE_RETRY_MODE_CONFIG_OPTIONS,
                 default: async () => (await defaultConfigProvider()).retryMode || DEFAULT_RETRY_MODE,
             }, config),
-        sha256: config?.sha256 ?? Hash.bind(null, "sha256"),
         streamCollector: config?.streamCollector ?? streamCollector,
         useDualstackEndpoint: config?.useDualstackEndpoint ?? loadConfig(NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
         useFipsEndpoint: config?.useFipsEndpoint ?? loadConfig(NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
@@ -16852,9 +16258,10 @@ const { DEFAULT_RETRY_MODE, NODE_RETRY_MODE_CONFIG_OPTIONS, NODE_MAX_ATTEMPT_CON
 const { TypeRegistry, getSchemaSerdePlugin } = __nccwpck_require__(6890);
 const { resolveAwsSdkSigV4Config, resolveAwsSdkSigV4AConfig, AwsSdkSigV4Signer, AwsSdkSigV4ASigner, NODE_SIGV4A_CONFIG_OPTIONS, NODE_AUTH_SCHEME_PREFERENCE_OPTIONS } = __nccwpck_require__(7523);
 const { SignatureV4MultiRegion } = __nccwpck_require__(5785);
-const { toUtf8, fromUtf8, toBase64, fromBase64, Hash, calculateBodyLength } = __nccwpck_require__(2430);
+const { toUtf8, fromUtf8, toBase64, fromBase64, calculateBodyLength } = __nccwpck_require__(2430);
 const { streamCollector, NodeHttpHandler } = __nccwpck_require__(2764);
 const { AwsQueryProtocol } = __nccwpck_require__(7288);
+const { Sha256 } = __nccwpck_require__(9542);
 
 const q = "ref";
 const a = -1, b = true, c = "isSet", d = "PartitionResult", e = "booleanEquals", f = "stringEquals", g = "getAttr", h = "us-east-1", i = "sigv4", j = "sts", k = "https://sts.{Region}.{PartitionResult#dnsSuffix}", l = { [q]: "Endpoint" }, m = { [q]: "Region" }, n = { [q]: d }, o = {}, p = [m];
@@ -17098,7 +16505,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.22";
+var version = "3.997.24";
 var packageInfo = {
 	version: version};
 
@@ -17403,6 +16810,7 @@ const getRuntimeConfig$1 = (config) => {
             serviceTarget: "AWSSecurityTokenServiceV20110615",
         },
         serviceId: config?.serviceId ?? "STS",
+        sha256: config?.sha256 ?? Sha256,
         signerConstructor: config?.signerConstructor ?? SignatureV4MultiRegion,
         urlParser: config?.urlParser ?? parseUrl,
         utf8Decoder: config?.utf8Decoder ?? fromUtf8,
@@ -17453,7 +16861,6 @@ const getRuntimeConfig = (config) => {
                 ...NODE_RETRY_MODE_CONFIG_OPTIONS,
                 default: async () => (await defaultConfigProvider()).retryMode || DEFAULT_RETRY_MODE,
             }, config),
-        sha256: config?.sha256 ?? Hash.bind(null, "sha256"),
         sigv4aSigningRegionSet: config?.sigv4aSigningRegionSet ?? loadConfig(NODE_SIGV4A_CONFIG_OPTIONS, loaderConfig),
         streamCollector: config?.streamCollector ?? streamCollector,
         useDualstackEndpoint: config?.useDualstackEndpoint ?? loadConfig(NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
@@ -17739,8 +17146,10 @@ exports.getDefaultRoleAssumerWithWebIdentity = getDefaultRoleAssumerWithWebIdent
 
 const { buildQueryString, HttpResponse } = __nccwpck_require__(3422);
 const node_https = __nccwpck_require__(4708);
-const { Readable, Writable } = __nccwpck_require__(7075);
+const { Readable } = __nccwpck_require__(7075);
 const http2 = __nccwpck_require__(2467);
+const { streamCollector } = __nccwpck_require__(2430);
+exports.streamCollector = streamCollector;
 
 function buildAbortError(abortSignal) {
     const reason = abortSignal && typeof abortSignal === "object" && "reason" in abortSignal
@@ -18572,59 +17981,9 @@ class NodeHttp2Handler {
     }
 }
 
-class Collector extends Writable {
-    bufferedBytes = [];
-    _write(chunk, encoding, callback) {
-        this.bufferedBytes.push(chunk);
-        callback();
-    }
-}
-
-const streamCollector = (stream) => {
-    if (isReadableStreamInstance(stream)) {
-        return collectReadableStream(stream);
-    }
-    return new Promise((resolve, reject) => {
-        const collector = new Collector();
-        stream.pipe(collector);
-        stream.on("error", (err) => {
-            collector.end();
-            reject(err);
-        });
-        collector.on("error", reject);
-        collector.on("finish", function () {
-            const bytes = new Uint8Array(Buffer.concat(this.bufferedBytes));
-            resolve(bytes);
-        });
-    });
-};
-const isReadableStreamInstance = (stream) => typeof ReadableStream === "function" && stream instanceof ReadableStream;
-async function collectReadableStream(stream) {
-    const chunks = [];
-    const reader = stream.getReader();
-    let isDone = false;
-    let length = 0;
-    while (!isDone) {
-        const { done, value } = await reader.read();
-        if (value) {
-            chunks.push(value);
-            length += value.length;
-        }
-        isDone = done;
-    }
-    const collected = new Uint8Array(length);
-    let offset = 0;
-    for (const chunk of chunks) {
-        collected.set(chunk, offset);
-        offset += chunk.length;
-    }
-    return collected;
-}
-
 exports.DEFAULT_REQUEST_TIMEOUT = DEFAULT_REQUEST_TIMEOUT;
 exports.NodeHttp2Handler = NodeHttp2Handler;
 exports.NodeHttpHandler = NodeHttpHandler;
-exports.streamCollector = streamCollector;
 
 
 /***/ }),
@@ -18964,10 +18323,7 @@ exports.nodeProvider = nodeProvider;
 /***/ }),
 
 /***/ 4274:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-const { parseXML } = __nccwpck_require__(3343);
-exports.parseXML = parseXML;
+/***/ ((__unused_webpack_module, exports) => {
 
 const ATTR_ESCAPE_RE = /[&<>"]/g;
 const ATTR_ESCAPE_MAP = {
@@ -19093,19 +18449,10 @@ class XmlNode {
     }
 }
 
-exports.XmlNode = XmlNode;
-exports.XmlText = XmlText;
-
-
-/***/ }),
-
-/***/ 3343:
-/***/ ((__unused_webpack_module, exports) => {
-
-exports.parseXML = function parseXML(xml) {
+function parseXML(xml) {
     const state = new AwsXmlParser(xml);
     return state.parse();
-};
+}
 class AwsXmlParser {
     x;
     i = 0;
@@ -19336,6 +18683,10 @@ class AwsXmlParser {
         });
     }
 }
+
+exports.XmlNode = XmlNode;
+exports.XmlText = XmlText;
+exports.parseXML = parseXML;
 
 
 /***/ }),
@@ -21077,6 +20428,590 @@ exports.tagSymbol = tagSymbol;
 
 /***/ }),
 
+/***/ 9542:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+const { createReadStream } = __nccwpck_require__(3024);
+const { Writable } = __nccwpck_require__(7075);
+const { toUint8Array, concatBytes } = __nccwpck_require__(2430);
+const { createHash, createHmac } = __nccwpck_require__(7598);
+const zlib = __nccwpck_require__(8522);
+
+async function blobReader(blob, onChunk, chunkSize = 1024 * 1024) {
+    const size = blob.size;
+    let totalBytesRead = 0;
+    while (totalBytesRead < size) {
+        const slice = blob.slice(totalBytesRead, Math.min(size, totalBytesRead + chunkSize));
+        onChunk(new Uint8Array(await slice.arrayBuffer()));
+        totalBytesRead += slice.size;
+    }
+}
+
+const blobHasher = async function blobHasher(hashCtor, blob) {
+    const hash = new hashCtor();
+    await blobReader(blob, (chunk) => {
+        hash.update(chunk);
+    });
+    return hash.digest();
+};
+
+class HashCalculator extends Writable {
+    hash;
+    constructor(hash, options) {
+        super(options);
+        this.hash = hash;
+    }
+    _write(chunk, encoding, callback) {
+        try {
+            this.hash.update(toUint8Array(chunk));
+        }
+        catch (err) {
+            return callback(err);
+        }
+        callback();
+    }
+}
+
+const fileStreamHasher = (hashCtor, fileStream) => new Promise((resolve, reject) => {
+    if (!isReadStream(fileStream)) {
+        reject(new Error("Unable to calculate hash for non-file streams."));
+        return;
+    }
+    const fileStreamTee = createReadStream(fileStream.path, {
+        start: fileStream.start,
+        end: fileStream.end,
+    });
+    const hash = new hashCtor();
+    const hashCalculator = new HashCalculator(hash);
+    fileStreamTee.pipe(hashCalculator);
+    fileStreamTee.on("error", (err) => {
+        hashCalculator.end();
+        reject(err);
+    });
+    hashCalculator.on("error", reject);
+    hashCalculator.on("finish", function () {
+        hash.digest().then(resolve).catch(reject);
+    });
+});
+const isReadStream = (stream) => typeof stream.path === "string";
+
+const readableStreamHasher = (hashCtor, readableStream) => {
+    if (readableStream.readableFlowing !== null) {
+        throw new Error("Unable to calculate hash for flowing readable stream");
+    }
+    const hash = new hashCtor();
+    const hashCalculator = new HashCalculator(hash);
+    readableStream.pipe(hashCalculator);
+    return new Promise((resolve, reject) => {
+        readableStream.on("error", (err) => {
+            hashCalculator.end();
+            reject(err);
+        });
+        hashCalculator.on("error", reject);
+        hashCalculator.on("finish", () => {
+            hash.digest().then(resolve).catch(reject);
+        });
+    });
+};
+
+class Md5Js {
+    digestLength = 16;
+    state = Uint32Array.from(INIT$1);
+    writeBuffer = new DataView(new ArrayBuffer(64));
+    bufferLength = 0;
+    bytesHashed = 0;
+    update(sourceData) {
+        const data = toUint8Array(sourceData);
+        let pos = 0;
+        let len = data.byteLength;
+        this.bytesHashed += len;
+        while (len > 0) {
+            this.writeBuffer.setUint8(this.bufferLength++, data[pos++]);
+            --len;
+            if (this.bufferLength === 64) {
+                compress(this.state, this.writeBuffer);
+                this.bufferLength = 0;
+            }
+        }
+    }
+    async digest() {
+        const state = Uint32Array.from(this.state);
+        const buf = new DataView(this.writeBuffer.buffer.slice(0));
+        let bufLen = this.bufferLength;
+        const bits = this.bytesHashed * 8;
+        buf.setUint8(bufLen++, 0x80);
+        if (this.bufferLength % 64 >= 56) {
+            for (let i = bufLen; i < 64; ++i) {
+                buf.setUint8(i, 0);
+            }
+            compress(state, buf);
+            bufLen = 0;
+        }
+        for (let i = bufLen; i < 56; ++i) {
+            buf.setUint8(i, 0);
+        }
+        buf.setUint32(56, bits >>> 0, true);
+        buf.setUint32(60, Math.floor(bits / 2 ** 32), true);
+        compress(state, buf);
+        const out = new Uint8Array(16);
+        const view = new DataView(out.buffer);
+        for (let i = 0; i < 4; ++i) {
+            view.setUint32(i * 4, state[i], true);
+        }
+        return out;
+    }
+    reset() {
+        this.state.set(INIT$1);
+        this.writeBuffer = new DataView(new ArrayBuffer(64));
+        this.bufferLength = 0;
+        this.bytesHashed = 0;
+    }
+}
+const INIT$1 = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476];
+const M = 0xffffffff;
+const S = Uint8Array.of(7, 12, 17, 22, 5, 9, 14, 20, 4, 11, 16, 23, 6, 10, 15, 21);
+const T = Array.from({ length: 64 }, (_, i) => (Math.abs(Math.sin(i + 1)) * 2 ** 32) >>> 0);
+function compress(state, block) {
+    let a = state[0], b = state[1], c = state[2], d = state[3];
+    for (let i = 0; i < 64; ++i) {
+        let f, g;
+        if (i < 16) {
+            f = (b & c) | (~b & d);
+            g = i;
+        }
+        else if (i < 32) {
+            f = (d & b) | (c & ~d);
+            g = (5 * i + 1) % 16;
+        }
+        else if (i < 48) {
+            f = b ^ c ^ d;
+            g = (3 * i + 5) % 16;
+        }
+        else {
+            f = c ^ (b | ~d);
+            g = (7 * i) % 16;
+        }
+        const x = block.getUint32(g * 4, true);
+        const tmp = d;
+        d = c;
+        c = b;
+        const s = S[(i >> 4) * 4 + (i & 3)];
+        const sum = (((a + f) & M) + ((x + T[i]) & M)) & M;
+        b = (b + (((sum << s) | (sum >>> (32 - s))) >>> 0)) & M;
+        a = tmp;
+    }
+    state[0] = (state[0] + a) & M;
+    state[1] = (state[1] + b) & M;
+    state[2] = (state[2] + c) & M;
+    state[3] = (state[3] + d) & M;
+}
+
+const hasNativeCrypto$1 = (() => {
+    try {
+        createHash("md5");
+        return true;
+    }
+    catch {
+        return false;
+    }
+})();
+const Md5Node = hasNativeCrypto$1 ? buildNativeClass$2() : Md5Js;
+function buildNativeClass$2() {
+    return class Md5Node {
+        digestLength = 16;
+        hash = createHash("md5");
+        update(data) {
+            this.hash.update(toUint8Array(data));
+        }
+        async digest() {
+            const buf = this.hash.copy().digest();
+            return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+        }
+        reset() {
+            this.hash = createHash("md5");
+        }
+    };
+}
+
+const CRC32_TABLE = new Uint32Array(256);
+for (let i = 0; i < 256; ++i) {
+    let c = i;
+    for (let j = 0; j < 8; ++j) {
+        c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    }
+    CRC32_TABLE[i] = c >>> 0;
+}
+const ONES = 0xffff_ffff;
+class Crc32Js {
+    digestLength = 4;
+    checksum = ONES;
+    update(data) {
+        for (let i = 0; i < data.length; ++i) {
+            this.checksum = (this.checksum >>> 8) ^ CRC32_TABLE[(this.checksum ^ data[i]) & 0xff];
+        }
+    }
+    digestSync() {
+        return (this.checksum ^ ONES) >>> 0;
+    }
+    async digest() {
+        const value = this.digestSync();
+        const out = new Uint8Array(4);
+        new DataView(out.buffer).setUint32(0, value, false);
+        return out;
+    }
+    reset() {
+        this.checksum = ONES;
+    }
+}
+
+const zlibCrc32 = typeof zlib.crc32 === "function" ? zlib.crc32 : undefined;
+const Crc32Node = zlibCrc32 ? buildNativeClass$1(zlibCrc32) : Crc32Js;
+function buildNativeClass$1(nativeCrc32) {
+    return class Crc32Node {
+        digestLength = 4;
+        value = 0;
+        update(data) {
+            this.value = nativeCrc32(data, this.value);
+        }
+        digestSync() {
+            return this.value >>> 0;
+        }
+        async digest() {
+            const out = new Uint8Array(4);
+            new DataView(out.buffer).setUint32(0, this.digestSync(), false);
+            return out;
+        }
+        reset() {
+            this.value = 0;
+        }
+    };
+}
+
+const BLOCK = 64;
+const DIGEST_LENGTH = 32;
+const MAX_HASHABLE_LENGTH = 2 ** 53 - 1;
+class Sha256Js {
+    digestLength = DIGEST_LENGTH;
+    state = Int32Array.from(INIT);
+    w;
+    buffer = new Uint8Array(64);
+    bufferLength = 0;
+    bytesHashed = 0;
+    finished = false;
+    inner;
+    outer;
+    constructor(secret) {
+        if (secret) {
+            const key = Sha256Js.normalizeKey(secret);
+            this.inner = new Sha256Js();
+            this.outer = new Sha256Js();
+            const { inner, outer } = this;
+            const pad = new Uint8Array(BLOCK * 2);
+            for (let i = 0; i < BLOCK; ++i) {
+                pad[i] = 0x36 ^ key[i];
+                pad[i + BLOCK] = 0x5c ^ key[i];
+            }
+            inner.update(pad.subarray(0, BLOCK));
+            outer.update(pad.subarray(BLOCK));
+        }
+    }
+    update(data) {
+        if (this.finished) {
+            throw new Error("Attempted to update an already finished HMAC.");
+        }
+        if (this.inner) {
+            this.inner.update(data);
+            return;
+        }
+        const chunk = toUint8Array(data);
+        let position = 0;
+        let { byteLength } = chunk;
+        this.bytesHashed += byteLength;
+        if (this.bytesHashed * 8 > MAX_HASHABLE_LENGTH) {
+            throw new Error("Cannot hash more than 2^53 - 1 bits");
+        }
+        while (byteLength > 0) {
+            this.buffer[this.bufferLength++] = chunk[position++];
+            byteLength--;
+            if (this.bufferLength === BLOCK) {
+                this.hashBuffer();
+                this.bufferLength = 0;
+            }
+        }
+    }
+    async digest() {
+        const { inner, outer } = this;
+        if (inner && outer) {
+            if (this.finished) {
+                throw new Error("Attempted to digest an already finished HMAC.");
+            }
+            this.finished = true;
+            const innerDigest = inner.digestSync();
+            outer.update(innerDigest);
+            return outer.digestSync();
+        }
+        return this.digestSync();
+    }
+    reset() {
+        this.state = Int32Array.from(INIT);
+        this.buffer = new Uint8Array(64);
+        this.bufferLength = 0;
+        this.bytesHashed = 0;
+    }
+    digestSync() {
+        const state = this.state.slice();
+        const buffer = this.buffer.slice();
+        let bufferLength = this.bufferLength;
+        const bitsHashed = this.bytesHashed * 8;
+        const bufferView = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+        bufferView.setUint8(bufferLength++, 0x80);
+        if ((bufferLength - 1) % BLOCK >= BLOCK - 8) {
+            for (let i = bufferLength; i < BLOCK; ++i) {
+                bufferView.setUint8(i, 0);
+            }
+            this.hashBufferWith(state, buffer);
+            bufferLength = 0;
+        }
+        for (let i = bufferLength; i < BLOCK - 8; ++i) {
+            bufferView.setUint8(i, 0);
+        }
+        bufferView.setUint32(BLOCK - 8, Math.floor(bitsHashed / 0x100000000), false);
+        bufferView.setUint32(BLOCK - 4, bitsHashed, false);
+        this.hashBufferWith(state, buffer);
+        const out = new Uint8Array(DIGEST_LENGTH);
+        for (let i = 0; i < 8; ++i) {
+            out[i * 4] = (state[i] >>> 24) & 0xff;
+            out[i * 4 + 1] = (state[i] >>> 16) & 0xff;
+            out[i * 4 + 2] = (state[i] >>> 8) & 0xff;
+            out[i * 4 + 3] = (state[i] >>> 0) & 0xff;
+        }
+        return out;
+    }
+    static normalizeKey(secret) {
+        const key = toUint8Array(secret);
+        if (key.byteLength > BLOCK) {
+            const h = new Sha256Js();
+            h.update(key);
+            const out = h.digestSync();
+            const padded = new Uint8Array(BLOCK);
+            padded.set(out);
+            return padded;
+        }
+        if (key.byteLength < BLOCK) {
+            const padded = new Uint8Array(BLOCK);
+            padded.set(key);
+            return padded;
+        }
+        return key;
+    }
+    hashBuffer() {
+        this.hashBufferWith(this.state, this.buffer);
+    }
+    hashBufferWith(state, buffer) {
+        const w = (this.w ??= new Int32Array(64));
+        let s0 = state[0], s1 = state[1], s2 = state[2], s3 = state[3], s4 = state[4], s5 = state[5], s6 = state[6], s7 = state[7];
+        for (let i = 0; i < BLOCK; ++i) {
+            if (i < 16) {
+                w[i] =
+                    ((buffer[i * 4] & 0xff) << 24) |
+                        ((buffer[i * 4 + 1] & 0xff) << 16) |
+                        ((buffer[i * 4 + 2] & 0xff) << 8) |
+                        (buffer[i * 4 + 3] & 0xff);
+            }
+            else {
+                let u = w[i - 2];
+                const t1 = ((u >>> 17) | (u << 15)) ^ ((u >>> 19) | (u << 13)) ^ (u >>> 10);
+                u = w[i - 15];
+                const t2 = ((u >>> 7) | (u << 25)) ^ ((u >>> 18) | (u << 14)) ^ (u >>> 3);
+                w[i] = ((t1 + w[i - 7]) | 0) + ((t2 + w[i - 16]) | 0);
+            }
+            const t1 = ((((((s4 >>> 6) | (s4 << 26)) ^ ((s4 >>> 11) | (s4 << 21)) ^ ((s4 >>> 25) | (s4 << 7))) +
+                ((s4 & s5) ^ (~s4 & s6))) |
+                0) +
+                ((s7 + ((K[i] + w[i]) | 0)) | 0)) |
+                0;
+            const t2 = ((((s0 >>> 2) | (s0 << 30)) ^ ((s0 >>> 13) | (s0 << 19)) ^ ((s0 >>> 22) | (s0 << 10))) +
+                ((s0 & s1) ^ (s0 & s2) ^ (s1 & s2))) |
+                0;
+            s7 = s6;
+            s6 = s5;
+            s5 = s4;
+            s4 = (s3 + t1) | 0;
+            s3 = s2;
+            s2 = s1;
+            s1 = s0;
+            s0 = (t1 + t2) | 0;
+        }
+        state[0] += s0;
+        state[1] += s1;
+        state[2] += s2;
+        state[3] += s3;
+        state[4] += s4;
+        state[5] += s5;
+        state[6] += s6;
+        state[7] += s7;
+    }
+}
+const INIT = new Int32Array([
+    0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
+]);
+const K = new Int32Array([
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+]);
+
+const hasNativeCrypto = (() => {
+    try {
+        createHash("sha256");
+        return true;
+    }
+    catch {
+        return false;
+    }
+})();
+const Sha256Node = hasNativeCrypto ? buildNativeClass() : Sha256Js;
+function buildNativeClass() {
+    return class Sha256Node {
+        digestLength = 32;
+        secret;
+        hash;
+        isHmac;
+        finished = false;
+        constructor(secret) {
+            this.secret = secret;
+            this.isHmac = !!secret;
+            this.hash = this.createHash();
+        }
+        update(data) {
+            if (this.finished) {
+                throw new Error("Attempted to update an already finished hash.");
+            }
+            this.hash.update(data);
+        }
+        async digest() {
+            let buf;
+            if (this.isHmac) {
+                this.finished = true;
+                buf = this.hash.digest();
+            }
+            else {
+                buf = this.hash.copy().digest();
+            }
+            return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+        }
+        reset() {
+            this.hash = this.createHash();
+            this.finished = false;
+        }
+        createHash() {
+            return this.secret ? createHmac("sha256", toBuffer(this.secret)) : createHash("sha256");
+        }
+    };
+}
+function toBuffer(data) {
+    if (typeof data === "string") {
+        return data;
+    }
+    if (ArrayBuffer.isView(data)) {
+        return Buffer.from(data.buffer, data.byteOffset, data.byteLength);
+    }
+    return Buffer.from(data);
+}
+
+const { digest, sign, importKey } = globalThis?.crypto?.subtle ?? {};
+const subtle = typeof digest === "function" && typeof sign === "function" && typeof importKey === "function"
+    ? globalThis.crypto.subtle
+    : undefined;
+const MAX_PENDING_BYTES = 8 * 1024 * 1024;
+class Sha256WebCrypto {
+    digestLength = 32;
+    secret;
+    pending = [];
+    pendingBytes = 0;
+    fallback;
+    finished = false;
+    constructor(secret) {
+        if (secret) {
+            this.secret = toUint8Array(secret);
+        }
+    }
+    update(data) {
+        if (this.finished) {
+            throw new Error("Attempted to update an already finished HMAC.");
+        }
+        if (this.fallback) {
+            this.fallback.update(data);
+            return;
+        }
+        this.pending.push(data.slice());
+        this.pendingBytes += data.byteLength;
+        if (this.pendingBytes >= MAX_PENDING_BYTES) {
+            this.switchToFallback();
+        }
+    }
+    async digest() {
+        if (this.fallback) {
+            return this.fallback.digest();
+        }
+        if (this.secret && this.finished) {
+            throw new Error("Attempted to digest an already finished HMAC.");
+        }
+        const data = concatBytes(this.pending);
+        if (subtle) {
+            if (this.secret) {
+                this.finished = true;
+                const key = await subtle.importKey("raw", this.secret, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+                const sig = await subtle.sign("HMAC", key, data);
+                return new Uint8Array(sig);
+            }
+            const hash = await subtle.digest("SHA-256", data);
+            return new Uint8Array(hash);
+        }
+        const sha256 = new Sha256Js(this.secret);
+        sha256.update(data);
+        return sha256.digest();
+    }
+    reset() {
+        this.pending = [];
+        this.pendingBytes = 0;
+        this.fallback = undefined;
+        this.finished = false;
+    }
+    switchToFallback() {
+        const sha256Js = new Sha256Js(this.secret);
+        for (const chunk of this.pending) {
+            sha256Js.update(chunk);
+        }
+        this.fallback = sha256Js;
+        this.pending = [];
+        this.pendingBytes = 0;
+    }
+}
+
+exports.Crc32 = Crc32Node;
+exports.Crc32Js = Crc32Js;
+exports.Crc32Node = Crc32Node;
+exports.Md5 = Md5Node;
+exports.Md5Js = Md5Js;
+exports.Md5Node = Md5Node;
+exports.Sha256 = Sha256Node;
+exports.Sha256Js = Sha256Js;
+exports.Sha256Node = Sha256Node;
+exports.Sha256WebCrypto = Sha256WebCrypto;
+exports.blobHasher = blobHasher;
+exports.blobReader = blobReader;
+exports.fileStreamHasher = fileStreamHasher;
+exports.readableStreamHasher = readableStreamHasher;
+
+
+/***/ }),
+
 /***/ 2658:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -22686,12 +22621,118 @@ const resolveEndpointsConfig = (input) => {
     });
 };
 
+const AWS_EXECUTION_ENV = "AWS_EXECUTION_ENV";
+const AWS_REGION_ENV = "AWS_REGION";
+const AWS_DEFAULT_REGION_ENV = "AWS_DEFAULT_REGION";
+const ENV_IMDS_DISABLED = "AWS_EC2_METADATA_DISABLED";
+const DEFAULTS_MODE_OPTIONS = ["in-region", "cross-region", "mobile", "standard", "legacy"];
+const IMDS_REGION_PATH = "/latest/meta-data/placement/region";
+const IMDS_TOKEN_PATH = "/latest/api/token";
+const X_AWS_EC2_METADATA_TOKEN = "x-aws-ec2-metadata-token";
+const X_AWS_EC2_METADATA_TOKEN_TTL = "x-aws-ec2-metadata-token-ttl-seconds";
+
+const TIMEOUT_MS = 1000;
+const NEG_CACHE_TTL_MS = 60_000;
+let negativeCacheUntil = 0;
+const getInstanceMetadataRegion = async () => {
+    if (process.env[ENV_IMDS_DISABLED]) {
+        return undefined;
+    }
+    if (Date.now() < negativeCacheUntil) {
+        return undefined;
+    }
+    try {
+        const endpoint = resolveImdsEndpoint();
+        const token = (await imdsRequest({
+            ...endpoint,
+            path: IMDS_TOKEN_PATH,
+            method: "PUT",
+            headers: {
+                [X_AWS_EC2_METADATA_TOKEN_TTL]: "21600",
+            },
+        })).toString();
+        const region = (await imdsRequest({
+            ...endpoint,
+            path: IMDS_REGION_PATH,
+            method: "GET",
+            headers: {
+                [X_AWS_EC2_METADATA_TOKEN]: token,
+            },
+        }))
+            .toString()
+            .trim();
+        return region || cacheNegativeAndReturnUndefined();
+    }
+    catch {
+        return cacheNegativeAndReturnUndefined();
+    }
+};
+const cacheNegativeAndReturnUndefined = () => {
+    negativeCacheUntil = Date.now() + NEG_CACHE_TTL_MS;
+    return undefined;
+};
+const resolveImdsEndpoint = () => {
+    const envEndpoint = process.env.AWS_EC2_METADATA_SERVICE_ENDPOINT;
+    if (envEndpoint) {
+        const url = new URL(envEndpoint);
+        return {
+            hostname: url.hostname.replace(/^\[(.+)]$/, "$1"),
+            port: url.port ? Number(url.port) : undefined,
+        };
+    }
+    if (process.env.AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE === "IPv6") {
+        return { hostname: "fd00:ec2::254" };
+    }
+    return { hostname: "169.254.169.254" };
+};
+const imdsRequest = async (options) => {
+    const { request } = __nccwpck_require__(7067);
+    return new Promise((resolve, reject) => {
+        const req = request({
+            hostname: options.hostname,
+            port: options.port,
+            path: options.path,
+            method: options.method,
+            headers: options.headers,
+            timeout: TIMEOUT_MS,
+            signal: AbortSignal.timeout(TIMEOUT_MS),
+        });
+        req.on("error", (err) => {
+            reject(err);
+            req.destroy();
+        });
+        req.on("timeout", () => {
+            reject(new Error("TimeoutError from instance metadata service"));
+            req.destroy();
+        });
+        req.on("response", (res) => {
+            const { statusCode = 400 } = res;
+            if (statusCode < 200 || statusCode >= 300) {
+                reject(Object.assign(new Error("Error response received from instance metadata service"), { statusCode }));
+                req.destroy();
+                return;
+            }
+            const chunks = [];
+            res.on("data", (chunk) => chunks.push(chunk));
+            res.on("end", () => {
+                resolve(Buffer.concat(chunks));
+                req.destroy();
+            });
+        });
+        req.end();
+    });
+};
+
 const REGION_ENV_NAME = "AWS_REGION";
 const REGION_INI_NAME = "region";
 const NODE_REGION_CONFIG_OPTIONS = {
     environmentVariableSelector: (env) => env[REGION_ENV_NAME],
     configFileSelector: (profile) => profile[REGION_INI_NAME],
-    default: () => {
+    default: async () => {
+        const region = await getInstanceMetadataRegion();
+        if (region) {
+            return region;
+        }
         throw new Error("Region is missing");
     },
 };
@@ -22793,13 +22834,6 @@ const getRegionInfo = (region, { useFipsEndpoint = false, useDualstackEndpoint =
     };
 };
 
-const AWS_EXECUTION_ENV = "AWS_EXECUTION_ENV";
-const AWS_REGION_ENV = "AWS_REGION";
-const AWS_DEFAULT_REGION_ENV = "AWS_DEFAULT_REGION";
-const ENV_IMDS_DISABLED = "AWS_EC2_METADATA_DISABLED";
-const DEFAULTS_MODE_OPTIONS = ["in-region", "cross-region", "mobile", "standard", "legacy"];
-const IMDS_REGION_PATH = "/latest/meta-data/placement/region";
-
 const AWS_DEFAULTS_MODE_ENV = "AWS_DEFAULTS_MODE";
 const AWS_DEFAULTS_MODE_CONFIG = "defaults_mode";
 const NODE_DEFAULTS_MODE_CONFIG_OPTIONS = {
@@ -22849,61 +22883,7 @@ const inferPhysicalRegion = async () => {
     if (process.env[AWS_EXECUTION_ENV] && (process.env[AWS_REGION_ENV] || process.env[AWS_DEFAULT_REGION_ENV])) {
         return process.env[AWS_REGION_ENV] ?? process.env[AWS_DEFAULT_REGION_ENV];
     }
-    if (!process.env[ENV_IMDS_DISABLED]) {
-        try {
-            const endpoint = await getImdsEndpoint();
-            return (await imdsHttpGet({ hostname: endpoint.hostname, path: IMDS_REGION_PATH })).toString();
-        }
-        catch (e) {
-        }
-    }
-};
-const getImdsEndpoint = async () => {
-    const envEndpoint = process.env.AWS_EC2_METADATA_SERVICE_ENDPOINT;
-    if (envEndpoint) {
-        const url = new URL(envEndpoint);
-        return { hostname: url.hostname, path: url.pathname };
-    }
-    const envMode = process.env.AWS_EC2_METADATA_SERVICE_ENDPOINT_MODE;
-    if (envMode === "IPv6") {
-        return { hostname: "fd00:ec2::254", path: "/" };
-    }
-    return { hostname: "169.254.169.254", path: "/" };
-};
-const imdsHttpGet = async ({ hostname, path }) => {
-    const { request } = __nccwpck_require__(7067);
-    return new Promise((resolve, reject) => {
-        const req = request({
-            method: "GET",
-            hostname: hostname.replace(/^\[(.+)]$/, "$1"),
-            path,
-            timeout: 1000,
-            signal: AbortSignal.timeout(1000),
-        });
-        req.on("error", (err) => {
-            reject(err);
-            req.destroy();
-        });
-        req.on("timeout", () => {
-            reject(new Error("TimeoutError from instance metadata service"));
-            req.destroy();
-        });
-        req.on("response", (res) => {
-            const { statusCode = 400 } = res;
-            if (statusCode < 200 || 300 <= statusCode) {
-                reject(Object.assign(new Error("Error response received from instance metadata service"), { statusCode }));
-                req.destroy();
-                return;
-            }
-            const chunks = [];
-            res.on("data", (chunk) => chunks.push(chunk));
-            res.on("end", () => {
-                resolve(Buffer.concat(chunks));
-                req.destroy();
-            });
-        });
-        req.end();
-    });
+    return getInstanceMetadataRegion();
 };
 
 exports.CONFIG_PREFIX_SEPARATOR = CONFIG_PREFIX_SEPARATOR;
@@ -23820,7 +23800,7 @@ exports.resolveParams = resolveParams;
 /***/ 6579:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-const { Crc32 } = __nccwpck_require__(2110);
+const { Crc32 } = __nccwpck_require__(9542);
 const { toHex, fromHex, toUtf8, fromUtf8 } = __nccwpck_require__(2430);
 const { Readable } = __nccwpck_require__(7075);
 
@@ -24067,13 +24047,14 @@ function splitMessage({ byteLength, byteOffset, buffer }) {
     const headerLength = view.getUint32(PRELUDE_MEMBER_LENGTH, false);
     const expectedPreludeChecksum = view.getUint32(PRELUDE_LENGTH, false);
     const expectedMessageChecksum = view.getUint32(byteLength - CHECKSUM_LENGTH, false);
-    const checksummer = new Crc32().update(new Uint8Array(buffer, byteOffset, PRELUDE_LENGTH));
-    if (expectedPreludeChecksum !== checksummer.digest()) {
-        throw new Error(`The prelude checksum specified in the message (${expectedPreludeChecksum}) does not match the calculated CRC32 checksum (${checksummer.digest()})`);
+    const checksummer = new Crc32();
+    checksummer.update(new Uint8Array(buffer, byteOffset, PRELUDE_LENGTH));
+    if (expectedPreludeChecksum !== checksummer.digestSync()) {
+        throw new Error(`The prelude checksum specified in the message (${expectedPreludeChecksum}) does not match the calculated CRC32 checksum (${checksummer.digestSync()})`);
     }
     checksummer.update(new Uint8Array(buffer, byteOffset + PRELUDE_LENGTH, byteLength - (PRELUDE_LENGTH + CHECKSUM_LENGTH)));
-    if (expectedMessageChecksum !== checksummer.digest()) {
-        throw new Error(`The message checksum (${checksummer.digest()}) did not match the expected value of ${expectedMessageChecksum}`);
+    if (expectedMessageChecksum !== checksummer.digestSync()) {
+        throw new Error(`The message checksum (${checksummer.digestSync()}) did not match the expected value of ${expectedMessageChecksum}`);
     }
     return {
         headers: new DataView(buffer, byteOffset + PRELUDE_LENGTH + CHECKSUM_LENGTH, headerLength),
@@ -24129,10 +24110,12 @@ class EventStreamCodec {
         const checksum = new Crc32();
         view.setUint32(0, length, false);
         view.setUint32(4, headers.byteLength, false);
-        view.setUint32(8, checksum.update(out.subarray(0, 8)).digest(), false);
+        checksum.update(out.subarray(0, 8));
+        view.setUint32(8, checksum.digestSync(), false);
         out.set(headers, 12);
         out.set(body, headers.byteLength + 12);
-        view.setUint32(length - 4, checksum.update(out.subarray(8, length - 4)).digest(), false);
+        checksum.update(out.subarray(8, length - 4));
+        view.setUint32(length - 4, checksum.digestSync(), false);
         return out;
     }
     decode(message) {
@@ -24718,8 +24701,8 @@ exports.universalEventStreamSerdeProvider = eventStreamSerdeProvider$1;
 
 const { Uint8ArrayBlobAdapter, sdkStreamMixin, splitEvery, splitHeader, fromBase64, _parseEpochTimestamp, _parseRfc7231DateTime, _parseRfc3339DateTimeWithOffset, LazyJsonString, NumericValue, toUtf8, fromUtf8, generateIdempotencyToken, toBase64, dateToUtcString, quoteHeader } = __nccwpck_require__(2430);
 const { TypeRegistry, NormalizedSchema, translateTraits } = __nccwpck_require__(6890);
-const { HttpRequest, HttpResponse } = __nccwpck_require__(4534);
-const { isValidHostname, parseQueryString, parseUrl } = __nccwpck_require__(4534);
+const { HttpRequest, HttpResponse, isValidHostname } = __nccwpck_require__(4534);
+const { parseQueryString, parseUrl } = __nccwpck_require__(4534);
 exports.HttpRequest = HttpRequest;
 exports.HttpResponse = HttpResponse;
 exports.isValidHostname = isValidHostname;
@@ -24834,6 +24817,9 @@ class HttpProtocol extends SerdeContext {
                     hostPrefix = hostPrefix.replace(`{${name}}`, replacement);
                 }
                 request.hostname = hostPrefix + request.hostname;
+                if (!isValidHostname(request.hostname)) {
+                    throw new Error(`[${request.hostname}] is not a valid hostname.`);
+                }
             }
         }
     }
@@ -27350,7 +27336,7 @@ const fromString = (input, encoding) => {
 };
 
 const BASE64_REGEX = /^[A-Za-z0-9+/]*={0,2}$/;
-const fromBase64$1 = (input) => {
+const fromBase64 = (input) => {
     if ((input.length * 3) % 4 !== 0) {
         throw new TypeError(`Incorrect padding on base64 string.`);
     }
@@ -28160,6 +28146,9 @@ const calculateBodyLength = (body) => {
 };
 
 const toUint8Array = (data) => {
+    if (data instanceof Uint8Array) {
+        return data;
+    }
     if (typeof data === "string") {
         return fromUtf8$1(data);
     }
@@ -28168,6 +28157,22 @@ const toUint8Array = (data) => {
     }
     return new Uint8Array(data);
 };
+
+function concatBytes(arrays, length) {
+    if (length === undefined) {
+        length = 0;
+        for (const bytes of arrays) {
+            length += bytes.byteLength;
+        }
+    }
+    const result = new Uint8Array(length);
+    let offset = 0;
+    for (const buf of arrays) {
+        result.set(buf, offset);
+        offset += buf.byteLength;
+    }
+    return result;
+}
 
 const deserializerMiddleware = (options, deserializer) => (next, context) => async (args) => {
     const { response } = await next(args);
@@ -28354,6 +28359,10 @@ let ChecksumStream$1 = class ChecksumStream extends Duplex {
         this.push(null);
         return callback();
     }
+    _destroy(error, callback) {
+        this.source?.destroy();
+        callback(error);
+    }
 };
 
 const isReadableStream = (stream) => typeof ReadableStream === "function" &&
@@ -28365,7 +28374,7 @@ const isBlob = (blob) => {
 const fromUtf8 = (input) => new TextEncoder().encode(input);
 
 const chars = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/`;
-const alphabetByEncoding = Object.entries(chars).reduce((acc, [i, c]) => {
+Object.entries(chars).reduce((acc, [i, c]) => {
     acc[c] = Number(i);
     return acc;
 }, {});
@@ -28743,7 +28752,7 @@ const headStream = (stream, bytes) => {
         });
         collector.on("error", reject);
         collector.on("finish", function () {
-            const bytes = new Uint8Array(Buffer.concat(this.buffers));
+            const bytes = concatBytes(this.buffers);
             resolve(bytes);
         });
     });
@@ -28775,93 +28784,30 @@ const toUtf8 = (input) => {
     return new TextDecoder("utf-8").decode(input);
 };
 
-const fromBase64 = (input) => {
-    let totalByteLength = (input.length / 4) * 3;
-    if (input.slice(-2) === "==") {
-        totalByteLength -= 2;
-    }
-    else if (input.slice(-1) === "=") {
-        totalByteLength--;
-    }
-    const out = new ArrayBuffer(totalByteLength);
-    const dataView = new DataView(out);
-    for (let i = 0; i < input.length; i += 4) {
-        let bits = 0;
-        let bitLength = 0;
-        for (let j = i, limit = i + 3; j <= limit; j++) {
-            if (input[j] !== "=") {
-                if (!(input[j] in alphabetByEncoding)) {
-                    throw new TypeError(`Invalid character ${input[j]} in base64 string.`);
-                }
-                bits |= alphabetByEncoding[input[j]] << ((limit - j) * bitsPerLetter);
-                bitLength += bitsPerLetter;
-            }
-            else {
-                bits >>= bitsPerLetter;
-            }
-        }
-        const chunkOffset = (i / 4) * 3;
-        bits >>= bitLength % bitsPerByte;
-        const byteLength = Math.floor(bitLength / bitsPerByte);
-        for (let k = 0; k < byteLength; k++) {
-            const offset = (byteLength - k - 1) * bitsPerByte;
-            dataView.setUint8(chunkOffset + k, (bits & (255 << offset)) >> offset);
-        }
-    }
-    return new Uint8Array(out);
-};
-
 const streamCollector$1 = async (stream) => {
-    if ((typeof Blob === "function" && stream instanceof Blob) || stream.constructor?.name === "Blob") {
-        if (Blob.prototype.arrayBuffer !== undefined) {
-            return new Uint8Array(await stream.arrayBuffer());
-        }
+    if (isBlob(stream)) {
         return collectBlob(stream);
     }
-    return collectStream(stream);
+    return collectReadableStream(stream);
 };
 async function collectBlob(blob) {
-    const base64 = await readToBase64(blob);
-    const arrayBuffer = fromBase64(base64);
-    return new Uint8Array(arrayBuffer);
+    return blob.arrayBuffer().then((ab) => new Uint8Array(ab));
 }
-async function collectStream(stream) {
+async function collectReadableStream(stream) {
     const chunks = [];
     const reader = stream.getReader();
-    let isDone = false;
     let length = 0;
-    while (!isDone) {
+    while (true) {
         const { done, value } = await reader.read();
         if (value) {
             chunks.push(value);
             length += value.length;
         }
-        isDone = done;
+        if (done) {
+            break;
+        }
     }
-    const collected = new Uint8Array(length);
-    let offset = 0;
-    for (const chunk of chunks) {
-        collected.set(chunk, offset);
-        offset += chunk.length;
-    }
-    return collected;
-}
-function readToBase64(blob) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            if (reader.readyState !== 2) {
-                return reject(new Error("Reader aborted too early"));
-            }
-            const result = (reader.result ?? "");
-            const commaIndex = result.indexOf(",");
-            const dataOffset = commaIndex > -1 ? commaIndex + 1 : result.length;
-            resolve(result.substring(dataOffset));
-        };
-        reader.onabort = () => reject(new Error("Read aborted"));
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(blob);
-    });
+    return concatBytes(chunks, length);
 }
 
 const ERR_MSG_STREAM_HAS_BEEN_TRANSFORMED$1 = "The stream has already been transformed.";
@@ -28924,6 +28870,28 @@ const sdkStreamMixin$1 = (stream) => {
 };
 const isBlobInstance = (stream) => typeof Blob === "function" && stream instanceof Blob;
 
+const streamCollector = (stream) => {
+    if (isBlob(stream)) {
+        return collectBlob(stream);
+    }
+    if (isReadableStream(stream)) {
+        return collectReadableStream(stream);
+    }
+    return new Promise((resolve, reject) => {
+        const collector = new Collector();
+        const nodeStream = stream;
+        nodeStream.pipe(collector);
+        nodeStream.on("error", (err) => {
+            collector.end();
+            reject(err);
+        });
+        collector.on("error", reject);
+        collector.on("finish", function () {
+            const bytes = concatBytes(this.bufferedBytes);
+            resolve(bytes);
+        });
+    });
+};
 class Collector extends Writable {
     bufferedBytes = [];
     _write(chunk, encoding, callback) {
@@ -28931,46 +28899,6 @@ class Collector extends Writable {
         callback();
     }
 }
-const isReadableStreamInstance = (stream) => typeof ReadableStream === "function" && stream instanceof ReadableStream;
-async function collectReadableStream(stream) {
-    const chunks = [];
-    const reader = stream.getReader();
-    let isDone = false;
-    let length = 0;
-    while (!isDone) {
-        const { done, value } = await reader.read();
-        if (value) {
-            chunks.push(value);
-            length += value.length;
-        }
-        isDone = done;
-    }
-    const collected = new Uint8Array(length);
-    let offset = 0;
-    for (const chunk of chunks) {
-        collected.set(chunk, offset);
-        offset += chunk.length;
-    }
-    return collected;
-}
-const streamCollector = (stream) => {
-    if (isReadableStreamInstance(stream)) {
-        return collectReadableStream(stream);
-    }
-    return new Promise((resolve, reject) => {
-        const collector = new Collector();
-        stream.pipe(collector);
-        stream.on("error", (err) => {
-            collector.end();
-            reject(err);
-        });
-        collector.on("error", reject);
-        collector.on("finish", function () {
-            const bytes = new Uint8Array(Buffer.concat(this.bufferedBytes));
-            resolve(bytes);
-        });
-    });
-};
 
 const ERR_MSG_STREAM_HAS_BEEN_TRANSFORMED = "The stream has already been transformed.";
 const sdkStreamMixin = (stream) => {
@@ -29038,7 +28966,7 @@ async function splitStream(stream) {
     return [stream1, stream2];
 }
 
-class Uint8ArrayBlobAdapter extends bindUint8ArrayBlobAdapter(toUtf8$1, fromUtf8$1, toBase64$1, fromBase64$1) {
+class Uint8ArrayBlobAdapter extends bindUint8ArrayBlobAdapter(toUtf8$1, fromUtf8$1, toBase64$1, fromBase64) {
 }
 const _getRandomValues = getRandomValues;
 const v4 = bindV4(_getRandomValues);
@@ -29053,6 +28981,7 @@ exports._parseEpochTimestamp = _parseEpochTimestamp;
 exports._parseRfc3339DateTimeWithOffset = _parseRfc3339DateTimeWithOffset;
 exports._parseRfc7231DateTime = _parseRfc7231DateTime;
 exports.calculateBodyLength = calculateBodyLength;
+exports.concatBytes = concatBytes;
 exports.copyDocumentWithTransform = copyDocumentWithTransform;
 exports.createBufferedReadable = createBufferedReadable;
 exports.createChecksumStream = createChecksumStream;
@@ -29072,7 +29001,7 @@ exports.expectShort = expectShort;
 exports.expectString = expectString;
 exports.expectUnion = expectUnion;
 exports.fromArrayBuffer = fromArrayBuffer;
-exports.fromBase64 = fromBase64$1;
+exports.fromBase64 = fromBase64;
 exports.fromHex = fromHex;
 exports.fromString = fromString;
 exports.fromUtf8 = fromUtf8$1;
@@ -29101,6 +29030,7 @@ exports.serializerMiddlewareOption = serializerMiddlewareOption;
 exports.splitEvery = splitEvery;
 exports.splitHeader = splitHeader;
 exports.splitStream = splitStream;
+exports.streamCollector = streamCollector;
 exports.strictParseByte = strictParseByte;
 exports.strictParseDouble = strictParseDouble;
 exports.strictParseFloat = strictParseFloat;
@@ -29413,11 +29343,9 @@ exports.resolveDefaultRuntimeConfig = resolveDefaultRuntimeConfig;
 /***/ 566:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-
-
-var config = __nccwpck_require__(7291);
-var node_http = __nccwpck_require__(7067);
-var protocols = __nccwpck_require__(3422);
+const { ProviderError, CredentialsProviderError, loadConfig } = __nccwpck_require__(7291);
+const node_http = __nccwpck_require__(7067);
+const { parseUrl } = __nccwpck_require__(3422);
 
 const isImdsCredentials = (arg) => Boolean(arg) &&
     typeof arg === "object" &&
@@ -29445,17 +29373,17 @@ function httpRequest(options) {
             hostname: options.hostname?.replace(/^\[(.+)\]$/, "$1"),
         });
         req.on("error", (err) => {
-            reject(Object.assign(new config.ProviderError("Unable to connect to instance metadata service"), err));
+            reject(Object.assign(new ProviderError("Unable to connect to instance metadata service"), err));
             req.destroy();
         });
         req.on("timeout", () => {
-            reject(new config.ProviderError("TimeoutError from instance metadata service"));
+            reject(new ProviderError("TimeoutError from instance metadata service"));
             req.destroy();
         });
         req.on("response", (res) => {
             const { statusCode = 400 } = res;
             if (statusCode < 200 || 300 <= statusCode) {
-                reject(Object.assign(new config.ProviderError("Error response received from instance metadata service"), { statusCode }));
+                reject(Object.assign(new ProviderError("Error response received from instance metadata service"), { statusCode }));
                 req.destroy();
             }
             const chunks = [];
@@ -29488,7 +29416,7 @@ const fromContainerMetadata = (init = {}) => {
         const requestOptions = await getCmdsUri({ logger: init.logger });
         const credsResponse = JSON.parse(await requestFromEcsImds(timeout, requestOptions));
         if (!isImdsCredentials(credsResponse)) {
-            throw new config.CredentialsProviderError("Invalid response received from instance metadata service.", {
+            throw new CredentialsProviderError("Invalid response received from instance metadata service.", {
                 logger: init.logger,
             });
         }
@@ -29524,16 +29452,16 @@ const getCmdsUri = async ({ logger }) => {
             parsed = new URL(process.env[ENV_CMDS_FULL_URI]);
         }
         catch {
-            throw new config.CredentialsProviderError(`${process.env[ENV_CMDS_FULL_URI]} is not a valid container metadata service URL`, { tryNextLink: false, logger });
+            throw new CredentialsProviderError(`${process.env[ENV_CMDS_FULL_URI]} is not a valid container metadata service URL`, { tryNextLink: false, logger });
         }
         if (!parsed.hostname || !GREENGRASS_HOSTS.has(parsed.hostname)) {
-            throw new config.CredentialsProviderError(`${parsed.hostname} is not a valid container metadata service hostname`, {
+            throw new CredentialsProviderError(`${parsed.hostname} is not a valid container metadata service hostname`, {
                 tryNextLink: false,
                 logger,
             });
         }
         if (!parsed.protocol || !GREENGRASS_PROTOCOLS.has(parsed.protocol)) {
-            throw new config.CredentialsProviderError(`${parsed.protocol} is not a valid container metadata service protocol`, {
+            throw new CredentialsProviderError(`${parsed.protocol} is not a valid container metadata service protocol`, {
                 tryNextLink: false,
                 logger,
             });
@@ -29545,7 +29473,7 @@ const getCmdsUri = async ({ logger }) => {
             port: parsed.port ? parseInt(parsed.port, 10) : undefined,
         };
     }
-    throw new config.CredentialsProviderError("The container metadata credential provider cannot be used unless" +
+    throw new CredentialsProviderError("The container metadata credential provider cannot be used unless" +
         ` the ${ENV_CMDS_RELATIVE_URI} or ${ENV_CMDS_FULL_URI} environment` +
         " variable is set", {
         tryNextLink: false,
@@ -29553,7 +29481,7 @@ const getCmdsUri = async ({ logger }) => {
     });
 };
 
-class InstanceMetadataV1FallbackError extends config.CredentialsProviderError {
+class InstanceMetadataV1FallbackError extends CredentialsProviderError {
     tryNextLink;
     name = "InstanceMetadataV1FallbackError";
     constructor(message, tryNextLink = true) {
@@ -29563,11 +29491,11 @@ class InstanceMetadataV1FallbackError extends config.CredentialsProviderError {
     }
 }
 
-exports.Endpoint = void 0;
+var Endpoint;
 (function (Endpoint) {
     Endpoint["IPv4"] = "http://169.254.169.254";
     Endpoint["IPv6"] = "http://[fd00:ec2::254]";
-})(exports.Endpoint || (exports.Endpoint = {}));
+})(Endpoint || (Endpoint = {}));
 
 const ENV_ENDPOINT_NAME = "AWS_EC2_METADATA_SERVICE_ENDPOINT";
 const CONFIG_ENDPOINT_NAME = "ec2_metadata_service_endpoint";
@@ -29591,15 +29519,15 @@ const ENDPOINT_MODE_CONFIG_OPTIONS = {
     default: EndpointMode.IPv4,
 };
 
-const getInstanceMetadataEndpoint = async () => protocols.parseUrl((await getFromEndpointConfig()) || (await getFromEndpointModeConfig()));
-const getFromEndpointConfig = async () => config.loadConfig(ENDPOINT_CONFIG_OPTIONS)();
+const getInstanceMetadataEndpoint = async () => parseUrl((await getFromEndpointConfig()) || (await getFromEndpointModeConfig()));
+const getFromEndpointConfig = async () => loadConfig(ENDPOINT_CONFIG_OPTIONS)();
 const getFromEndpointModeConfig = async () => {
-    const endpointMode = await config.loadConfig(ENDPOINT_MODE_CONFIG_OPTIONS)();
+    const endpointMode = await loadConfig(ENDPOINT_MODE_CONFIG_OPTIONS)();
     switch (endpointMode) {
         case EndpointMode.IPv4:
-            return exports.Endpoint.IPv4;
+            return Endpoint.IPv4;
         case EndpointMode.IPv6:
-            return exports.Endpoint.IPv6;
+            return Endpoint.IPv6;
         default:
             throw new Error(`Unsupported endpoint mode: ${endpointMode}.` + ` Select from ${Object.values(EndpointMode)}`);
     }
@@ -29663,12 +29591,12 @@ const getInstanceMetadataProvider = (init = {}) => {
         if (isImdsV1Fallback) {
             let fallbackBlockedFromProfile = false;
             let fallbackBlockedFromProcessEnv = false;
-            const configValue = await config.loadConfig({
+            const configValue = await loadConfig({
                 environmentVariableSelector: (env) => {
                     const envValue = env[AWS_EC2_METADATA_V1_DISABLED];
                     fallbackBlockedFromProcessEnv = !!envValue && envValue !== "false";
                     if (envValue === undefined) {
-                        throw new config.CredentialsProviderError(`${AWS_EC2_METADATA_V1_DISABLED} not set in env, checking config file next.`, { logger: init.logger });
+                        throw new CredentialsProviderError(`${AWS_EC2_METADATA_V1_DISABLED} not set in env, checking config file next.`, { logger: init.logger });
                     }
                     return fallbackBlockedFromProcessEnv;
                 },
@@ -29767,7 +29695,7 @@ const getCredentialsFromProfile = async (profile, options, init) => {
         path: IMDS_PATH + profile,
     })).toString());
     if (!isImdsCredentials(credentialsResponse)) {
-        throw new config.CredentialsProviderError("Invalid response received from instance metadata service.", {
+        throw new CredentialsProviderError("Invalid response received from instance metadata service.", {
             logger: init.logger,
         });
     }
@@ -29779,6 +29707,7 @@ exports.DEFAULT_TIMEOUT = DEFAULT_TIMEOUT;
 exports.ENV_CMDS_AUTH_TOKEN = ENV_CMDS_AUTH_TOKEN;
 exports.ENV_CMDS_FULL_URI = ENV_CMDS_FULL_URI;
 exports.ENV_CMDS_RELATIVE_URI = ENV_CMDS_RELATIVE_URI;
+exports.Endpoint = Endpoint;
 exports.fromContainerMetadata = fromContainerMetadata;
 exports.fromInstanceMetadata = fromInstanceMetadata;
 exports.getInstanceMetadataEndpoint = getInstanceMetadataEndpoint;
@@ -30667,17 +30596,15 @@ exports.buildQueryString = buildQueryString;
 /***/ 5118:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-
-
-var serde = __nccwpck_require__(2430);
-var client = __nccwpck_require__(2658);
-var protocols = __nccwpck_require__(3422);
+const { fromUtf8, fromHex, toHex, toUint8Array, isArrayBuffer } = __nccwpck_require__(2430);
+const { normalizeProvider } = __nccwpck_require__(2658);
+const { escapeUri, HttpRequest } = __nccwpck_require__(3422);
 
 class HeaderFormatter {
     format(headers) {
         const chunks = [];
         for (const headerName of Object.keys(headers)) {
-            const bytes = serde.fromUtf8(headerName);
+            const bytes = fromUtf8(headerName);
             chunks.push(Uint8Array.from([bytes.byteLength]), bytes, this.formatHeaderValue(headers[headerName]));
         }
         const out = new Uint8Array(chunks.reduce((carry, bytes) => carry + bytes.byteLength, 0));
@@ -30717,7 +30644,7 @@ class HeaderFormatter {
                 binBytes.set(header.value, 3);
                 return binBytes;
             case "string":
-                const utf8Bytes = serde.fromUtf8(header.value);
+                const utf8Bytes = fromUtf8(header.value);
                 const strView = new DataView(new ArrayBuffer(3 + utf8Bytes.byteLength));
                 strView.setUint8(0, 7);
                 strView.setUint16(1, utf8Bytes.byteLength, false);
@@ -30735,7 +30662,7 @@ class HeaderFormatter {
                 }
                 const uuidBytes = new Uint8Array(17);
                 uuidBytes[0] = 9;
-                uuidBytes.set(serde.fromHex(header.value.replace(/\-/g, "")), 1);
+                uuidBytes.set(fromHex(header.value.replace(/\-/g, "")), 1);
                 return uuidBytes;
         }
     }
@@ -30781,7 +30708,7 @@ class Int64 {
         if (negative) {
             negate(bytes);
         }
-        return parseInt(serde.toHex(bytes), 16) * (negative ? -1 : 1);
+        return parseInt(toHex(bytes), 16) * (negative ? -1 : 1);
     }
     toString() {
         return String(this.valueOf());
@@ -30849,16 +30776,16 @@ const getCanonicalQuery = ({ query = {} }) => {
         if (key.toLowerCase() === SIGNATURE_HEADER) {
             continue;
         }
-        const encodedKey = protocols.escapeUri(key);
+        const encodedKey = escapeUri(key);
         keys.push(encodedKey);
         const value = query[key];
         if (typeof value === "string") {
-            serialized[encodedKey] = `${encodedKey}=${protocols.escapeUri(value)}`;
+            serialized[encodedKey] = `${encodedKey}=${escapeUri(value)}`;
         }
         else if (Array.isArray(value)) {
             serialized[encodedKey] = value
                 .slice(0)
-                .reduce((encoded, value) => encoded.concat([`${encodedKey}=${protocols.escapeUri(value)}`]), [])
+                .reduce((encoded, value) => encoded.concat([`${encodedKey}=${escapeUri(value)}`]), [])
                 .sort()
                 .join("&");
         }
@@ -30898,8 +30825,8 @@ class SignatureV4Base {
         this.sha256 = sha256;
         this.uriEscapePath = uriEscapePath;
         this.applyChecksum = typeof applyChecksum === "boolean" ? applyChecksum : true;
-        this.regionProvider = client.normalizeProvider(region);
-        this.credentialProvider = client.normalizeProvider(credentials);
+        this.regionProvider = normalizeProvider(region);
+        this.credentialProvider = normalizeProvider(credentials);
     }
     createCanonicalRequest(request, canonicalHeaders, payloadHash) {
         const sortedHeaders = Object.keys(canonicalHeaders).sort();
@@ -30913,12 +30840,12 @@ ${payloadHash}`;
     }
     async createStringToSign(longDate, credentialScope, canonicalRequest, algorithmIdentifier) {
         const hash = new this.sha256();
-        hash.update(serde.toUint8Array(canonicalRequest));
+        hash.update(toUint8Array(canonicalRequest));
         const hashedRequest = await hash.digest();
         return `${algorithmIdentifier}
 ${longDate}
 ${credentialScope}
-${serde.toHex(hashedRequest)}`;
+${toHex(hashedRequest)}`;
     }
     getCanonicalPath({ path }) {
         if (this.uriEscapePath) {
@@ -30936,7 +30863,7 @@ ${serde.toHex(hashedRequest)}`;
                 }
             }
             const normalizedPath = `${path?.startsWith("/") ? "/" : ""}${normalizedPathSegments.join("/")}${normalizedPathSegments.length > 0 && path?.endsWith("/") ? "/" : ""}`;
-            const doubleEncoded = protocols.escapeUri(normalizedPath);
+            const doubleEncoded = escapeUri(normalizedPath);
             return doubleEncoded.replace(/%2F/g, "/");
         }
         return path;
@@ -30965,7 +30892,7 @@ const cacheQueue = [];
 const createScope = (shortDate, region, service) => `${shortDate}/${region}/${service}/${KEY_TYPE_IDENTIFIER}`;
 const getSigningKey = async (sha256Constructor, credentials, shortDate, region, service) => {
     const credsHash = await hmac(sha256Constructor, credentials.secretAccessKey, credentials.accessKeyId);
-    const cacheKey = `${shortDate}:${region}:${service}:${serde.toHex(credsHash)}:${credentials.sessionToken}`;
+    const cacheKey = `${shortDate}:${region}:${service}:${toHex(credsHash)}:${credentials.sessionToken}`;
     if (cacheKey in signingKeyCache) {
         return signingKeyCache[cacheKey];
     }
@@ -30987,7 +30914,7 @@ const clearCredentialCache = () => {
 };
 const hmac = (ctor, secret, data) => {
     const hash = new ctor(secret);
-    hash.update(serde.toUint8Array(data));
+    hash.update(toUint8Array(data));
     return hash.digest();
 };
 
@@ -31020,10 +30947,10 @@ const getPayloadHash = async ({ headers, body }, hashConstructor) => {
     if (body == undefined) {
         return "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
     }
-    else if (typeof body === "string" || ArrayBuffer.isView(body) || serde.isArrayBuffer(body)) {
+    else if (typeof body === "string" || ArrayBuffer.isView(body) || isArrayBuffer(body)) {
         const hashCtor = new hashConstructor();
-        hashCtor.update(serde.toUint8Array(body));
-        return serde.toHex(await hashCtor.digest());
+        hashCtor.update(toUint8Array(body));
+        return toHex(await hashCtor.digest());
     }
     return UNSIGNED_PAYLOAD;
 };
@@ -31039,7 +30966,7 @@ const hasHeader = (soughtHeader, headers) => {
 };
 
 const moveHeadersToQuery = (request, options = {}) => {
-    const { headers, query = {} } = protocols.HttpRequest.clone(request);
+    const { headers, query = {} } = HttpRequest.clone(request);
     for (const name of Object.keys(headers)) {
         const lname = name.toLowerCase();
         if ((lname.slice(0, 6) === "x-amz-" && !options.unhoistableHeaders?.has(lname)) ||
@@ -31056,7 +30983,7 @@ const moveHeadersToQuery = (request, options = {}) => {
 };
 
 const prepareRequest = (request) => {
-    request = protocols.HttpRequest.clone(request);
+    request = HttpRequest.clone(request);
     for (const headerName of Object.keys(request.headers)) {
         if (GENERATED_HEADERS.indexOf(headerName.toLowerCase()) > -1) {
             delete request.headers[headerName];
@@ -31121,7 +31048,7 @@ class SignatureV4 extends SignatureV4Base {
         const hashedPayload = await getPayloadHash({ headers: {}, body: payload }, this.sha256);
         const hash = new this.sha256();
         hash.update(headers);
-        const hashedHeaders = serde.toHex(await hash.digest());
+        const hashedHeaders = toHex(await hash.digest());
         const stringToSign = [
             EVENT_ALGORITHM_IDENTIFIER,
             longDate,
@@ -31158,8 +31085,8 @@ class SignatureV4 extends SignatureV4Base {
         const region = signingRegion ?? (await this.regionProvider());
         const { shortDate } = this.formatDate(signingDate);
         const hash = new this.sha256(await this.getSigningKey(credentials, region, shortDate, signingService));
-        hash.update(serde.toUint8Array(stringToSign));
-        return serde.toHex(await hash.digest());
+        hash.update(toUint8Array(stringToSign));
+        return toHex(await hash.digest());
     }
     async signRequest(requestToSign, { signingDate = new Date(), signableHeaders, unsignableHeaders, signingRegion, signingService, } = {}) {
         const credentials = await this.credentialProvider();
@@ -31188,8 +31115,8 @@ class SignatureV4 extends SignatureV4Base {
     async getSignature(longDate, credentialScope, keyPromise, canonicalRequest) {
         const stringToSign = await this.createStringToSign(longDate, credentialScope, canonicalRequest, ALGORITHM_IDENTIFIER);
         const hash = new this.sha256(await keyPromise);
-        hash.update(serde.toUint8Array(stringToSign));
-        return serde.toHex(await hash.digest());
+        hash.update(toUint8Array(stringToSign));
+        return toHex(await hash.digest());
     }
     getSigningKey(credentials, region, shortDate, service) {
         return getSigningKey(this.sha256, credentials, shortDate, region, service || this.service);
@@ -61176,13 +61103,6 @@ module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("assert");
 
 /***/ }),
 
-/***/ 181:
-/***/ ((module) => {
-
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("buffer");
-
-/***/ }),
-
 /***/ 4434:
 /***/ ((module) => {
 
@@ -61446,13 +61366,6 @@ module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("tty");
 /***/ ((module) => {
 
 module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("util");
-
-/***/ }),
-
-/***/ 7643:
-/***/ ((module) => {
-
-module.exports = /*#__PURE__*/JSON.parse('{"name":"@aws-sdk/client-ecr-public","description":"AWS SDK for JavaScript Ecr Public Client for Node.js, Browser and React Native","version":"3.1070.0","scripts":{"build":"concurrently \'yarn:build:types\' \'yarn:build:es\' && yarn build:cjs","build:cjs":"node ../../scripts/compilation/inline","build:es":"premove dist-es && tsc -p tsconfig.es.json","build:include:deps":"yarn g:turbo run build -F=\\"$npm_package_name\\"","build:types":"premove dist-types && tsc -p tsconfig.types.json","build:types:downlevel":"downlevel-dts dist-types dist-types/ts3.4","clean":"premove dist-cjs dist-es dist-types","extract:docs":"api-extractor run --local","generate:client":"node ../../scripts/generate-clients/single-service","test:index":"tsc --noEmit ./test/index-types.ts && node ./test/index-objects.spec.mjs"},"main":"./dist-cjs/index.js","types":"./dist-types/index.d.ts","module":"./dist-es/index.js","sideEffects":false,"dependencies":{"@aws-crypto/sha256-browser":"5.2.0","@aws-crypto/sha256-js":"5.2.0","@aws-sdk/core":"^3.974.21","@aws-sdk/credential-provider-node":"^3.972.56","@aws-sdk/types":"^3.973.13","@smithy/core":"^3.24.6","@smithy/fetch-http-handler":"^5.4.6","@smithy/node-http-handler":"^4.7.6","@smithy/types":"^4.14.3","tslib":"^2.6.2"},"devDependencies":{"@tsconfig/node20":"20.1.8","@types/node":"^20.14.8","concurrently":"7.0.0","downlevel-dts":"0.10.1","premove":"4.0.0","typescript":"~5.8.3"},"engines":{"node":">=20.0.0"},"typesVersions":{"<4.5":{"dist-types/*":["dist-types/ts3.4/*"]}},"files":["dist-*/**"],"author":{"name":"AWS SDK for JavaScript Team","url":"https://aws.amazon.com/sdk-for-javascript/"},"license":"Apache-2.0","browser":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.browser"},"react-native":{"./dist-es/runtimeConfig":"./dist-es/runtimeConfig.native"},"homepage":"https://github.com/aws/aws-sdk-js-v3/tree/main/clients/client-ecr-public","repository":{"type":"git","url":"https://github.com/aws/aws-sdk-js-v3.git","directory":"clients/client-ecr-public"}}');
 
 /***/ }),
 
@@ -65270,7 +65183,7 @@ async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
 }
 
 async function getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
-  const ecrPublicClient = new client_ecr_public_dist_cjs.ECRPUBLICClient({
+  const ecrPublicClient = new client_ecr_public_dist_cjs/* ECRPUBLICClient */.Rr({
     customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
     // Authenticating to ECR Public auth only works in us-east-1
     region: "us-east-1",
@@ -65280,7 +65193,7 @@ async function getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
       httpsAgent: httpsProxyAgent
     }),
   });
-  const command = new client_ecr_public_dist_cjs.GetAuthorizationTokenCommand(authTokenRequest);
+  const command = new client_ecr_public_dist_cjs/* GetAuthorizationTokenCommand */.Eu(authTokenRequest);
   const authTokenResponse = await ecrPublicClient.send(command);
   if (!authTokenResponse) {
     throw new Error('Amazon ECR Public authorization token returned no data');
