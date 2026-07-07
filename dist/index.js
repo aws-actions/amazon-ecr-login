@@ -2716,8 +2716,9 @@ exports.NodeHttpHandler = NodeHttpHandler;
 var __webpack_unused_export__;
 const { awsEndpointFunctions, emitWarningIfUnsupportedVersion: emitWarningIfUnsupportedVersion$1, createDefaultUserAgentProvider, NODE_APP_ID_CONFIG_OPTIONS, getAwsRegionExtensionConfiguration, resolveAwsRegionExtensionConfiguration, resolveUserAgentConfig, resolveHostHeaderConfig, getUserAgentPlugin, getHostHeaderPlugin, getLoggerPlugin, getRecursionDetectionPlugin } = __nccwpck_require__(5152);
 const { getHttpAuthSchemeEndpointRuleSetPlugin, DefaultIdentityProviderConfig, getHttpSigningPlugin, createPaginator } = __nccwpck_require__(402);
-const { normalizeProvider, getSmithyContext, ServiceException, NoOpLogger, emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode, getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, Command, createWaiter, checkExceptions, WaiterState, createAggregatedClient } = __nccwpck_require__(2658);
-__webpack_unused_export__ = Command;
+const { normalizeProvider, getSmithyContext, ServiceException, NoOpLogger, emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode, getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, makeBuilder, createWaiter, checkExceptions, WaiterState, createAggregatedClient } = __nccwpck_require__(2658);
+const { Command: $Command } = __nccwpck_require__(2658);
+__webpack_unused_export__ = $Command;
 __webpack_unused_export__ = Client;
 const { resolveDefaultsModeConfig, loadConfig, NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, NODE_REGION_CONFIG_OPTIONS, NODE_REGION_CONFIG_FILE_OPTIONS, resolveRegionConfig } = __nccwpck_require__(7291);
 const { BinaryDecisionDiagram, EndpointCache, decideEndpoint, customEndpointFunctions, resolveEndpointConfig, getEndpointPlugin } = __nccwpck_require__(2085);
@@ -2784,7 +2785,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.1076.0";
+var version = "3.1080.0";
 var packageInfo = {
 	version: version};
 
@@ -5528,700 +5529,182 @@ class ECRClient extends Client {
     }
 }
 
-class BatchCheckLayerAvailabilityCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "BatchCheckLayerAvailability", {})
-    .n("ECRClient", "BatchCheckLayerAvailabilityCommand")
-    .sc(BatchCheckLayerAvailability$)
-    .build() {
+const command = makeBuilder(commonParams, "AmazonEC2ContainerRegistry_V20150921", "ECRClient", getEndpointPlugin);
+const _ep0 = {};
+const _mw0 = (Command, cs, config, o) => [];
+
+class BatchCheckLayerAvailabilityCommand extends command(_ep0, _mw0, "BatchCheckLayerAvailability", BatchCheckLayerAvailability$) {
 }
 
-class BatchDeleteImageCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "BatchDeleteImage", {})
-    .n("ECRClient", "BatchDeleteImageCommand")
-    .sc(BatchDeleteImage$)
-    .build() {
+class BatchDeleteImageCommand extends command(_ep0, _mw0, "BatchDeleteImage", BatchDeleteImage$) {
 }
 
-class BatchGetImageCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "BatchGetImage", {})
-    .n("ECRClient", "BatchGetImageCommand")
-    .sc(BatchGetImage$)
-    .build() {
+class BatchGetImageCommand extends command(_ep0, _mw0, "BatchGetImage", BatchGetImage$) {
 }
 
-class BatchGetRepositoryScanningConfigurationCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "BatchGetRepositoryScanningConfiguration", {})
-    .n("ECRClient", "BatchGetRepositoryScanningConfigurationCommand")
-    .sc(BatchGetRepositoryScanningConfiguration$)
-    .build() {
+class BatchGetRepositoryScanningConfigurationCommand extends command(_ep0, _mw0, "BatchGetRepositoryScanningConfiguration", BatchGetRepositoryScanningConfiguration$) {
 }
 
-class CompleteLayerUploadCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "CompleteLayerUpload", {})
-    .n("ECRClient", "CompleteLayerUploadCommand")
-    .sc(CompleteLayerUpload$)
-    .build() {
+class CompleteLayerUploadCommand extends command(_ep0, _mw0, "CompleteLayerUpload", CompleteLayerUpload$) {
 }
 
-class CreatePullThroughCacheRuleCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "CreatePullThroughCacheRule", {})
-    .n("ECRClient", "CreatePullThroughCacheRuleCommand")
-    .sc(CreatePullThroughCacheRule$)
-    .build() {
+class CreatePullThroughCacheRuleCommand extends command(_ep0, _mw0, "CreatePullThroughCacheRule", CreatePullThroughCacheRule$) {
 }
 
-class CreateRepositoryCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "CreateRepository", {})
-    .n("ECRClient", "CreateRepositoryCommand")
-    .sc(CreateRepository$)
-    .build() {
+class CreateRepositoryCommand extends command(_ep0, _mw0, "CreateRepository", CreateRepository$) {
 }
 
-class CreateRepositoryCreationTemplateCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "CreateRepositoryCreationTemplate", {})
-    .n("ECRClient", "CreateRepositoryCreationTemplateCommand")
-    .sc(CreateRepositoryCreationTemplate$)
-    .build() {
+class CreateRepositoryCreationTemplateCommand extends command(_ep0, _mw0, "CreateRepositoryCreationTemplate", CreateRepositoryCreationTemplate$) {
 }
 
-class DeleteLifecyclePolicyCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "DeleteLifecyclePolicy", {})
-    .n("ECRClient", "DeleteLifecyclePolicyCommand")
-    .sc(DeleteLifecyclePolicy$)
-    .build() {
+class DeleteLifecyclePolicyCommand extends command(_ep0, _mw0, "DeleteLifecyclePolicy", DeleteLifecyclePolicy$) {
 }
 
-class DeletePullThroughCacheRuleCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "DeletePullThroughCacheRule", {})
-    .n("ECRClient", "DeletePullThroughCacheRuleCommand")
-    .sc(DeletePullThroughCacheRule$)
-    .build() {
+class DeletePullThroughCacheRuleCommand extends command(_ep0, _mw0, "DeletePullThroughCacheRule", DeletePullThroughCacheRule$) {
 }
 
-class DeleteRegistryPolicyCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "DeleteRegistryPolicy", {})
-    .n("ECRClient", "DeleteRegistryPolicyCommand")
-    .sc(DeleteRegistryPolicy$)
-    .build() {
+class DeleteRegistryPolicyCommand extends command(_ep0, _mw0, "DeleteRegistryPolicy", DeleteRegistryPolicy$) {
 }
 
-class DeleteRepositoryCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "DeleteRepository", {})
-    .n("ECRClient", "DeleteRepositoryCommand")
-    .sc(DeleteRepository$)
-    .build() {
+class DeleteRepositoryCommand extends command(_ep0, _mw0, "DeleteRepository", DeleteRepository$) {
 }
 
-class DeleteRepositoryCreationTemplateCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "DeleteRepositoryCreationTemplate", {})
-    .n("ECRClient", "DeleteRepositoryCreationTemplateCommand")
-    .sc(DeleteRepositoryCreationTemplate$)
-    .build() {
+class DeleteRepositoryCreationTemplateCommand extends command(_ep0, _mw0, "DeleteRepositoryCreationTemplate", DeleteRepositoryCreationTemplate$) {
 }
 
-class DeleteRepositoryPolicyCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "DeleteRepositoryPolicy", {})
-    .n("ECRClient", "DeleteRepositoryPolicyCommand")
-    .sc(DeleteRepositoryPolicy$)
-    .build() {
+class DeleteRepositoryPolicyCommand extends command(_ep0, _mw0, "DeleteRepositoryPolicy", DeleteRepositoryPolicy$) {
 }
 
-class DeleteSigningConfigurationCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "DeleteSigningConfiguration", {})
-    .n("ECRClient", "DeleteSigningConfigurationCommand")
-    .sc(DeleteSigningConfiguration$)
-    .build() {
+class DeleteSigningConfigurationCommand extends command(_ep0, _mw0, "DeleteSigningConfiguration", DeleteSigningConfiguration$) {
 }
 
-class DeregisterPullTimeUpdateExclusionCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "DeregisterPullTimeUpdateExclusion", {})
-    .n("ECRClient", "DeregisterPullTimeUpdateExclusionCommand")
-    .sc(DeregisterPullTimeUpdateExclusion$)
-    .build() {
+class DeregisterPullTimeUpdateExclusionCommand extends command(_ep0, _mw0, "DeregisterPullTimeUpdateExclusion", DeregisterPullTimeUpdateExclusion$) {
 }
 
-class DescribeImageReplicationStatusCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "DescribeImageReplicationStatus", {})
-    .n("ECRClient", "DescribeImageReplicationStatusCommand")
-    .sc(DescribeImageReplicationStatus$)
-    .build() {
+class DescribeImageReplicationStatusCommand extends command(_ep0, _mw0, "DescribeImageReplicationStatus", DescribeImageReplicationStatus$) {
 }
 
-class DescribeImageScanFindingsCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "DescribeImageScanFindings", {})
-    .n("ECRClient", "DescribeImageScanFindingsCommand")
-    .sc(DescribeImageScanFindings$)
-    .build() {
+class DescribeImageScanFindingsCommand extends command(_ep0, _mw0, "DescribeImageScanFindings", DescribeImageScanFindings$) {
 }
 
-class DescribeImagesCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "DescribeImages", {})
-    .n("ECRClient", "DescribeImagesCommand")
-    .sc(DescribeImages$)
-    .build() {
+class DescribeImagesCommand extends command(_ep0, _mw0, "DescribeImages", DescribeImages$) {
 }
 
-class DescribeImageSigningStatusCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "DescribeImageSigningStatus", {})
-    .n("ECRClient", "DescribeImageSigningStatusCommand")
-    .sc(DescribeImageSigningStatus$)
-    .build() {
+class DescribeImageSigningStatusCommand extends command(_ep0, _mw0, "DescribeImageSigningStatus", DescribeImageSigningStatus$) {
 }
 
-class DescribePullThroughCacheRulesCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "DescribePullThroughCacheRules", {})
-    .n("ECRClient", "DescribePullThroughCacheRulesCommand")
-    .sc(DescribePullThroughCacheRules$)
-    .build() {
+class DescribePullThroughCacheRulesCommand extends command(_ep0, _mw0, "DescribePullThroughCacheRules", DescribePullThroughCacheRules$) {
 }
 
-class DescribeRegistryCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "DescribeRegistry", {})
-    .n("ECRClient", "DescribeRegistryCommand")
-    .sc(DescribeRegistry$)
-    .build() {
+class DescribeRegistryCommand extends command(_ep0, _mw0, "DescribeRegistry", DescribeRegistry$) {
 }
 
-class DescribeRepositoriesCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "DescribeRepositories", {})
-    .n("ECRClient", "DescribeRepositoriesCommand")
-    .sc(DescribeRepositories$)
-    .build() {
+class DescribeRepositoriesCommand extends command(_ep0, _mw0, "DescribeRepositories", DescribeRepositories$) {
 }
 
-class DescribeRepositoryCreationTemplatesCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "DescribeRepositoryCreationTemplates", {})
-    .n("ECRClient", "DescribeRepositoryCreationTemplatesCommand")
-    .sc(DescribeRepositoryCreationTemplates$)
-    .build() {
+class DescribeRepositoryCreationTemplatesCommand extends command(_ep0, _mw0, "DescribeRepositoryCreationTemplates", DescribeRepositoryCreationTemplates$) {
 }
 
-class GetAccountSettingCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "GetAccountSetting", {})
-    .n("ECRClient", "GetAccountSettingCommand")
-    .sc(GetAccountSetting$)
-    .build() {
+class GetAccountSettingCommand extends command(_ep0, _mw0, "GetAccountSetting", GetAccountSetting$) {
 }
 
-class GetAuthorizationTokenCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "GetAuthorizationToken", {})
-    .n("ECRClient", "GetAuthorizationTokenCommand")
-    .sc(GetAuthorizationToken$)
-    .build() {
+class GetAuthorizationTokenCommand extends command(_ep0, _mw0, "GetAuthorizationToken", GetAuthorizationToken$) {
 }
 
-class GetDownloadUrlForLayerCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "GetDownloadUrlForLayer", {})
-    .n("ECRClient", "GetDownloadUrlForLayerCommand")
-    .sc(GetDownloadUrlForLayer$)
-    .build() {
+class GetDownloadUrlForLayerCommand extends command(_ep0, _mw0, "GetDownloadUrlForLayer", GetDownloadUrlForLayer$) {
 }
 
-class GetLifecyclePolicyCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "GetLifecyclePolicy", {})
-    .n("ECRClient", "GetLifecyclePolicyCommand")
-    .sc(GetLifecyclePolicy$)
-    .build() {
+class GetLifecyclePolicyCommand extends command(_ep0, _mw0, "GetLifecyclePolicy", GetLifecyclePolicy$) {
 }
 
-class GetLifecyclePolicyPreviewCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "GetLifecyclePolicyPreview", {})
-    .n("ECRClient", "GetLifecyclePolicyPreviewCommand")
-    .sc(GetLifecyclePolicyPreview$)
-    .build() {
+class GetLifecyclePolicyPreviewCommand extends command(_ep0, _mw0, "GetLifecyclePolicyPreview", GetLifecyclePolicyPreview$) {
 }
 
-class GetRegistryPolicyCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "GetRegistryPolicy", {})
-    .n("ECRClient", "GetRegistryPolicyCommand")
-    .sc(GetRegistryPolicy$)
-    .build() {
+class GetRegistryPolicyCommand extends command(_ep0, _mw0, "GetRegistryPolicy", GetRegistryPolicy$) {
 }
 
-class GetRegistryScanningConfigurationCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "GetRegistryScanningConfiguration", {})
-    .n("ECRClient", "GetRegistryScanningConfigurationCommand")
-    .sc(GetRegistryScanningConfiguration$)
-    .build() {
+class GetRegistryScanningConfigurationCommand extends command(_ep0, _mw0, "GetRegistryScanningConfiguration", GetRegistryScanningConfiguration$) {
 }
 
-class GetRepositoryPolicyCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "GetRepositoryPolicy", {})
-    .n("ECRClient", "GetRepositoryPolicyCommand")
-    .sc(GetRepositoryPolicy$)
-    .build() {
+class GetRepositoryPolicyCommand extends command(_ep0, _mw0, "GetRepositoryPolicy", GetRepositoryPolicy$) {
 }
 
-class GetSigningConfigurationCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "GetSigningConfiguration", {})
-    .n("ECRClient", "GetSigningConfigurationCommand")
-    .sc(GetSigningConfiguration$)
-    .build() {
+class GetSigningConfigurationCommand extends command(_ep0, _mw0, "GetSigningConfiguration", GetSigningConfiguration$) {
 }
 
-class InitiateLayerUploadCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "InitiateLayerUpload", {})
-    .n("ECRClient", "InitiateLayerUploadCommand")
-    .sc(InitiateLayerUpload$)
-    .build() {
+class InitiateLayerUploadCommand extends command(_ep0, _mw0, "InitiateLayerUpload", InitiateLayerUpload$) {
 }
 
-class ListImageReferrersCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "ListImageReferrers", {})
-    .n("ECRClient", "ListImageReferrersCommand")
-    .sc(ListImageReferrers$)
-    .build() {
+class ListImageReferrersCommand extends command(_ep0, _mw0, "ListImageReferrers", ListImageReferrers$) {
 }
 
-class ListImagesCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "ListImages", {})
-    .n("ECRClient", "ListImagesCommand")
-    .sc(ListImages$)
-    .build() {
+class ListImagesCommand extends command(_ep0, _mw0, "ListImages", ListImages$) {
 }
 
-class ListPullTimeUpdateExclusionsCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "ListPullTimeUpdateExclusions", {})
-    .n("ECRClient", "ListPullTimeUpdateExclusionsCommand")
-    .sc(ListPullTimeUpdateExclusions$)
-    .build() {
+class ListPullTimeUpdateExclusionsCommand extends command(_ep0, _mw0, "ListPullTimeUpdateExclusions", ListPullTimeUpdateExclusions$) {
 }
 
-class ListTagsForResourceCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "ListTagsForResource", {})
-    .n("ECRClient", "ListTagsForResourceCommand")
-    .sc(ListTagsForResource$)
-    .build() {
+class ListTagsForResourceCommand extends command(_ep0, _mw0, "ListTagsForResource", ListTagsForResource$) {
 }
 
-class PutAccountSettingCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "PutAccountSetting", {})
-    .n("ECRClient", "PutAccountSettingCommand")
-    .sc(PutAccountSetting$)
-    .build() {
+class PutAccountSettingCommand extends command(_ep0, _mw0, "PutAccountSetting", PutAccountSetting$) {
 }
 
-class PutImageCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "PutImage", {})
-    .n("ECRClient", "PutImageCommand")
-    .sc(PutImage$)
-    .build() {
+class PutImageCommand extends command(_ep0, _mw0, "PutImage", PutImage$) {
 }
 
-class PutImageScanningConfigurationCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "PutImageScanningConfiguration", {})
-    .n("ECRClient", "PutImageScanningConfigurationCommand")
-    .sc(PutImageScanningConfiguration$)
-    .build() {
+class PutImageScanningConfigurationCommand extends command(_ep0, _mw0, "PutImageScanningConfiguration", PutImageScanningConfiguration$) {
 }
 
-class PutImageTagMutabilityCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "PutImageTagMutability", {})
-    .n("ECRClient", "PutImageTagMutabilityCommand")
-    .sc(PutImageTagMutability$)
-    .build() {
+class PutImageTagMutabilityCommand extends command(_ep0, _mw0, "PutImageTagMutability", PutImageTagMutability$) {
 }
 
-class PutLifecyclePolicyCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "PutLifecyclePolicy", {})
-    .n("ECRClient", "PutLifecyclePolicyCommand")
-    .sc(PutLifecyclePolicy$)
-    .build() {
+class PutLifecyclePolicyCommand extends command(_ep0, _mw0, "PutLifecyclePolicy", PutLifecyclePolicy$) {
 }
 
-class PutRegistryPolicyCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "PutRegistryPolicy", {})
-    .n("ECRClient", "PutRegistryPolicyCommand")
-    .sc(PutRegistryPolicy$)
-    .build() {
+class PutRegistryPolicyCommand extends command(_ep0, _mw0, "PutRegistryPolicy", PutRegistryPolicy$) {
 }
 
-class PutRegistryScanningConfigurationCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "PutRegistryScanningConfiguration", {})
-    .n("ECRClient", "PutRegistryScanningConfigurationCommand")
-    .sc(PutRegistryScanningConfiguration$)
-    .build() {
+class PutRegistryScanningConfigurationCommand extends command(_ep0, _mw0, "PutRegistryScanningConfiguration", PutRegistryScanningConfiguration$) {
 }
 
-class PutReplicationConfigurationCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "PutReplicationConfiguration", {})
-    .n("ECRClient", "PutReplicationConfigurationCommand")
-    .sc(PutReplicationConfiguration$)
-    .build() {
+class PutReplicationConfigurationCommand extends command(_ep0, _mw0, "PutReplicationConfiguration", PutReplicationConfiguration$) {
 }
 
-class PutSigningConfigurationCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "PutSigningConfiguration", {})
-    .n("ECRClient", "PutSigningConfigurationCommand")
-    .sc(PutSigningConfiguration$)
-    .build() {
+class PutSigningConfigurationCommand extends command(_ep0, _mw0, "PutSigningConfiguration", PutSigningConfiguration$) {
 }
 
-class RegisterPullTimeUpdateExclusionCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "RegisterPullTimeUpdateExclusion", {})
-    .n("ECRClient", "RegisterPullTimeUpdateExclusionCommand")
-    .sc(RegisterPullTimeUpdateExclusion$)
-    .build() {
+class RegisterPullTimeUpdateExclusionCommand extends command(_ep0, _mw0, "RegisterPullTimeUpdateExclusion", RegisterPullTimeUpdateExclusion$) {
 }
 
-class SetRepositoryPolicyCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "SetRepositoryPolicy", {})
-    .n("ECRClient", "SetRepositoryPolicyCommand")
-    .sc(SetRepositoryPolicy$)
-    .build() {
+class SetRepositoryPolicyCommand extends command(_ep0, _mw0, "SetRepositoryPolicy", SetRepositoryPolicy$) {
 }
 
-class StartImageScanCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "StartImageScan", {})
-    .n("ECRClient", "StartImageScanCommand")
-    .sc(StartImageScan$)
-    .build() {
+class StartImageScanCommand extends command(_ep0, _mw0, "StartImageScan", StartImageScan$) {
 }
 
-class StartLifecyclePolicyPreviewCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "StartLifecyclePolicyPreview", {})
-    .n("ECRClient", "StartLifecyclePolicyPreviewCommand")
-    .sc(StartLifecyclePolicyPreview$)
-    .build() {
+class StartLifecyclePolicyPreviewCommand extends command(_ep0, _mw0, "StartLifecyclePolicyPreview", StartLifecyclePolicyPreview$) {
 }
 
-class TagResourceCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "TagResource", {})
-    .n("ECRClient", "TagResourceCommand")
-    .sc(TagResource$)
-    .build() {
+class TagResourceCommand extends command(_ep0, _mw0, "TagResource", TagResource$) {
 }
 
-class UntagResourceCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "UntagResource", {})
-    .n("ECRClient", "UntagResourceCommand")
-    .sc(UntagResource$)
-    .build() {
+class UntagResourceCommand extends command(_ep0, _mw0, "UntagResource", UntagResource$) {
 }
 
-class UpdateImageStorageClassCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "UpdateImageStorageClass", {})
-    .n("ECRClient", "UpdateImageStorageClassCommand")
-    .sc(UpdateImageStorageClass$)
-    .build() {
+class UpdateImageStorageClassCommand extends command(_ep0, _mw0, "UpdateImageStorageClass", UpdateImageStorageClass$) {
 }
 
-class UpdatePullThroughCacheRuleCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "UpdatePullThroughCacheRule", {})
-    .n("ECRClient", "UpdatePullThroughCacheRuleCommand")
-    .sc(UpdatePullThroughCacheRule$)
-    .build() {
+class UpdatePullThroughCacheRuleCommand extends command(_ep0, _mw0, "UpdatePullThroughCacheRule", UpdatePullThroughCacheRule$) {
 }
 
-class UpdateRepositoryCreationTemplateCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "UpdateRepositoryCreationTemplate", {})
-    .n("ECRClient", "UpdateRepositoryCreationTemplateCommand")
-    .sc(UpdateRepositoryCreationTemplate$)
-    .build() {
+class UpdateRepositoryCreationTemplateCommand extends command(_ep0, _mw0, "UpdateRepositoryCreationTemplate", UpdateRepositoryCreationTemplate$) {
 }
 
-class UploadLayerPartCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "UploadLayerPart", {})
-    .n("ECRClient", "UploadLayerPartCommand")
-    .sc(UploadLayerPart$)
-    .build() {
+class UploadLayerPartCommand extends command(_ep0, _mw0, "UploadLayerPart", UploadLayerPart$) {
 }
 
-class ValidatePullThroughCacheRuleCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AmazonEC2ContainerRegistry_V20150921", "ValidatePullThroughCacheRule", {})
-    .n("ECRClient", "ValidatePullThroughCacheRuleCommand")
-    .sc(ValidatePullThroughCacheRule$)
-    .build() {
+class ValidatePullThroughCacheRuleCommand extends command(_ep0, _mw0, "ValidatePullThroughCacheRule", ValidatePullThroughCacheRule$) {
 }
 
 const paginateDescribeImageScanFindings = createPaginator(ECRClient, DescribeImageScanFindingsCommand, "nextToken", "nextToken", "maxResults");
@@ -11532,18 +11015,18 @@ const fromHttp = (options = {}) => {
     if (relative && full) {
         warn("@aws-sdk/credential-provider-http: " +
             "you have set both awsContainerCredentialsRelativeUri and awsContainerCredentialsFullUri.");
-        warn("awsContainerCredentialsFullUri will take precedence.");
+        warn("awsContainerCredentialsRelativeUri will take precedence.");
     }
     if (token && tokenFile) {
         warn("@aws-sdk/credential-provider-http: " +
             "you have set both awsContainerAuthorizationToken and awsContainerAuthorizationTokenFile.");
-        warn("awsContainerAuthorizationToken will take precedence.");
+        warn("awsContainerAuthorizationTokenFile will take precedence.");
     }
-    if (full) {
-        host = full;
-    }
-    else if (relative) {
+    if (relative) {
         host = `${DEFAULT_LINK_LOCAL_HOST}${relative}`;
+    }
+    else if (full) {
+        host = full;
     }
     else {
         throw new CredentialsProviderError(`No HTTP credential provider host provided.
@@ -11555,11 +11038,11 @@ Set AWS_CONTAINER_CREDENTIALS_FULL_URI or AWS_CONTAINER_CREDENTIALS_RELATIVE_URI
     const requestTimeout = options.timeout ?? 1000;
     const provider = retryWrapper(async () => {
         const request = createGetRequest(url);
-        if (token) {
-            request.headers.Authorization = token;
+        if (tokenFile) {
+            request.headers.Authorization = validateToken((await fs.readFile(tokenFile)).toString());
         }
-        else if (tokenFile) {
-            request.headers.Authorization = (await fs.readFile(tokenFile)).toString();
+        else if (token) {
+            request.headers.Authorization = validateToken(token);
         }
         try {
             const result = await requestHandler.handle(request, { requestTimeout });
@@ -11577,6 +11060,12 @@ Set AWS_CONTAINER_CREDENTIALS_FULL_URI or AWS_CONTAINER_CREDENTIALS_RELATIVE_URI
             requestHandler.destroy?.();
         }
     };
+};
+const validateToken = (token) => {
+    if (token.includes("\r\n")) {
+        throw new CredentialsProviderError("Authorization token contains invalid \\r\\n sequence.");
+    }
+    return token;
 };
 
 exports.fromHttp = fromHttp;
@@ -13751,8 +13240,9 @@ exports.STSClient = STSClient;
 
 const { awsEndpointFunctions, emitWarningIfUnsupportedVersion: emitWarningIfUnsupportedVersion$1, createDefaultUserAgentProvider, NODE_APP_ID_CONFIG_OPTIONS, getAwsRegionExtensionConfiguration, resolveAwsRegionExtensionConfiguration, resolveUserAgentConfig, resolveHostHeaderConfig, getUserAgentPlugin, getHostHeaderPlugin, getLoggerPlugin, getRecursionDetectionPlugin } = __nccwpck_require__(5152);
 const { NoAuthSigner, getHttpAuthSchemeEndpointRuleSetPlugin, DefaultIdentityProviderConfig, getHttpSigningPlugin } = __nccwpck_require__(402);
-const { normalizeProvider, getSmithyContext, ServiceException, NoOpLogger, emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode, getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, Command, createAggregatedClient } = __nccwpck_require__(2658);
-exports.$Command = Command;
+const { normalizeProvider, getSmithyContext, ServiceException, NoOpLogger, emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode, getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, makeBuilder, createAggregatedClient } = __nccwpck_require__(2658);
+const { Command: $Command } = __nccwpck_require__(2658);
+exports.$Command = $Command;
 exports.__Client = Client;
 const { resolveDefaultsModeConfig, loadConfig, NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, NODE_REGION_CONFIG_OPTIONS, NODE_REGION_CONFIG_FILE_OPTIONS, resolveRegionConfig } = __nccwpck_require__(7291);
 const { BinaryDecisionDiagram, EndpointCache, decideEndpoint, customEndpointFunctions, resolveEndpointConfig, getEndpointPlugin } = __nccwpck_require__(2085);
@@ -13831,7 +13321,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.24";
+var version = "3.997.28";
 var packageInfo = {
 	version: version};
 
@@ -14312,28 +13802,14 @@ class CognitoIdentityClient extends Client {
     }
 }
 
-class GetCredentialsForIdentityCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AWSCognitoIdentityService", "GetCredentialsForIdentity", {})
-    .n("CognitoIdentityClient", "GetCredentialsForIdentityCommand")
-    .sc(GetCredentialsForIdentity$)
-    .build() {
+const command = makeBuilder(commonParams, "AWSCognitoIdentityService", "CognitoIdentityClient", getEndpointPlugin);
+const _ep0 = {};
+const _mw0 = (Command, cs, config, o) => [];
+
+class GetCredentialsForIdentityCommand extends command(_ep0, _mw0, "GetCredentialsForIdentity", GetCredentialsForIdentity$) {
 }
 
-class GetIdCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AWSCognitoIdentityService", "GetId", {})
-    .n("CognitoIdentityClient", "GetIdCommand")
-    .sc(GetId$)
-    .build() {
+class GetIdCommand extends command(_ep0, _mw0, "GetId", GetId$) {
 }
 
 const commands = {
@@ -14385,8 +13861,9 @@ exports.errorTypeRegistries = errorTypeRegistries;
 
 const { awsEndpointFunctions, emitWarningIfUnsupportedVersion: emitWarningIfUnsupportedVersion$1, createDefaultUserAgentProvider, NODE_APP_ID_CONFIG_OPTIONS, getAwsRegionExtensionConfiguration, resolveAwsRegionExtensionConfiguration, resolveUserAgentConfig, resolveHostHeaderConfig, getUserAgentPlugin, getHostHeaderPlugin, getLoggerPlugin, getRecursionDetectionPlugin } = __nccwpck_require__(5152);
 const { NoAuthSigner, getHttpAuthSchemeEndpointRuleSetPlugin, DefaultIdentityProviderConfig, getHttpSigningPlugin } = __nccwpck_require__(402);
-const { normalizeProvider, getSmithyContext, ServiceException, NoOpLogger, emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode, getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, Command, createAggregatedClient } = __nccwpck_require__(2658);
-exports.$Command = Command;
+const { normalizeProvider, getSmithyContext, ServiceException, NoOpLogger, emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode, getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, makeBuilder, createAggregatedClient } = __nccwpck_require__(2658);
+const { Command: $Command } = __nccwpck_require__(2658);
+exports.$Command = $Command;
 exports.__Client = Client;
 const { resolveDefaultsModeConfig, loadConfig, NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, NODE_REGION_CONFIG_OPTIONS, NODE_REGION_CONFIG_FILE_OPTIONS, resolveRegionConfig } = __nccwpck_require__(7291);
 const { BinaryDecisionDiagram, EndpointCache, decideEndpoint, customEndpointFunctions, resolveEndpointConfig, getEndpointPlugin } = __nccwpck_require__(2085);
@@ -14461,7 +13938,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.24";
+var version = "3.997.28";
 var packageInfo = {
 	version: version};
 
@@ -14878,19 +14355,13 @@ class SigninClient extends Client {
     }
 }
 
-class CreateOAuth2TokenCommand extends Command
-    .classBuilder()
-    .ep({
-    ...commonParams,
+const command = makeBuilder(commonParams, "Signin", "SigninClient", getEndpointPlugin);
+const _ep0 = {
     IsControlPlane: { type: "staticContextParams", value: false },
-})
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("Signin", "CreateOAuth2Token", {})
-    .n("SigninClient", "CreateOAuth2TokenCommand")
-    .sc(CreateOAuth2Token$)
-    .build() {
+};
+const _mw0 = (Command, cs, config, o) => [];
+
+class CreateOAuth2TokenCommand extends command(_ep0, _mw0, "CreateOAuth2Token", CreateOAuth2Token$) {
 }
 
 const commands = {
@@ -14942,8 +14413,9 @@ exports.errorTypeRegistries = errorTypeRegistries;
 
 const { awsEndpointFunctions, emitWarningIfUnsupportedVersion: emitWarningIfUnsupportedVersion$1, createDefaultUserAgentProvider, NODE_APP_ID_CONFIG_OPTIONS, getAwsRegionExtensionConfiguration, resolveAwsRegionExtensionConfiguration, resolveUserAgentConfig, resolveHostHeaderConfig, getUserAgentPlugin, getHostHeaderPlugin, getLoggerPlugin, getRecursionDetectionPlugin } = __nccwpck_require__(5152);
 const { NoAuthSigner, getHttpAuthSchemeEndpointRuleSetPlugin, DefaultIdentityProviderConfig, getHttpSigningPlugin } = __nccwpck_require__(402);
-const { normalizeProvider, getSmithyContext, ServiceException, NoOpLogger, emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode, getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, Command, createAggregatedClient } = __nccwpck_require__(2658);
-exports.$Command = Command;
+const { normalizeProvider, getSmithyContext, ServiceException, NoOpLogger, emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode, getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, makeBuilder, createAggregatedClient } = __nccwpck_require__(2658);
+const { Command: $Command } = __nccwpck_require__(2658);
+exports.$Command = $Command;
 exports.__Client = Client;
 const { resolveDefaultsModeConfig, loadConfig, NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, NODE_REGION_CONFIG_OPTIONS, NODE_REGION_CONFIG_FILE_OPTIONS, resolveRegionConfig } = __nccwpck_require__(7291);
 const { BinaryDecisionDiagram, EndpointCache, decideEndpoint, customEndpointFunctions, resolveEndpointConfig, getEndpointPlugin } = __nccwpck_require__(2085);
@@ -15018,7 +14490,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.24";
+var version = "3.997.28";
 var packageInfo = {
 	version: version};
 
@@ -15555,16 +15027,11 @@ class SSOOIDCClient extends Client {
     }
 }
 
-class CreateTokenCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AWSSSOOIDCService", "CreateToken", {})
-    .n("SSOOIDCClient", "CreateTokenCommand")
-    .sc(CreateToken$)
-    .build() {
+const command = makeBuilder(commonParams, "AWSSSOOIDCService", "SSOOIDCClient", getEndpointPlugin);
+const _ep0 = {};
+const _mw0 = (Command, cs, config, o) => [];
+
+class CreateTokenCommand extends command(_ep0, _mw0, "CreateToken", CreateToken$) {
 }
 
 const commands = {
@@ -15626,8 +15093,9 @@ exports.errorTypeRegistries = errorTypeRegistries;
 
 const { awsEndpointFunctions, emitWarningIfUnsupportedVersion: emitWarningIfUnsupportedVersion$1, createDefaultUserAgentProvider, NODE_APP_ID_CONFIG_OPTIONS, getAwsRegionExtensionConfiguration, resolveAwsRegionExtensionConfiguration, resolveUserAgentConfig, resolveHostHeaderConfig, getUserAgentPlugin, getHostHeaderPlugin, getLoggerPlugin, getRecursionDetectionPlugin } = __nccwpck_require__(5152);
 const { NoAuthSigner, getHttpAuthSchemeEndpointRuleSetPlugin, DefaultIdentityProviderConfig, getHttpSigningPlugin } = __nccwpck_require__(402);
-const { normalizeProvider, getSmithyContext, ServiceException, NoOpLogger, emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode, getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, Command, createAggregatedClient } = __nccwpck_require__(2658);
-exports.$Command = Command;
+const { normalizeProvider, getSmithyContext, ServiceException, NoOpLogger, emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode, getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, makeBuilder, createAggregatedClient } = __nccwpck_require__(2658);
+const { Command: $Command } = __nccwpck_require__(2658);
+exports.$Command = $Command;
 exports.__Client = Client;
 const { resolveDefaultsModeConfig, loadConfig, NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, NODE_REGION_CONFIG_OPTIONS, NODE_REGION_CONFIG_FILE_OPTIONS, resolveRegionConfig } = __nccwpck_require__(7291);
 const { BinaryDecisionDiagram, EndpointCache, decideEndpoint, customEndpointFunctions, resolveEndpointConfig, getEndpointPlugin } = __nccwpck_require__(2085);
@@ -15702,7 +15170,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.24";
+var version = "3.997.28";
 var packageInfo = {
 	version: version};
 
@@ -16058,16 +15526,11 @@ class SSOClient extends Client {
     }
 }
 
-class GetRoleCredentialsCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SWBPortalService", "GetRoleCredentials", {})
-    .n("SSOClient", "GetRoleCredentialsCommand")
-    .sc(GetRoleCredentials$)
-    .build() {
+const command = makeBuilder(commonParams, "SWBPortalService", "SSOClient", getEndpointPlugin);
+const _ep0 = {};
+const _mw0 = (Command, cs, config, o) => [];
+
+class GetRoleCredentialsCommand extends command(_ep0, _mw0, "GetRoleCredentials", GetRoleCredentials$) {
 }
 
 const commands = {
@@ -16104,8 +15567,9 @@ exports.errorTypeRegistries = errorTypeRegistries;
 
 const { awsEndpointFunctions, emitWarningIfUnsupportedVersion: emitWarningIfUnsupportedVersion$1, createDefaultUserAgentProvider, NODE_APP_ID_CONFIG_OPTIONS, getAwsRegionExtensionConfiguration, resolveAwsRegionExtensionConfiguration, resolveUserAgentConfig, resolveHostHeaderConfig, getUserAgentPlugin, getHostHeaderPlugin, getLoggerPlugin, getRecursionDetectionPlugin, setCredentialFeature, stsRegionDefaultResolver } = __nccwpck_require__(5152);
 const { NoAuthSigner, getHttpAuthSchemeEndpointRuleSetPlugin, DefaultIdentityProviderConfig, getHttpSigningPlugin } = __nccwpck_require__(402);
-const { normalizeProvider, getSmithyContext, ServiceException, NoOpLogger, emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode, getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, Command, createAggregatedClient } = __nccwpck_require__(2658);
-exports.$Command = Command;
+const { normalizeProvider, getSmithyContext, ServiceException, NoOpLogger, emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode, getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, makeBuilder, createAggregatedClient } = __nccwpck_require__(2658);
+const { Command: $Command } = __nccwpck_require__(2658);
+exports.$Command = $Command;
 exports.__Client = Client;
 const { resolveDefaultsModeConfig, loadConfig, NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, NODE_REGION_CONFIG_OPTIONS, NODE_REGION_CONFIG_FILE_OPTIONS, resolveRegionConfig } = __nccwpck_require__(7291);
 const { BinaryDecisionDiagram, EndpointCache, decideEndpoint, customEndpointFunctions, resolveParams, resolveEndpointConfig, getEndpointPlugin } = __nccwpck_require__(2085);
@@ -16361,7 +15825,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.24";
+var version = "3.997.28";
 var packageInfo = {
 	version: version};
 
@@ -16806,28 +16270,14 @@ class STSClient extends Client {
     }
 }
 
-class AssumeRoleCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AWSSecurityTokenServiceV20110615", "AssumeRole", {})
-    .n("STSClient", "AssumeRoleCommand")
-    .sc(AssumeRole$)
-    .build() {
+const command = makeBuilder(commonParams, "AWSSecurityTokenServiceV20110615", "STSClient", getEndpointPlugin);
+const _ep0 = {};
+const _mw0 = (Command, cs, config, o) => [];
+
+class AssumeRoleCommand extends command(_ep0, _mw0, "AssumeRole", AssumeRole$) {
 }
 
-class AssumeRoleWithWebIdentityCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("AWSSecurityTokenServiceV20110615", "AssumeRoleWithWebIdentity", {})
-    .n("STSClient", "AssumeRoleWithWebIdentityCommand")
-    .sc(AssumeRoleWithWebIdentity$)
-    .build() {
+class AssumeRoleWithWebIdentityCommand extends command(_ep0, _mw0, "AssumeRoleWithWebIdentity", AssumeRoleWithWebIdentity$) {
 }
 
 const commands = {
@@ -18556,6 +18006,9 @@ const PROTECTED_KEYS = {
     REQUEST_ID: Symbol.for("_AWS_LAMBDA_REQUEST_ID"),
     X_RAY_TRACE_ID: Symbol.for("_AWS_LAMBDA_X_RAY_TRACE_ID"),
     TENANT_ID: Symbol.for("_AWS_LAMBDA_TENANT_ID"),
+    TRACEPARENT: Symbol.for("_AWS_LAMBDA_TRACEPARENT"),
+    TRACESTATE: Symbol.for("_AWS_LAMBDA_TRACESTATE"),
+    BAGGAGE: Symbol.for("_AWS_LAMBDA_BAGGAGE"),
 };
 const NO_GLOBAL_AWS_LAMBDA = ["true", "1"].includes(process.env?.AWS_LAMBDA_NODEJS_NO_GLOBAL_AWSLAMBDA ?? "");
 if (!NO_GLOBAL_AWS_LAMBDA) {
@@ -18574,6 +18027,15 @@ class InvokeStoreBase {
     }
     getTenantId() {
         return this.get(PROTECTED_KEYS.TENANT_ID);
+    }
+    getTraceparent() {
+        return this.get(PROTECTED_KEYS.TRACEPARENT);
+    }
+    getTracestate() {
+        return this.get(PROTECTED_KEYS.TRACESTATE);
+    }
+    getBaggage() {
+        return this.get(PROTECTED_KEYS.BAGGAGE);
     }
 }
 class InvokeStoreSingle extends InvokeStoreBase {
@@ -18633,10 +18095,10 @@ class InvokeStoreMulti extends InvokeStoreBase {
 exports.InvokeStore = void 0;
 (function (InvokeStore) {
     let instance = null;
-    async function getInstanceAsync() {
+    async function getInstanceAsync(forceInvokeStoreMulti) {
         if (!instance) {
             instance = (async () => {
-                const isMulti = "AWS_LAMBDA_MAX_CONCURRENCY" in process.env;
+                const isMulti = forceInvokeStoreMulti === true || "AWS_LAMBDA_MAX_CONCURRENCY" in process.env;
                 const newInstance = isMulti
                     ? await InvokeStoreMulti.create()
                     : new InvokeStoreSingle();
@@ -21963,6 +21425,23 @@ const _json = (obj) => {
     return obj;
 };
 
+function makeBuilder(common, service, name, ep) {
+    return function makeCommand(added, plugins, op, $, smithyContext = {}) {
+        const epMerged = Object.assign({}, common, added);
+        return Command.classBuilder()
+            .ep(epMerged)
+            .m(function (CommandCtor, clientStack, config, options) {
+            const list = plugins.call(this, CommandCtor, clientStack, config, options);
+            list.unshift(ep(config, CommandCtor.getEndpointParameterInstructions()));
+            return list;
+        })
+            .s(service, op, smithyContext)
+            .n(name, op.charAt(0).toUpperCase() + op.slice(1) + "Command")
+            .sc($)
+            .build();
+    };
+}
+
 exports.Client = Client;
 exports.Command = Command;
 exports.NoOpLogger = NoOpLogger;
@@ -21987,6 +21466,7 @@ exports.invalidFunction = invalidFunction;
 exports.invalidProvider = invalidProvider;
 exports.isSerializableHeaderValue = isSerializableHeaderValue;
 exports.loadConfigsForDefaultMode = loadConfigsForDefaultMode;
+exports.makeBuilder = makeBuilder;
 exports.map = map;
 exports.resolveChecksumRuntimeConfig = resolveChecksumRuntimeConfig;
 exports.resolveDefaultRuntimeConfig = resolveDefaultRuntimeConfig;
@@ -27173,7 +26653,7 @@ const { createHmac, createHash, getRandomValues } = __nccwpck_require__(7598);
 const { ReadStream, lstatSync, fstatSync } = __nccwpck_require__(3024);
 const { HttpResponse } = __nccwpck_require__(4534);
 const { toEndpointV1 } = __nccwpck_require__(2085);
-const { Duplex, Readable, Writable, PassThrough } = __nccwpck_require__(7075);
+const { Readable, Writable, PassThrough } = __nccwpck_require__(7075);
 
 const isArrayBuffer = (arg) => (typeof ArrayBuffer === "function" && arg instanceof ArrayBuffer) ||
     Object.prototype.toString.call(arg) === "[object ArrayBuffer]";
@@ -28158,62 +27638,66 @@ function castSourceData(toCast, encoding) {
     return fromArrayBuffer(toCast);
 }
 
-let ChecksumStream$1 = class ChecksumStream extends Duplex {
+let ChecksumStream$1 = class ChecksumStream extends Readable {
     expectedChecksum;
     checksumSourceLocation;
     checksum;
     source;
     base64Encoder;
-    pendingCallback = null;
     constructor({ expectedChecksum, checksum, source, checksumSourceLocation, base64Encoder, }) {
         super();
-        if (typeof source.pipe === "function") {
-            this.source = source;
-        }
-        else {
+        if (typeof source.pipe !== "function") {
             throw new Error(`@smithy/util-stream: unsupported source type ${source?.constructor?.name ?? source} in ChecksumStream.`);
         }
+        this.source = source;
         this.base64Encoder = base64Encoder ?? toBase64$1;
         this.expectedChecksum = expectedChecksum;
         this.checksum = checksum;
         this.checksumSourceLocation = checksumSourceLocation;
-        this.source.pipe(this);
+        this.source.on("data", this.onSourceData);
+        this.source.on("end", this.onSourceEnd);
+        this.source.on("error", this.onSourceError);
+        this.source.pause();
     }
-    _read(size) {
-        if (this.pendingCallback) {
-            const callback = this.pendingCallback;
-            this.pendingCallback = null;
-            callback();
+    onSourceData = (chunk) => {
+        if (this.destroyed) {
+            return;
         }
-    }
-    _write(chunk, encoding, callback) {
         try {
             this.checksum.update(chunk);
-            const canPushMore = this.push(chunk);
-            if (!canPushMore) {
-                this.pendingCallback = callback;
-                return;
-            }
         }
         catch (e) {
-            return callback(e);
+            this.destroy(e);
+            return;
         }
-        return callback();
-    }
-    async _final(callback) {
+        if (!this.push(chunk)) {
+            this.source.pause();
+        }
+    };
+    onSourceEnd = async () => {
+        if (this.destroyed) {
+            return;
+        }
         try {
             const digest = await this.checksum.digest();
             const received = this.base64Encoder(digest);
             if (this.expectedChecksum !== received) {
-                return callback(new Error(`Checksum mismatch: expected "${this.expectedChecksum}" but received "${received}"` +
+                this.destroy(new Error(`Checksum mismatch: expected "${this.expectedChecksum}" but received "${received}"` +
                     ` in response header "${this.checksumSourceLocation}".`));
+                return;
             }
         }
         catch (e) {
-            return callback(e);
+            this.destroy(e);
+            return;
         }
         this.push(null);
-        return callback();
+    };
+    onSourceError = (error) => {
+        this.destroy(error);
+    };
+    _read(size) {
+        this.source.resume();
     }
     _destroy(error, callback) {
         this.source?.destroy();
