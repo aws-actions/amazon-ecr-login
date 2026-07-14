@@ -2785,7 +2785,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.1080.0";
+var version = "3.1086.0";
 var packageInfo = {
 	version: version};
 
@@ -7314,20 +7314,18 @@ const { InvokeStore } = __nccwpck_require__(9320);
 const { normalizeProvider } = __nccwpck_require__(402);
 const { platform, release } = __nccwpck_require__(8161);
 const { versions, env } = __nccwpck_require__(1708);
-const { booleanSelector, SelectorType, loadConfig, NODE_REGION_CONFIG_OPTIONS, NODE_REGION_CONFIG_FILE_OPTIONS } = __nccwpck_require__(7291);
+const { isValidHostLabel, isIpAddress, customEndpointFunctions } = __nccwpck_require__(2085);
+const { EndpointError, resolveEndpoint } = __nccwpck_require__(2085);
+exports.EndpointError = EndpointError;
+exports.isIpAddress = isIpAddress;
+exports.resolveEndpoint = resolveEndpoint;
+const { loadConfig, NODE_REGION_CONFIG_OPTIONS, NODE_REGION_CONFIG_FILE_OPTIONS } = __nccwpck_require__(7291);
 const { REGION_ENV_NAME, REGION_INI_NAME, resolveRegionConfig } = __nccwpck_require__(7291);
 exports.NODE_REGION_CONFIG_FILE_OPTIONS = NODE_REGION_CONFIG_FILE_OPTIONS;
 exports.NODE_REGION_CONFIG_OPTIONS = NODE_REGION_CONFIG_OPTIONS;
 exports.REGION_ENV_NAME = REGION_ENV_NAME;
 exports.REGION_INI_NAME = REGION_INI_NAME;
 exports.resolveRegionConfig = resolveRegionConfig;
-const { readFile } = __nccwpck_require__(1455);
-const { normalize, sep, join } = __nccwpck_require__(6760);
-const { isValidHostLabel, isIpAddress, customEndpointFunctions } = __nccwpck_require__(2085);
-const { EndpointError, resolveEndpoint } = __nccwpck_require__(2085);
-exports.EndpointError = EndpointError;
-exports.isIpAddress = isIpAddress;
-exports.resolveEndpoint = resolveEndpoint;
 
 const state = {
     warningEmitted: false,
@@ -7477,39 +7475,68 @@ const getLoggerPlugin = (options) => ({
 
 const recursionDetectionMiddlewareOptions = {
     step: "build",
-    tags: ["RECURSION_DETECTION"],
+    tags: ["RECURSION_DETECTION", "TRACE_CONTEXT_PROPAGATION"],
     name: "recursionDetectionMiddleware",
     override: true,
     priority: "low",
 };
 
-const TRACE_ID_HEADER_NAME = "X-Amzn-Trace-Id";
-const ENV_LAMBDA_FUNCTION_NAME = "AWS_LAMBDA_FUNCTION_NAME";
-const ENV_TRACE_ID = "_X_AMZN_TRACE_ID";
+const AWS_LAMBDA_FUNCTION_NAME = "AWS_LAMBDA_FUNCTION_NAME";
+const _X_AMZN_TRACE_ID = "_X_AMZN_TRACE_ID";
+const X_AMZN_TRACE_ID = "X-Amzn-Trace-Id";
+const TRACEPARENT = "traceparent";
+const TRACESTATE = "tracestate";
+const BAGGAGE = "baggage";
 const recursionDetectionMiddleware = () => (next) => async (args) => {
     const { request } = args;
     if (!HttpRequest.isInstance(request)) {
         return next(args);
     }
-    const traceIdHeader = Object.keys(request.headers ?? {}).find((h) => h.toLowerCase() === TRACE_ID_HEADER_NAME.toLowerCase()) ??
-        TRACE_ID_HEADER_NAME;
-    if (request.headers.hasOwnProperty(traceIdHeader)) {
-        return next(args);
+    let invokeStore;
+    {
+        const traceIdHeader = Object.keys(request.headers ?? {}).find((h) => h.toLowerCase() === X_AMZN_TRACE_ID.toLowerCase()) ??
+            X_AMZN_TRACE_ID;
+        if (!request.headers.hasOwnProperty(traceIdHeader)) {
+            const functionName = process.env[AWS_LAMBDA_FUNCTION_NAME];
+            const traceIdFromEnv = process.env[_X_AMZN_TRACE_ID];
+            invokeStore ??= await InvokeStore.getInstanceAsync();
+            const traceIdFromInvokeStore = invokeStore?.getXRayTraceId();
+            const traceId = traceIdFromInvokeStore ?? traceIdFromEnv;
+            const nonEmptyString = (str) => typeof str === "string" && str.length > 0;
+            if (nonEmptyString(functionName) && nonEmptyString(traceId)) {
+                request.headers[X_AMZN_TRACE_ID] = traceId;
+            }
+        }
     }
-    const functionName = process.env[ENV_LAMBDA_FUNCTION_NAME];
-    const traceIdFromEnv = process.env[ENV_TRACE_ID];
-    const invokeStore = await InvokeStore.getInstanceAsync();
-    const traceIdFromInvokeStore = invokeStore?.getXRayTraceId();
-    const traceId = traceIdFromInvokeStore ?? traceIdFromEnv;
-    const nonEmptyString = (str) => typeof str === "string" && str.length > 0;
-    if (nonEmptyString(functionName) && nonEmptyString(traceId)) {
-        request.headers[TRACE_ID_HEADER_NAME] = traceId;
+    {
+        sanitizeTraceHeaders(request.headers);
+        const existingTraceparent = request.headers[TRACEPARENT];
+        if (!existingTraceparent) {
+            const traceparent = (invokeStore ??= await InvokeStore.getInstanceAsync())?.getTraceparent?.();
+            if (traceparent) {
+                request.headers[TRACEPARENT] = traceparent;
+                const tracestate = invokeStore?.getTracestate?.();
+                if (tracestate) {
+                    request.headers[TRACESTATE] = tracestate;
+                }
+                const baggage = invokeStore?.getBaggage?.();
+                if (baggage) {
+                    request.headers[BAGGAGE] = baggage;
+                }
+            }
+        }
     }
-    return next({
-        ...args,
-        request,
-    });
+    return next(args);
 };
+function sanitizeTraceHeaders(headers) {
+    for (const header of Object.keys(headers)) {
+        const lower = header.toLowerCase();
+        if (header !== lower && (lower === TRACEPARENT || lower === TRACESTATE || lower === BAGGAGE)) {
+            headers[lower] = headers[header];
+            delete headers[header];
+        }
+    }
+}
 
 const getRecursionDetectionPlugin = (options) => ({
     applyToStack: (clientStack) => {
@@ -8026,115 +8053,6 @@ const getRuntimeUserAgentPair = () => {
     return ["md/nodejs", versions.node];
 };
 
-const getNodeModulesParentDirs = (dirname) => {
-    const cwd = process.cwd();
-    if (!dirname) {
-        return [cwd];
-    }
-    const normalizedPath = normalize(dirname);
-    const parts = normalizedPath.split(sep);
-    const nodeModulesIndex = parts.indexOf("node_modules");
-    const parentDir = nodeModulesIndex !== -1 ? parts.slice(0, nodeModulesIndex).join(sep) : normalizedPath;
-    if (cwd === parentDir) {
-        return [cwd];
-    }
-    return [parentDir, cwd];
-};
-
-const SEMVER_REGEX = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*)?$/;
-const getSanitizedTypeScriptVersion = (version = "") => {
-    const match = version.match(SEMVER_REGEX);
-    if (!match) {
-        return undefined;
-    }
-    const [major, minor, patch, prerelease] = [match[1], match[2], match[3], match[4]];
-    return prerelease ? `${major}.${minor}.${patch}-${prerelease}` : `${major}.${minor}.${patch}`;
-};
-
-const ALLOWED_PREFIXES = ["^", "~", ">=", "<=", ">", "<"];
-const ALLOWED_DIST_TAGS = ["latest", "beta", "dev", "rc", "insiders", "next"];
-const getSanitizedDevTypeScriptVersion = (version = "") => {
-    if (ALLOWED_DIST_TAGS.includes(version)) {
-        return version;
-    }
-    const prefix = ALLOWED_PREFIXES.find((p) => version.startsWith(p)) ?? "";
-    const sanitizedTypeScriptVersion = getSanitizedTypeScriptVersion(version.slice(prefix.length));
-    if (!sanitizedTypeScriptVersion) {
-        return undefined;
-    }
-    return `${prefix}${sanitizedTypeScriptVersion}`;
-};
-
-let tscVersion;
-const TS_PACKAGE_JSON = join("node_modules", "typescript", "package.json");
-const getTypeScriptUserAgentPair = async () => {
-    if (tscVersion === null) {
-        return undefined;
-    }
-    else if (typeof tscVersion === "string") {
-        return ["md/tsc", tscVersion];
-    }
-    let isTypeScriptDetectionDisabled = false;
-    try {
-        isTypeScriptDetectionDisabled =
-            booleanSelector(process.env, "AWS_SDK_JS_TYPESCRIPT_DETECTION_DISABLED", SelectorType.ENV) || false;
-    }
-    catch { }
-    if (isTypeScriptDetectionDisabled) {
-        tscVersion = null;
-        return undefined;
-    }
-    const dirname = typeof __dirname !== "undefined" ? __dirname : undefined;
-    const nodeModulesParentDirs = getNodeModulesParentDirs(dirname);
-    let versionFromApp;
-    for (const nodeModulesParentDir of nodeModulesParentDirs) {
-        try {
-            const appPackageJsonPath = join(nodeModulesParentDir, "package.json");
-            const packageJson = await readFile(appPackageJsonPath, "utf-8");
-            const { dependencies, devDependencies } = JSON.parse(packageJson);
-            const version = devDependencies?.typescript ?? dependencies?.typescript;
-            if (typeof version !== "string") {
-                continue;
-            }
-            versionFromApp = version;
-            break;
-        }
-        catch {
-        }
-    }
-    if (!versionFromApp) {
-        tscVersion = null;
-        return undefined;
-    }
-    let versionFromNodeModules;
-    for (const nodeModulesParentDir of nodeModulesParentDirs) {
-        try {
-            const tsPackageJsonPath = join(nodeModulesParentDir, TS_PACKAGE_JSON);
-            const packageJson = await readFile(tsPackageJsonPath, "utf-8");
-            const { version } = JSON.parse(packageJson);
-            const sanitizedVersion = getSanitizedTypeScriptVersion(version);
-            if (typeof sanitizedVersion !== "string") {
-                continue;
-            }
-            versionFromNodeModules = sanitizedVersion;
-            break;
-        }
-        catch {
-        }
-    }
-    if (versionFromNodeModules) {
-        tscVersion = versionFromNodeModules;
-        return ["md/tsc", tscVersion];
-    }
-    const sanitizedVersion = getSanitizedDevTypeScriptVersion(versionFromApp);
-    if (typeof sanitizedVersion !== "string") {
-        tscVersion = null;
-        return undefined;
-    }
-    tscVersion = `dev_${sanitizedVersion}`;
-    return ["md/tsc", tscVersion];
-};
-
 const crtAvailability = {
     isCrtAvailable: false,
 };
@@ -8156,10 +8074,6 @@ const createDefaultUserAgentProvider = ({ serviceId, clientVersion }) => {
             ["lang/js"],
             runtimeUserAgentPair,
         ];
-        const typescriptUserAgentPair = await getTypeScriptUserAgentPair();
-        if (typescriptUserAgentPair) {
-            sections.push(typescriptUserAgentPair);
-        }
         const crtAvailable = isCrtAvailable();
         if (crtAvailable) {
             sections.push(crtAvailable);
@@ -11925,7 +11839,6 @@ exports.NodeHttpHandler = NodeHttpHandler;
 
 const { CredentialsProviderError, chain, getProfileName, parseKnownFiles } = __nccwpck_require__(7291);
 const { setCredentialFeature } = __nccwpck_require__(5152);
-const { fromLoginCredentials } = __nccwpck_require__(4072);
 
 const resolveCredentialSource = (credentialSource, profileName, logger) => {
     const sourceProvidersMap = {
@@ -12037,6 +11950,7 @@ const isLoginProfile = (data) => {
     return Boolean(data && data.login_session);
 };
 const resolveLoginCredentials = async (profileName, options, callerClientConfig) => {
+    const { fromLoginCredentials } = __nccwpck_require__(4072);
     const credentials = await fromLoginCredentials({
         ...options,
         profile: profileName,
@@ -12979,19 +12893,7 @@ exports.fromWebToken = fromWebToken;
 
 var __webpack_unused_export__;
 const { ProviderError, CredentialsProviderError, loadConfig, NODE_REGION_CONFIG_FILE_OPTIONS } = __nccwpck_require__(7291);
-const { fromCognitoIdentity: fromCognitoIdentity$1, fromCognitoIdentityPool: fromCognitoIdentityPool$1 } = __nccwpck_require__(5081);
-const { fromContainerMetadata: fromContainerMetadata$1, fromInstanceMetadata: fromInstanceMetadata$1 } = __nccwpck_require__(566);
-const { fromEnv: fromEnv$1 } = __nccwpck_require__(5606);
-const { fromHttp } = __nccwpck_require__(8605);
-exports.bn = fromHttp;
-const { fromIni: fromIni$1 } = __nccwpck_require__(5869);
-const { setCredentialFeature } = __nccwpck_require__(5152);
-const { fromLoginCredentials: fromLoginCredentials$1 } = __nccwpck_require__(4072);
-const { defaultProvider } = __nccwpck_require__(5861);
-const { fromProcess: fromProcess$1 } = __nccwpck_require__(5360);
-const { fromSSO: fromSSO$1 } = __nccwpck_require__(998);
 const { normalizeProvider } = __nccwpck_require__(402);
-const { fromTokenFile: fromTokenFile$1, fromWebToken: fromWebToken$1 } = __nccwpck_require__(9956);
 
 const createCredentialChain = (...credentialProviders) => {
     let expireAfter = -1;
@@ -13033,42 +12935,88 @@ const propertyProviderChain = (...providers) => async (awsIdentityProperties) =>
     throw lastProviderError;
 };
 
-const fromCognitoIdentity = (options) => fromCognitoIdentity$1({
-    ...options,
-});
+const fromCognitoIdentity = (options) => {
+    return async (args) => {
+        const { fromCognitoIdentity: _fromCognitoIdentity } = __nccwpck_require__(5081);
+        return _fromCognitoIdentity(options)(args);
+    };
+};
 
-const fromCognitoIdentityPool = (options) => fromCognitoIdentityPool$1({
-    ...options,
-});
+const fromCognitoIdentityPool = (options) => {
+    return async (args) => {
+        const { fromCognitoIdentityPool: _fromCognitoIdentityPool } = __nccwpck_require__(5081);
+        return _fromCognitoIdentityPool(options)(args);
+    };
+};
 
 const fromContainerMetadata = (init) => {
-    init?.logger?.debug("@smithy/credential-provider-imds", "fromContainerMetadata");
-    return fromContainerMetadata$1(init);
+    return async (props) => {
+        init?.logger?.debug("@smithy/credential-provider-imds", "fromContainerMetadata");
+        const { fromContainerMetadata: _fromContainerMetadata } = __nccwpck_require__(566);
+        return _fromContainerMetadata(init)();
+    };
 };
 
-const fromEnv = (init) => fromEnv$1(init);
+const fromEnv = (init) => {
+    return async (args) => {
+        const { fromEnv: _fromEnv } = __nccwpck_require__(5606);
+        return _fromEnv(init)(args);
+    };
+};
 
-const fromIni = (init = {}) => fromIni$1({
-    ...init,
-});
+const fromHttp = (options = {}) => {
+    return async (args) => {
+        const { fromHttp: _fromHttp } = __nccwpck_require__(8605);
+        return _fromHttp(options)(args);
+    };
+};
+
+const fromIni = (init = {}) => {
+    return async (args) => {
+        const { fromIni: _fromIni } = __nccwpck_require__(5869);
+        return _fromIni({ ...init })(args);
+    };
+};
 
 const fromInstanceMetadata = (init) => {
-    init?.logger?.debug("@smithy/credential-provider-imds", "fromInstanceMetadata");
-    return async () => fromInstanceMetadata$1(init)().then((creds) => setCredentialFeature(creds, "CREDENTIALS_IMDS", "0"));
+    return async (props) => {
+        init?.logger?.debug("@smithy/credential-provider-imds", "fromInstanceMetadata");
+        const { setCredentialFeature } = __nccwpck_require__(5152);
+        const { fromInstanceMetadata: _fromInstanceMetadata } = __nccwpck_require__(566);
+        return _fromInstanceMetadata(init)().then((creds) => setCredentialFeature(creds, "CREDENTIALS_IMDS", "0"));
+    };
 };
 
-const fromLoginCredentials = (init) => fromLoginCredentials$1({
-    ...init,
-});
+const fromLoginCredentials = (init) => {
+    return async (args) => {
+        const { fromLoginCredentials: _fromLoginCredentials } = __nccwpck_require__(4072);
+        return _fromLoginCredentials({ ...init })(args);
+    };
+};
 
-const fromNodeProviderChain = (init = {}) => defaultProvider({
-    ...init,
-});
+const fromNodeProviderChain = (init = {}) => {
+    let chain;
+    return async (args) => {
+        if (!chain) {
+            const { defaultProvider } = __nccwpck_require__(5861);
+            chain = defaultProvider({ ...init });
+        }
+        return chain(args);
+    };
+};
 
-const fromProcess = (init) => fromProcess$1(init);
+const fromProcess = (init) => {
+    return async (args) => {
+        const { fromProcess: _fromProcess } = __nccwpck_require__(5360);
+        return _fromProcess(init)(args);
+    };
+};
 
 const fromSSO = (init = {}) => {
-    return fromSSO$1({ ...init });
+    return async (args) => {
+        const { fromSSO: _fromSSO } = __nccwpck_require__(998);
+        return _fromSSO({ ...init })(args);
+    };
 };
 
 const ASSUME_ROLE_DEFAULT_REGION = "us-east-1";
@@ -13198,19 +13146,26 @@ const fromTemporaryCredentials = (options) => {
     }, { ...NODE_REGION_CONFIG_FILE_OPTIONS, profile })());
 };
 
-const fromTokenFile = (init = {}) => fromTokenFile$1({
-    ...init,
-});
+const fromTokenFile = (init = {}) => {
+    return async (args) => {
+        const { fromTokenFile: _fromTokenFile } = __nccwpck_require__(9956);
+        return _fromTokenFile({ ...init })(args);
+    };
+};
 
-const fromWebToken = (init) => fromWebToken$1({
-    ...init,
-});
+const fromWebToken = (init) => {
+    return async (args) => {
+        const { fromWebToken: _fromWebToken } = __nccwpck_require__(9956);
+        return _fromWebToken({ ...init })(args);
+    };
+};
 
 __webpack_unused_export__ = createCredentialChain;
 __webpack_unused_export__ = fromCognitoIdentity;
 __webpack_unused_export__ = fromCognitoIdentityPool;
 __webpack_unused_export__ = fromContainerMetadata;
 __webpack_unused_export__ = fromEnv;
+exports.bn = fromHttp;
 __webpack_unused_export__ = fromIni;
 __webpack_unused_export__ = fromInstanceMetadata;
 __webpack_unused_export__ = fromLoginCredentials;
@@ -13321,7 +13276,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.28";
+var version = "3.997.31";
 var packageInfo = {
 	version: version};
 
@@ -13938,58 +13893,61 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.28";
+var version = "3.997.31";
 var packageInfo = {
 	version: version};
 
-const p = "ref";
-const a = -1, b = true, c = "isSet", d = "booleanEquals", e = "PartitionResult", f = "stringEquals", g = "getAttr", h = "https://signin.{Region}.{PartitionResult#dualStackDnsSuffix}", i = { [p]: "Endpoint" }, j = { "fn": g, "argv": [{ [p]: e }, "name"] }, k = { [p]: e }, l = { [p]: "Region" }, m = { "authSchemes": [{ "name": "sigv4", "signingName": "signin", "signingRegion": "{Region}" }] }, n = {}, o = [l];
+const s = "ref";
+const a = -1, b = false, c = true, d = "isSet", e = "booleanEquals", f = "coalesce", g = "PartitionResult", h = "stringEquals", i = "getAttr", j = "https://signin.{Region}.{PartitionResult#dualStackDnsSuffix}", k = { [s]: "Endpoint" }, l = { "fn": i, "argv": [{ [s]: g }, "name"] }, m = { [s]: "Region" }, n = { [s]: g }, o = { "authSchemes": [{ "name": "sigv4", "signingName": "signin", "signingRegion": "{Region}" }] }, p = {}, q = [m];
 const _data = {
     conditions: [
-        [c, o],
-        [d, [{ fn: "coalesce", argv: [{ [p]: "IsControlPlane" }, false] }, b]],
-        [c, [i]],
-        ["aws.partition", o, e],
-        [d, [{ [p]: "UseFIPS" }, b]],
-        [d, [{ [p]: "UseDualStack" }, b]],
-        [f, [j, "aws"]],
-        [f, [j, "aws-cn"]],
-        [d, [{ fn: g, argv: [k, "supportsDualStack"] }, b]],
-        [f, [l, "us-gov-west-1"]],
-        [f, [j, "aws-us-gov"]],
-        [d, [{ fn: g, argv: [k, "supportsFIPS"] }, b]],
-        [f, [j, "aws-iso"]],
-        [f, [j, "aws-iso-b"]],
-        [f, [j, "aws-iso-f"]],
-        [f, [j, "aws-iso-e"]],
-        [f, [j, "aws-eusc"]]
+        [d, q],
+        [e, [{ fn: f, argv: [{ [s]: "IsControlPlane" }, b] }, c]],
+        [d, [k]],
+        ["aws.partition", q, g],
+        [e, [{ [s]: "UseFIPS" }, c]],
+        [h, [l, "aws"]],
+        [e, [{ fn: f, argv: [{ [s]: "IsOAuthEndpoint" }, b] }, c]],
+        [e, [{ [s]: "UseDualStack" }, c]],
+        [h, [l, "aws-cn"]],
+        [h, [m, "us-gov-west-1"]],
+        [h, [l, "aws-us-gov"]],
+        [e, [{ fn: i, argv: [n, "supportsFIPS"] }, c]],
+        [h, [l, "aws-iso"]],
+        [h, [l, "aws-iso-b"]],
+        [h, [l, "aws-iso-f"]],
+        [h, [l, "aws-iso-e"]],
+        [h, [l, "aws-eusc"]],
+        [e, [{ fn: i, argv: [n, "supportsDualStack"] }, c]]
     ],
     results: [
         [a],
-        ["https://signin.{Region}.api.aws", m],
-        ["https://signin.{Region}.api.amazonwebservices.com.cn", m],
-        [h, m],
-        ["https://{Region}.signin.aws.amazon.com", n],
-        ["https://{Region}.signin.amazonaws.cn", n],
-        ["https://{Region}.signin.amazonaws-us-gov.com", n],
-        ["https://{Region}.signin.c2shome.ic.gov", n],
-        ["https://{Region}.signin.sc2shome.sgov.gov", n],
-        ["https://{Region}.signin.csphome.hci.ic.gov", n],
-        ["https://{Region}.signin.csphome.adc-e.uk", n],
-        ["https://{Region}.signin.amazonaws-eusc.eu", n],
-        ["https://signin-fips.amazonaws-us-gov.com", n],
-        ["https://{Region}.signin-fips.amazonaws-us-gov.com", n],
-        ["https://{Region}.signin.{PartitionResult#dnsSuffix}", n],
+        ["https://signin.{Region}.api.aws", o],
+        ["https://signin.{Region}.api.amazonwebservices.com.cn", o],
+        [j, o],
+        [a, "FIPS endpoints are not supported for OAuth operations. Disable FIPS or use a non-OAuth operation."],
+        ["https://{Region}.oauth.signin.aws", o],
+        ["https://{Region}.signin.aws.amazon.com", p],
+        ["https://{Region}.signin.amazonaws.cn", p],
+        ["https://{Region}.signin.amazonaws-us-gov.com", p],
+        ["https://{Region}.signin.c2shome.ic.gov", p],
+        ["https://{Region}.signin.sc2shome.sgov.gov", p],
+        ["https://{Region}.signin.csphome.hci.ic.gov", p],
+        ["https://{Region}.signin.csphome.adc-e.uk", p],
+        ["https://{Region}.signin.amazonaws-eusc.eu", p],
+        ["https://signin-fips.amazonaws-us-gov.com", p],
+        ["https://{Region}.signin-fips.amazonaws-us-gov.com", p],
+        ["https://{Region}.signin.{PartitionResult#dnsSuffix}", p],
         [a, "Invalid Configuration: FIPS and custom endpoint are not supported"],
         [a, "Invalid Configuration: Dualstack and custom endpoint are not supported"],
-        [i, n],
-        ["https://signin-fips.{Region}.{PartitionResult#dualStackDnsSuffix}", n],
+        [k, p],
+        ["https://signin-fips.{Region}.{PartitionResult#dualStackDnsSuffix}", p],
         [a, "FIPS and DualStack are enabled, but this partition does not support one or both"],
-        ["https://signin-fips.{Region}.{PartitionResult#dnsSuffix}", n],
+        ["https://signin-fips.{Region}.{PartitionResult#dnsSuffix}", p],
         [a, "FIPS is enabled but this partition does not support FIPS"],
-        [h, n],
+        [j, p],
         [a, "DualStack is enabled but this partition does not support DualStack"],
-        ["https://signin.{Region}.{PartitionResult#dnsSuffix}", n],
+        ["https://signin.{Region}.{PartitionResult#dnsSuffix}", p],
         [a, "Invalid Configuration: Missing Region"]
     ]
 };
@@ -13997,44 +13955,51 @@ const root = 2;
 const r = 100_000_000;
 const nodes = new Int32Array([
     -1, 1, -1,
-    0, 4, 3,
-    2, 30, r + 25,
-    1, 24, 5,
-    2, 30, 6,
-    3, 7, 26,
-    4, 18, 8,
-    5, 17, 9,
-    6, r + 4, 10,
-    7, r + 5, 11,
-    10, r + 6, 12,
-    12, r + 7, 13,
-    13, r + 8, 14,
-    14, r + 9, 15,
-    15, r + 10, 16,
-    16, r + 11, r + 14,
-    8, r + 22, r + 23,
-    5, 22, 19,
-    9, r + 12, 20,
-    10, r + 13, 21,
-    11, r + 20, r + 21,
-    8, 23, r + 19,
-    11, r + 18, r + 19,
-    2, 29, 25,
-    3, 32, 26,
-    4, 27, r + 25,
-    5, r + 25, 28,
-    9, r + 12, r + 25,
-    3, 32, 30,
-    4, r + 15, 31,
-    5, r + 16, r + 17,
-    6, r + 1, 33,
-    7, r + 2, r + 3,
+    0, 6, 3,
+    2, 36, 4,
+    4, 5, r + 27,
+    6, r + 4, r + 27,
+    1, 29, 7,
+    2, 36, 8,
+    3, 9, 31,
+    4, 22, 10,
+    5, 19, 11,
+    7, 21, 12,
+    8, r + 7, 13,
+    10, r + 8, 14,
+    12, r + 9, 15,
+    13, r + 10, 16,
+    14, r + 11, 17,
+    15, r + 12, 18,
+    16, r + 13, r + 16,
+    6, r + 5, 20,
+    7, 21, r + 6,
+    17, r + 24, r + 25,
+    6, r + 4, 23,
+    7, 27, 24,
+    9, r + 14, 25,
+    10, r + 15, 26,
+    11, r + 22, r + 23,
+    11, 28, r + 21,
+    17, r + 20, r + 21,
+    2, 35, 30,
+    3, 39, 31,
+    4, 32, r + 27,
+    6, r + 4, 33,
+    7, r + 27, 34,
+    9, r + 14, r + 27,
+    3, 39, 36,
+    4, 38, 37,
+    7, r + 18, r + 19,
+    6, r + 4, r + 17,
+    5, r + 1, 40,
+    8, r + 2, r + 3,
 ]);
 const bdd = BinaryDecisionDiagram.from(nodes, root, _data.conditions, _data.results);
 
 const cache = new EndpointCache({
     size: 50,
-    params: ["Endpoint", "IsControlPlane", "Region", "UseDualStack", "UseFIPS"],
+    params: ["Endpoint", "IsControlPlane", "IsOAuthEndpoint", "Region", "UseDualStack", "UseFIPS"],
 });
 const defaultEndpointResolver = (endpointParams, context = {}) => {
     return cache.get(endpointParams, () => decideEndpoint(bdd, {
@@ -14115,24 +14080,32 @@ const _COATR = "CreateOAuth2TokenRequest";
 const _COATRB = "CreateOAuth2TokenRequestBody";
 const _COATRBr = "CreateOAuth2TokenResponseBody";
 const _COATRr = "CreateOAuth2TokenResponse";
+const _COATWIAM = "CreateOAuth2TokenWithIAM";
+const _COATWIAMR = "CreateOAuth2TokenWithIAMRequest";
+const _COATWIAMRr = "CreateOAuth2TokenWithIAMResponse";
 const _ISE = "InternalServerException";
+const _OAAT = "OAuthAccessToken";
 const _RT = "RefreshToken";
 const _TMRE = "TooManyRequestsError";
 const _VE = "ValidationException";
 const _aKI = "accessKeyId";
 const _aT = "accessToken";
+const _at = "access_token";
 const _c = "client";
 const _cI = "clientId";
 const _cV = "codeVerifier";
 const _co = "code";
 const _e = "error";
 const _eI = "expiresIn";
+const _ei = "expires_in";
 const _gT = "grantType";
+const _gt = "grant_type";
 const _h = "http";
 const _hE = "httpError";
 const _iT = "idToken";
 const _jN = "jsonName";
 const _m = "message";
+const _r = "resource";
 const _rT = "refreshToken";
 const _rU = "redirectUri";
 const _s = "smithy.ts.sdk.synthetic.com.amazonaws.signin";
@@ -14142,6 +14115,7 @@ const _se = "server";
 const _tI = "tokenInput";
 const _tO = "tokenOutput";
 const _tT = "tokenType";
+const _tt = "token_type";
 const n0 = "com.amazonaws.signin";
 const _s_registry = TypeRegistry.for(_s);
 var SigninServiceException$ = [-3, _s, "SigninServiceException", 0, [], []];
@@ -14175,6 +14149,7 @@ const errorTypeRegistries = [
     _s_registry,
     n0_registry,
 ];
+var OAuthAccessToken = [0, n0, _OAAT, 8, 0];
 var RefreshToken = [0, n0, _RT, 8, 0];
 var AccessToken$ = [3, n0, _AT,
     8,
@@ -14201,8 +14176,21 @@ var CreateOAuth2TokenResponseBody$ = [3, n0, _COATRBr,
     [_aT, _tT, _eI, _rT, _iT],
     [[() => AccessToken$, { [_jN]: _aT }], [0, { [_jN]: _tT }], [1, { [_jN]: _eI }], [() => RefreshToken, { [_jN]: _rT }], [0, { [_jN]: _iT }]], 4
 ];
+var CreateOAuth2TokenWithIAMRequest$ = [3, n0, _COATWIAMR,
+    0,
+    [_gT, _r],
+    [[0, { [_jN]: _gt }], 0], 2
+];
+var CreateOAuth2TokenWithIAMResponse$ = [3, n0, _COATWIAMRr,
+    0,
+    [_aT, _tT, _eI],
+    [[() => OAuthAccessToken, { [_jN]: _at }], [0, { [_jN]: _tt }], [1, { [_jN]: _ei }]], 3
+];
 var CreateOAuth2Token$ = [9, n0, _COAT,
     { [_h]: ["POST", "/v1/token", 200] }, () => CreateOAuth2TokenRequest$, () => CreateOAuth2TokenResponse$
+];
+var CreateOAuth2TokenWithIAM$ = [9, n0, _COATWIAM,
+    { [_h]: ["POST", "/v1/token?x-amz-client-auth-method=iam", 200] }, () => CreateOAuth2TokenWithIAMRequest$, () => CreateOAuth2TokenWithIAMResponse$
 ];
 
 const getRuntimeConfig$1 = (config) => {
@@ -14359,13 +14347,20 @@ const command = makeBuilder(commonParams, "Signin", "SigninClient", getEndpointP
 const _ep0 = {
     IsControlPlane: { type: "staticContextParams", value: false },
 };
+const _ep1 = {
+    IsOAuthEndpoint: { type: "staticContextParams", value: true },
+};
 const _mw0 = (Command, cs, config, o) => [];
 
 class CreateOAuth2TokenCommand extends command(_ep0, _mw0, "CreateOAuth2Token", CreateOAuth2Token$) {
 }
 
+class CreateOAuth2TokenWithIAMCommand extends command(_ep1, _mw0, "CreateOAuth2TokenWithIAM", CreateOAuth2TokenWithIAM$) {
+}
+
 const commands = {
     CreateOAuth2TokenCommand,
+    CreateOAuth2TokenWithIAMCommand,
 };
 class Signin extends SigninClient {
 }
@@ -14392,6 +14387,10 @@ exports.CreateOAuth2TokenRequest$ = CreateOAuth2TokenRequest$;
 exports.CreateOAuth2TokenRequestBody$ = CreateOAuth2TokenRequestBody$;
 exports.CreateOAuth2TokenResponse$ = CreateOAuth2TokenResponse$;
 exports.CreateOAuth2TokenResponseBody$ = CreateOAuth2TokenResponseBody$;
+exports.CreateOAuth2TokenWithIAM$ = CreateOAuth2TokenWithIAM$;
+exports.CreateOAuth2TokenWithIAMCommand = CreateOAuth2TokenWithIAMCommand;
+exports.CreateOAuth2TokenWithIAMRequest$ = CreateOAuth2TokenWithIAMRequest$;
+exports.CreateOAuth2TokenWithIAMResponse$ = CreateOAuth2TokenWithIAMResponse$;
 exports.InternalServerException = InternalServerException;
 exports.InternalServerException$ = InternalServerException$;
 exports.OAuth2ErrorCode = OAuth2ErrorCode;
@@ -14490,7 +14489,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.28";
+var version = "3.997.31";
 var packageInfo = {
 	version: version};
 
@@ -15170,7 +15169,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.28";
+var version = "3.997.31";
 var packageInfo = {
 	version: version};
 
@@ -15825,7 +15824,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.28";
+var version = "3.997.31";
 var packageInfo = {
 	version: version};
 
@@ -19417,7 +19416,7 @@ const buildHttpRpcRequest = async (context, headers, path, resolvedHostname, bod
         try {
             contents.headers["content-length"] = String(calculateBodyLength(body));
         }
-        catch (e) { }
+        catch (ignored) { }
     }
     return new HttpRequest(contents);
 };
@@ -19666,7 +19665,7 @@ class SmithyRpcV2CborProtocol extends RpcProtocol {
             try {
                 request.headers["content-length"] = String(request.body.byteLength);
             }
-            catch (e) { }
+            catch (ignored) { }
         }
         const { service, operation } = getSmithyContext(context);
         const path = `/service/${service}/operation/${operation}`;
@@ -19698,7 +19697,7 @@ class SmithyRpcV2CborProtocol extends RpcProtocol {
         try {
             errorSchema = registry.getSchema(errorName);
         }
-        catch (e) {
+        catch (ignored) {
             if (dataObject.Message) {
                 dataObject.message = dataObject.Message;
             }
@@ -21694,7 +21693,7 @@ const getConfigFilepath = () => process.env[ENV_CONFIG_PATH] || join(getHomeDir(
 const ENV_CREDENTIALS_PATH = "AWS_SHARED_CREDENTIALS_FILE";
 const getCredentialsFilepath = () => process.env[ENV_CREDENTIALS_PATH] || join(getHomeDir(), ".aws", "credentials");
 
-const prefixKeyRegex = /^([\w-]+)\s(["'])?([\w-@\+\.%:/]+)\2$/;
+const prefixKeyRegex = /^([\w-]+)\s(["'])?([\w-@+.%:/]+)\2$/;
 const profileNameBlockList = ["__proto__", "profile __proto__"];
 const parseIni = (iniData) => {
     const map = {};
@@ -21842,7 +21841,7 @@ function getSelectorName(functionString) {
         constants.delete("ENV");
         return [...constants].join(", ");
     }
-    catch (e) {
+    catch (ignored) {
         return functionString;
     }
 }
@@ -22146,7 +22145,7 @@ const getResolvedSigningRegion = (hostname, { signingRegion, regionRegex, useFip
 
 const getRegionInfo = (region, { useFipsEndpoint = false, useDualstackEndpoint = false, signingService, regionHash, partitionHash, }) => {
     const partition = getResolvedPartition(region, { partitionHash });
-    const resolvedRegion = region in regionHash ? region : partitionHash[partition]?.endpoint ?? region;
+    const resolvedRegion = region in regionHash ? region : (partitionHash[partition]?.endpoint ?? region);
     const hostnameOptions = { useFipsEndpoint, useDualstackEndpoint };
     const regionHostname = getHostnameFromVariants(regionHash[resolvedRegion]?.variants, hostnameOptions);
     const partitionHostname = getHostnameFromVariants(partitionHash[partition]?.variants, hostnameOptions);
@@ -22333,7 +22332,7 @@ const resolveParamsForS3 = async (endpointParams) => {
     }
     return endpointParams;
 };
-const DOMAIN_PATTERN = /^[a-z0-9][a-z0-9\.\-]{1,61}[a-z0-9]$/;
+const DOMAIN_PATTERN = /^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/;
 const IP_ADDRESS_PATTERN = /(\d+\.){3}\d+/;
 const DOTS_PATTERN = /\.\./;
 const isDnsCompatibleBucketName = (bucketName) => DOMAIN_PATTERN.test(bucketName) && !IP_ADDRESS_PATTERN.test(bucketName) && !DOTS_PATTERN.test(bucketName);
@@ -22722,7 +22721,7 @@ const parseURL = (value) => {
             }
             return new URL(value);
         }
-        catch (error) {
+        catch (ignored) {
             return null;
         }
     })();
@@ -23208,27 +23207,27 @@ class HeaderMarshaller {
     formatHeaderValue(header) {
         switch (header.type) {
             case "boolean":
-                return Uint8Array.from([header.value ? 0 : 1]);
+                return Uint8Array.from([header.value ? HEADER_VALUE_TYPE.boolTrue : HEADER_VALUE_TYPE.boolFalse]);
             case "byte":
-                return Uint8Array.from([2, header.value]);
+                return Uint8Array.from([HEADER_VALUE_TYPE.byte, header.value]);
             case "short":
                 const shortView = new DataView(new ArrayBuffer(3));
-                shortView.setUint8(0, 3);
+                shortView.setUint8(0, HEADER_VALUE_TYPE.short);
                 shortView.setInt16(1, header.value, false);
                 return new Uint8Array(shortView.buffer);
             case "integer":
                 const intView = new DataView(new ArrayBuffer(5));
-                intView.setUint8(0, 4);
+                intView.setUint8(0, HEADER_VALUE_TYPE.integer);
                 intView.setInt32(1, header.value, false);
                 return new Uint8Array(intView.buffer);
             case "long":
                 const longBytes = new Uint8Array(9);
-                longBytes[0] = 5;
+                longBytes[0] = HEADER_VALUE_TYPE.long;
                 longBytes.set(header.value.bytes, 1);
                 return longBytes;
             case "binary":
                 const binView = new DataView(new ArrayBuffer(3 + header.value.byteLength));
-                binView.setUint8(0, 6);
+                binView.setUint8(0, HEADER_VALUE_TYPE.byteArray);
                 binView.setUint16(1, header.value.byteLength, false);
                 const binBytes = new Uint8Array(binView.buffer);
                 binBytes.set(header.value, 3);
@@ -23236,14 +23235,14 @@ class HeaderMarshaller {
             case "string":
                 const utf8Bytes = this.fromUtf8(header.value);
                 const strView = new DataView(new ArrayBuffer(3 + utf8Bytes.byteLength));
-                strView.setUint8(0, 7);
+                strView.setUint8(0, HEADER_VALUE_TYPE.string);
                 strView.setUint16(1, utf8Bytes.byteLength, false);
                 const strBytes = new Uint8Array(strView.buffer);
                 strBytes.set(utf8Bytes, 3);
                 return strBytes;
             case "timestamp":
                 const tsBytes = new Uint8Array(9);
-                tsBytes[0] = 8;
+                tsBytes[0] = HEADER_VALUE_TYPE.timestamp;
                 tsBytes.set(Int64.fromNumber(header.value.valueOf()).bytes, 1);
                 return tsBytes;
             case "uuid":
@@ -23251,8 +23250,8 @@ class HeaderMarshaller {
                     throw new Error(`Invalid UUID received: ${header.value}`);
                 }
                 const uuidBytes = new Uint8Array(17);
-                uuidBytes[0] = 9;
-                uuidBytes.set(fromHex(header.value.replace(/\-/g, "")), 1);
+                uuidBytes[0] = HEADER_VALUE_TYPE.uuid;
+                uuidBytes.set(fromHex(header.value.replace(/-/g, "")), 1);
                 return uuidBytes;
         }
     }
@@ -23264,46 +23263,46 @@ class HeaderMarshaller {
             const name = this.toUtf8(new Uint8Array(headers.buffer, headers.byteOffset + position, nameLength));
             position += nameLength;
             switch (headers.getUint8(position++)) {
-                case 0:
+                case HEADER_VALUE_TYPE.boolTrue:
                     out[name] = {
                         type: BOOLEAN_TAG,
                         value: true,
                     };
                     break;
-                case 1:
+                case HEADER_VALUE_TYPE.boolFalse:
                     out[name] = {
                         type: BOOLEAN_TAG,
                         value: false,
                     };
                     break;
-                case 2:
+                case HEADER_VALUE_TYPE.byte:
                     out[name] = {
                         type: BYTE_TAG,
                         value: headers.getInt8(position++),
                     };
                     break;
-                case 3:
+                case HEADER_VALUE_TYPE.short:
                     out[name] = {
                         type: SHORT_TAG,
                         value: headers.getInt16(position, false),
                     };
                     position += 2;
                     break;
-                case 4:
+                case HEADER_VALUE_TYPE.integer:
                     out[name] = {
                         type: INT_TAG,
                         value: headers.getInt32(position, false),
                     };
                     position += 4;
                     break;
-                case 5:
+                case HEADER_VALUE_TYPE.long:
                     out[name] = {
                         type: LONG_TAG,
                         value: new Int64(new Uint8Array(headers.buffer, headers.byteOffset + position, 8)),
                     };
                     position += 8;
                     break;
-                case 6:
+                case HEADER_VALUE_TYPE.byteArray:
                     const binaryLength = headers.getUint16(position, false);
                     position += 2;
                     out[name] = {
@@ -23312,7 +23311,7 @@ class HeaderMarshaller {
                     };
                     position += binaryLength;
                     break;
-                case 7:
+                case HEADER_VALUE_TYPE.string:
                     const stringLength = headers.getUint16(position, false);
                     position += 2;
                     out[name] = {
@@ -23321,14 +23320,14 @@ class HeaderMarshaller {
                     };
                     position += stringLength;
                     break;
-                case 8:
+                case HEADER_VALUE_TYPE.timestamp:
                     out[name] = {
                         type: TIMESTAMP_TAG,
                         value: new Date(new Int64(new Uint8Array(headers.buffer, headers.byteOffset + position, 8)).valueOf()),
                     };
                     position += 8;
                     break;
-                case 9:
+                case HEADER_VALUE_TYPE.uuid:
                     const uuidBytes = new Uint8Array(headers.buffer, headers.byteOffset + position, 16);
                     position += 16;
                     out[name] = {
@@ -25002,7 +25001,7 @@ function contentLengthMiddleware(bodyLengthChecker) {
                         [CONTENT_LENGTH_HEADER]: String(length),
                     };
                 }
-                catch (error) {
+                catch (ignored) {
                 }
             }
         }
@@ -25266,7 +25265,7 @@ function bindRetryMiddleware(isStreamingPayload) {
                     try {
                         retryToken = await retryStrategy.refreshRetryTokenForRetry(retryToken, retryErrorInfo);
                     }
-                    catch (refreshError) {
+                    catch (ignoredRefreshError) {
                         if (!lastError.$metadata) {
                             lastError.$metadata = {};
                         }
@@ -25584,7 +25583,7 @@ let StandardRetryStrategy$1 = class StandardRetryStrategy {
         try {
             return await this.maxAttemptsProvider();
         }
-        catch (error) {
+        catch (ignored) {
             console.warn(`Max attempts provider could not resolve. Using default of ${DEFAULT_MAX_ATTEMPTS}`);
             return DEFAULT_MAX_ATTEMPTS;
         }
@@ -25711,7 +25710,7 @@ class StandardRetryStrategy {
         try {
             maxAttempts = await this.maxAttemptsProvider();
         }
-        catch (error) {
+        catch (ignored) {
             maxAttempts = DEFAULT_MAX_ATTEMPTS;
         }
         return maxAttempts;
@@ -25974,7 +25973,7 @@ const schemaDeserializationMiddleware = (config) => (next, context) => async (ar
             try {
                 error.message += "\n  " + hint;
             }
-            catch (e) {
+            catch (ignored) {
                 if (!context.logger || context.logger?.constructor?.name === "NoOpLogger") {
                     console.warn(hint);
                 }
@@ -25999,7 +25998,7 @@ const schemaDeserializationMiddleware = (config) => (next, context) => async (ar
                     };
                 }
             }
-            catch (e) {
+            catch (ignored) {
             }
         }
         throw error;
@@ -26138,7 +26137,7 @@ class ErrorSchema extends StructureSchema {
     ctor;
     symbol = ErrorSchema.symbol;
 }
-const error = (namespace, name, traits, memberNames, memberList, ctor) => Schema.assign(new ErrorSchema(), {
+const error = (namespace, name, traits, memberNames, memberList, _ctor) => Schema.assign(new ErrorSchema(), {
     name,
     namespace,
     traits,
@@ -26390,7 +26389,7 @@ class NormalizedSchema {
         const schema = this.getSchema();
         const memberSchema = isDoc
             ? 15
-            : schema[4] ?? 0;
+            : (schema[4] ?? 0);
         return member([memberSchema, 0], "key");
     }
     getValueSchema() {
@@ -26769,7 +26768,7 @@ function bindV4(getRandomValues) {
     };
 }
 
-const copyDocumentWithTransform = (source, schemaRef, transform = (_) => _) => source;
+const copyDocumentWithTransform = (source, _schemaRef, _transform = (_) => _) => source;
 
 const parseBoolean = (value) => {
     switch (value) {
@@ -27039,7 +27038,7 @@ const parseRfc3339DateTime = (value) => {
     const day = parseDateValue(dayStr, "day", 1, 31);
     return buildDate(year, month, day, { hours, minutes, seconds, fractionalMilliseconds });
 };
-const RFC3339_WITH_OFFSET$1 = new RegExp(/^(\d{4})-(\d{2})-(\d{2})[tT](\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(([-+]\d{2}\:\d{2})|[zZ])$/);
+const RFC3339_WITH_OFFSET$1 = new RegExp(/^(\d{4})-(\d{2})-(\d{2})[tT](\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(([-+]\d{2}:\d{2})|[zZ])$/);
 const parseRfc3339DateTimeWithOffset = (value) => {
     if (value === null || value === undefined) {
         return undefined;
@@ -27531,7 +27530,7 @@ const deserializerMiddleware = (options, deserializer) => (next, context) => asy
             try {
                 error.message += "\n  " + hint;
             }
-            catch (e) {
+            catch (ignored) {
                 if (!context.logger || context.logger?.constructor?.name === "NoOpLogger") {
                     console.warn(hint);
                 }
@@ -27556,7 +27555,7 @@ const deserializerMiddleware = (options, deserializer) => (next, context) => asy
                     };
                 }
             }
-            catch (e) {
+            catch (ignored) {
             }
         }
         throw error;
@@ -28246,7 +28245,7 @@ const sdkStreamMixin = (stream) => {
         try {
             return sdkStreamMixin$1(stream);
         }
-        catch (e) {
+        catch (ignored) {
             const name = stream?.__proto__?.constructor?.name || stream;
             throw new Error(`Unexpected stream implementation, expect Stream.Readable instance, got ${name}`);
         }
@@ -28494,7 +28493,7 @@ const isValidHostLabel = (value, allowSubDomains = false) => {
 };
 
 function isValidHostname(hostname) {
-    const hostPattern = /^[a-z0-9][a-z0-9\.\-]*[a-z0-9]$/;
+    const hostPattern = /^[a-z0-9][a-z0-9.-]*[a-z0-9]$/;
     return hostPattern.test(hostname);
 }
 
@@ -29958,27 +29957,27 @@ class HeaderFormatter {
     formatHeaderValue(header) {
         switch (header.type) {
             case "boolean":
-                return Uint8Array.from([header.value ? 0 : 1]);
+                return Uint8Array.from([header.value ? HEADER_VALUE_TYPE.boolTrue : HEADER_VALUE_TYPE.boolFalse]);
             case "byte":
-                return Uint8Array.from([2, header.value]);
+                return Uint8Array.from([HEADER_VALUE_TYPE.byte, header.value]);
             case "short":
                 const shortView = new DataView(new ArrayBuffer(3));
-                shortView.setUint8(0, 3);
+                shortView.setUint8(0, HEADER_VALUE_TYPE.short);
                 shortView.setInt16(1, header.value, false);
                 return new Uint8Array(shortView.buffer);
             case "integer":
                 const intView = new DataView(new ArrayBuffer(5));
-                intView.setUint8(0, 4);
+                intView.setUint8(0, HEADER_VALUE_TYPE.integer);
                 intView.setInt32(1, header.value, false);
                 return new Uint8Array(intView.buffer);
             case "long":
                 const longBytes = new Uint8Array(9);
-                longBytes[0] = 5;
+                longBytes[0] = HEADER_VALUE_TYPE.long;
                 longBytes.set(header.value.bytes, 1);
                 return longBytes;
             case "binary":
                 const binView = new DataView(new ArrayBuffer(3 + header.value.byteLength));
-                binView.setUint8(0, 6);
+                binView.setUint8(0, HEADER_VALUE_TYPE.byteArray);
                 binView.setUint16(1, header.value.byteLength, false);
                 const binBytes = new Uint8Array(binView.buffer);
                 binBytes.set(header.value, 3);
@@ -29986,14 +29985,14 @@ class HeaderFormatter {
             case "string":
                 const utf8Bytes = fromUtf8(header.value);
                 const strView = new DataView(new ArrayBuffer(3 + utf8Bytes.byteLength));
-                strView.setUint8(0, 7);
+                strView.setUint8(0, HEADER_VALUE_TYPE.string);
                 strView.setUint16(1, utf8Bytes.byteLength, false);
                 const strBytes = new Uint8Array(strView.buffer);
                 strBytes.set(utf8Bytes, 3);
                 return strBytes;
             case "timestamp":
                 const tsBytes = new Uint8Array(9);
-                tsBytes[0] = 8;
+                tsBytes[0] = HEADER_VALUE_TYPE.timestamp;
                 tsBytes.set(Int64.fromNumber(header.value.valueOf()).bytes, 1);
                 return tsBytes;
             case "uuid":
@@ -30001,8 +30000,8 @@ class HeaderFormatter {
                     throw new Error(`Invalid UUID received: ${header.value}`);
                 }
                 const uuidBytes = new Uint8Array(17);
-                uuidBytes[0] = 9;
-                uuidBytes.set(fromHex(header.value.replace(/\-/g, "")), 1);
+                uuidBytes[0] = HEADER_VALUE_TYPE.uuid;
+                uuidBytes.set(fromHex(header.value.replace(/-/g, "")), 1);
                 return uuidBytes;
         }
     }
@@ -30216,7 +30215,7 @@ ${toHex(hashedRequest)}`;
         }
     }
     formatDate(now) {
-        const longDate = iso8601(now).replace(/[\-:]/g, "");
+        const longDate = iso8601(now).replace(/[-:]/g, "");
         return {
             longDate,
             shortDate: longDate.slice(0, 8),
