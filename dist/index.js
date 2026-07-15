@@ -7,8 +7,9 @@ import { createRequire as __WEBPACK_EXTERNAL_createRequire } from "module";
 var __webpack_unused_export__;
 const { awsEndpointFunctions, emitWarningIfUnsupportedVersion: emitWarningIfUnsupportedVersion$1, createDefaultUserAgentProvider, NODE_APP_ID_CONFIG_OPTIONS, getAwsRegionExtensionConfiguration, resolveAwsRegionExtensionConfiguration, resolveUserAgentConfig, resolveHostHeaderConfig, getUserAgentPlugin, getHostHeaderPlugin, getLoggerPlugin, getRecursionDetectionPlugin } = __nccwpck_require__(5152);
 const { getHttpAuthSchemeEndpointRuleSetPlugin, DefaultIdentityProviderConfig, getHttpSigningPlugin, createPaginator } = __nccwpck_require__(402);
-const { normalizeProvider, getSmithyContext, ServiceException, NoOpLogger, emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode, getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, Command, createAggregatedClient } = __nccwpck_require__(2658);
-__webpack_unused_export__ = Command;
+const { normalizeProvider, getSmithyContext, ServiceException, NoOpLogger, emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode, getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, makeBuilder, createAggregatedClient } = __nccwpck_require__(2658);
+const { Command: $Command } = __nccwpck_require__(2658);
+__webpack_unused_export__ = $Command;
 __webpack_unused_export__ = Client;
 const { resolveDefaultsModeConfig, loadConfig, NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, NODE_REGION_CONFIG_OPTIONS, NODE_REGION_CONFIG_FILE_OPTIONS, resolveRegionConfig } = __nccwpck_require__(7291);
 const { BinaryDecisionDiagram, EndpointCache, decideEndpoint, customEndpointFunctions, resolveEndpointConfig, getEndpointPlugin } = __nccwpck_require__(2085);
@@ -75,7 +76,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.1076.0";
+var version = "3.1086.0";
 var packageInfo = {
 	version: version};
 
@@ -1348,280 +1349,77 @@ class ECRPUBLICClient extends Client {
     }
 }
 
-class BatchCheckLayerAvailabilityCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "BatchCheckLayerAvailability", {})
-    .n("ECRPUBLICClient", "BatchCheckLayerAvailabilityCommand")
-    .sc(BatchCheckLayerAvailability$)
-    .build() {
+const command = makeBuilder(commonParams, "SpencerFrontendService", "ECRPUBLICClient", getEndpointPlugin);
+const _ep0 = {};
+const _mw0 = (Command, cs, config, o) => [];
+
+class BatchCheckLayerAvailabilityCommand extends command(_ep0, _mw0, "BatchCheckLayerAvailability", BatchCheckLayerAvailability$) {
 }
 
-class BatchDeleteImageCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "BatchDeleteImage", {})
-    .n("ECRPUBLICClient", "BatchDeleteImageCommand")
-    .sc(BatchDeleteImage$)
-    .build() {
+class BatchDeleteImageCommand extends command(_ep0, _mw0, "BatchDeleteImage", BatchDeleteImage$) {
 }
 
-class CompleteLayerUploadCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "CompleteLayerUpload", {})
-    .n("ECRPUBLICClient", "CompleteLayerUploadCommand")
-    .sc(CompleteLayerUpload$)
-    .build() {
+class CompleteLayerUploadCommand extends command(_ep0, _mw0, "CompleteLayerUpload", CompleteLayerUpload$) {
 }
 
-class CreateRepositoryCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "CreateRepository", {})
-    .n("ECRPUBLICClient", "CreateRepositoryCommand")
-    .sc(CreateRepository$)
-    .build() {
+class CreateRepositoryCommand extends command(_ep0, _mw0, "CreateRepository", CreateRepository$) {
 }
 
-class DeleteRepositoryCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "DeleteRepository", {})
-    .n("ECRPUBLICClient", "DeleteRepositoryCommand")
-    .sc(DeleteRepository$)
-    .build() {
+class DeleteRepositoryCommand extends command(_ep0, _mw0, "DeleteRepository", DeleteRepository$) {
 }
 
-class DeleteRepositoryPolicyCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "DeleteRepositoryPolicy", {})
-    .n("ECRPUBLICClient", "DeleteRepositoryPolicyCommand")
-    .sc(DeleteRepositoryPolicy$)
-    .build() {
+class DeleteRepositoryPolicyCommand extends command(_ep0, _mw0, "DeleteRepositoryPolicy", DeleteRepositoryPolicy$) {
 }
 
-class DescribeImagesCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "DescribeImages", {})
-    .n("ECRPUBLICClient", "DescribeImagesCommand")
-    .sc(DescribeImages$)
-    .build() {
+class DescribeImagesCommand extends command(_ep0, _mw0, "DescribeImages", DescribeImages$) {
 }
 
-class DescribeImageTagsCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "DescribeImageTags", {})
-    .n("ECRPUBLICClient", "DescribeImageTagsCommand")
-    .sc(DescribeImageTags$)
-    .build() {
+class DescribeImageTagsCommand extends command(_ep0, _mw0, "DescribeImageTags", DescribeImageTags$) {
 }
 
-class DescribeRegistriesCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "DescribeRegistries", {})
-    .n("ECRPUBLICClient", "DescribeRegistriesCommand")
-    .sc(DescribeRegistries$)
-    .build() {
+class DescribeRegistriesCommand extends command(_ep0, _mw0, "DescribeRegistries", DescribeRegistries$) {
 }
 
-class DescribeRepositoriesCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "DescribeRepositories", {})
-    .n("ECRPUBLICClient", "DescribeRepositoriesCommand")
-    .sc(DescribeRepositories$)
-    .build() {
+class DescribeRepositoriesCommand extends command(_ep0, _mw0, "DescribeRepositories", DescribeRepositories$) {
 }
 
-class GetAuthorizationTokenCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "GetAuthorizationToken", {})
-    .n("ECRPUBLICClient", "GetAuthorizationTokenCommand")
-    .sc(GetAuthorizationToken$)
-    .build() {
+class GetAuthorizationTokenCommand extends command(_ep0, _mw0, "GetAuthorizationToken", GetAuthorizationToken$) {
 }
 
-class GetRegistryCatalogDataCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "GetRegistryCatalogData", {})
-    .n("ECRPUBLICClient", "GetRegistryCatalogDataCommand")
-    .sc(GetRegistryCatalogData$)
-    .build() {
+class GetRegistryCatalogDataCommand extends command(_ep0, _mw0, "GetRegistryCatalogData", GetRegistryCatalogData$) {
 }
 
-class GetRepositoryCatalogDataCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "GetRepositoryCatalogData", {})
-    .n("ECRPUBLICClient", "GetRepositoryCatalogDataCommand")
-    .sc(GetRepositoryCatalogData$)
-    .build() {
+class GetRepositoryCatalogDataCommand extends command(_ep0, _mw0, "GetRepositoryCatalogData", GetRepositoryCatalogData$) {
 }
 
-class GetRepositoryPolicyCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "GetRepositoryPolicy", {})
-    .n("ECRPUBLICClient", "GetRepositoryPolicyCommand")
-    .sc(GetRepositoryPolicy$)
-    .build() {
+class GetRepositoryPolicyCommand extends command(_ep0, _mw0, "GetRepositoryPolicy", GetRepositoryPolicy$) {
 }
 
-class InitiateLayerUploadCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "InitiateLayerUpload", {})
-    .n("ECRPUBLICClient", "InitiateLayerUploadCommand")
-    .sc(InitiateLayerUpload$)
-    .build() {
+class InitiateLayerUploadCommand extends command(_ep0, _mw0, "InitiateLayerUpload", InitiateLayerUpload$) {
 }
 
-class ListTagsForResourceCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "ListTagsForResource", {})
-    .n("ECRPUBLICClient", "ListTagsForResourceCommand")
-    .sc(ListTagsForResource$)
-    .build() {
+class ListTagsForResourceCommand extends command(_ep0, _mw0, "ListTagsForResource", ListTagsForResource$) {
 }
 
-class PutImageCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "PutImage", {})
-    .n("ECRPUBLICClient", "PutImageCommand")
-    .sc(PutImage$)
-    .build() {
+class PutImageCommand extends command(_ep0, _mw0, "PutImage", PutImage$) {
 }
 
-class PutRegistryCatalogDataCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "PutRegistryCatalogData", {})
-    .n("ECRPUBLICClient", "PutRegistryCatalogDataCommand")
-    .sc(PutRegistryCatalogData$)
-    .build() {
+class PutRegistryCatalogDataCommand extends command(_ep0, _mw0, "PutRegistryCatalogData", PutRegistryCatalogData$) {
 }
 
-class PutRepositoryCatalogDataCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "PutRepositoryCatalogData", {})
-    .n("ECRPUBLICClient", "PutRepositoryCatalogDataCommand")
-    .sc(PutRepositoryCatalogData$)
-    .build() {
+class PutRepositoryCatalogDataCommand extends command(_ep0, _mw0, "PutRepositoryCatalogData", PutRepositoryCatalogData$) {
 }
 
-class SetRepositoryPolicyCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "SetRepositoryPolicy", {})
-    .n("ECRPUBLICClient", "SetRepositoryPolicyCommand")
-    .sc(SetRepositoryPolicy$)
-    .build() {
+class SetRepositoryPolicyCommand extends command(_ep0, _mw0, "SetRepositoryPolicy", SetRepositoryPolicy$) {
 }
 
-class TagResourceCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "TagResource", {})
-    .n("ECRPUBLICClient", "TagResourceCommand")
-    .sc(TagResource$)
-    .build() {
+class TagResourceCommand extends command(_ep0, _mw0, "TagResource", TagResource$) {
 }
 
-class UntagResourceCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "UntagResource", {})
-    .n("ECRPUBLICClient", "UntagResourceCommand")
-    .sc(UntagResource$)
-    .build() {
+class UntagResourceCommand extends command(_ep0, _mw0, "UntagResource", UntagResource$) {
 }
 
-class UploadLayerPartCommand extends Command
-    .classBuilder()
-    .ep(commonParams)
-    .m(function (Command, cs, config, o) {
-    return [getEndpointPlugin(config, Command.getEndpointParameterInstructions())];
-})
-    .s("SpencerFrontendService", "UploadLayerPart", {})
-    .n("ECRPUBLICClient", "UploadLayerPartCommand")
-    .sc(UploadLayerPart$)
-    .build() {
+class UploadLayerPartCommand extends command(_ep0, _mw0, "UploadLayerPart", UploadLayerPart$) {
 }
 
 const paginateDescribeImages = createPaginator(ECRPUBLICClient, DescribeImagesCommand, "nextToken", "nextToken", "maxResults");
