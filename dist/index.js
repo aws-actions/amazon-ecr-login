@@ -2583,7 +2583,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.1086.0";
+var version = "3.1091.0";
 var packageInfo = {
 	version: version};
 
@@ -8103,7 +8103,7 @@ const { ProviderError } = __nccwpck_require__(7291);
 const { setCredentialFeature } = __nccwpck_require__(5152);
 const { SignatureV4 } = __nccwpck_require__(5118);
 
-const getDateHeader = (response) => HttpResponse.isInstance(response) ? response.headers?.date ?? response.headers?.Date : undefined;
+const getDateHeader = (response) => HttpResponse.isInstance(response) ? (response.headers?.date ?? response.headers?.Date) : undefined;
 
 const getSkewCorrectedDate = (systemClockOffset) => new Date(Date.now() + systemClockOffset);
 
@@ -8831,7 +8831,7 @@ class JsonShapeDeserializer extends SerdeContextConfig {
                 else if (typeof record.__type === "string") {
                     for (const k in record) {
                         const v = record[k];
-                        const t = jsonName ? nameMap[k] ?? k : k;
+                        const t = jsonName ? (nameMap[k] ?? k) : k;
                         if (!(t in out)) {
                             out[t] = v;
                         }
@@ -9040,7 +9040,7 @@ class JsonShapeSerializer extends SerdeContextConfig {
                 else if (typeof record.__type === "string") {
                     for (const k in record) {
                         const v = record[k];
-                        const targetKey = jsonName ? nameMap[k] ?? k : k;
+                        const targetKey = jsonName ? (nameMap[k] ?? k) : k;
                         if (!(targetKey in out)) {
                             out[targetKey] = this._write(15, v);
                         }
@@ -9467,8 +9467,8 @@ class XmlShapeDeserializer extends SerdeContextConfig {
                 for (const [memberName, memberSchema] of ns.structIterator()) {
                     const memberTraits = memberSchema.getMergedTraits();
                     const xmlObjectKey = !memberTraits.httpPayload
-                        ? memberSchema.getMemberTraits().xmlName ?? memberName
-                        : memberTraits.xmlName ?? memberSchema.getName();
+                        ? (memberSchema.getMemberTraits().xmlName ?? memberName)
+                        : (memberTraits.xmlName ?? memberSchema.getName());
                     if (union) {
                         unionSerde.mark(xmlObjectKey);
                     }
@@ -9950,8 +9950,8 @@ class XmlShapeSerializer extends SerdeContextConfig {
     writeStruct(ns, value, parentXmlns) {
         const traits = ns.getMergedTraits();
         const name = ns.isMemberSchema() && !traits.httpPayload
-            ? ns.getMemberTraits().xmlName ?? ns.getMemberName()
-            : traits.xmlName ?? ns.getName();
+            ? (ns.getMemberTraits().xmlName ?? ns.getMemberName())
+            : (traits.xmlName ?? ns.getName());
         if (!name || !ns.isStructSchema()) {
             throw new Error(`@aws-sdk/core/protocols - xml serializer, cannot write struct with empty name or non-struct, schema=${ns.getName(true)}.`);
         }
@@ -10020,10 +10020,10 @@ class XmlShapeSerializer extends SerdeContextConfig {
             }
             else if (listValueSchema.isStructSchema()) {
                 const struct = this.writeStruct(listValueSchema, value, xmlns);
-                container.addChildNode(struct.withName(flat ? listTraits.xmlName ?? listMember.getMemberName() : listValueTraits.xmlName ?? "member"));
+                container.addChildNode(struct.withName(flat ? (listTraits.xmlName ?? listMember.getMemberName()) : (listValueTraits.xmlName ?? "member")));
             }
             else {
-                const listItemNode = XmlNode.of(flat ? listTraits.xmlName ?? listMember.getMemberName() : listValueTraits.xmlName ?? "member");
+                const listItemNode = XmlNode.of(flat ? (listTraits.xmlName ?? listMember.getMemberName()) : (listValueTraits.xmlName ?? "member"));
                 this.writeSimpleInto(listValueSchema, value, listItemNode, xmlns);
                 container.addChildNode(listItemNode);
             }
@@ -11960,12 +11960,12 @@ class LoginCredentialsFetcher {
                 ...token,
                 accessToken: {
                     ...token.accessToken,
-                    accessKeyId: accessKeyId,
-                    secretAccessKey: secretAccessKey,
-                    sessionToken: sessionToken,
+                    accessKeyId,
+                    secretAccessKey,
+                    sessionToken,
                     expiresAt: expiration.toISOString(),
                 },
-                refreshToken: refreshToken,
+                refreshToken,
             };
             await this.saveToken(updatedToken);
             const newAccessToken = updatedToken.accessToken;
@@ -13039,14 +13039,16 @@ function createSmithyApiNoAuthHttpAuthOption(authParameters) {
 const defaultCognitoIdentityHttpAuthSchemeProvider = (authParameters) => {
     const options = [];
     switch (authParameters.operation) {
-        case "GetCredentialsForIdentity": {
-            options.push(createSmithyApiNoAuthHttpAuthOption());
-            break;
-        }
-        case "GetId": {
-            options.push(createSmithyApiNoAuthHttpAuthOption());
-            break;
-        }
+        case "GetCredentialsForIdentity":
+            {
+                options.push(createSmithyApiNoAuthHttpAuthOption());
+                break;
+            }
+        case "GetId":
+            {
+                options.push(createSmithyApiNoAuthHttpAuthOption());
+                break;
+            }
         default: {
             options.push(createAwsAuthSigv4HttpAuthOption(authParameters));
         }
@@ -13074,7 +13076,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.31";
+var version = "3.997.33";
 var packageInfo = {
 	version: version};
 
@@ -13660,10 +13662,11 @@ function createSmithyApiNoAuthHttpAuthOption(authParameters) {
 const defaultSigninHttpAuthSchemeProvider = (authParameters) => {
     const options = [];
     switch (authParameters.operation) {
-        case "CreateOAuth2Token": {
-            options.push(createSmithyApiNoAuthHttpAuthOption());
-            break;
-        }
+        case "CreateOAuth2Token":
+            {
+                options.push(createSmithyApiNoAuthHttpAuthOption());
+                break;
+            }
         default: {
             options.push(createAwsAuthSigv4HttpAuthOption(authParameters));
         }
@@ -13691,7 +13694,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.31";
+var version = "3.997.33";
 var packageInfo = {
 	version: version};
 
@@ -14256,10 +14259,11 @@ function createSmithyApiNoAuthHttpAuthOption(authParameters) {
 const defaultSSOOIDCHttpAuthSchemeProvider = (authParameters) => {
     const options = [];
     switch (authParameters.operation) {
-        case "CreateToken": {
-            options.push(createSmithyApiNoAuthHttpAuthOption());
-            break;
-        }
+        case "CreateToken":
+            {
+                options.push(createSmithyApiNoAuthHttpAuthOption());
+                break;
+            }
         default: {
             options.push(createAwsAuthSigv4HttpAuthOption(authParameters));
         }
@@ -14287,7 +14291,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.31";
+var version = "3.997.33";
 var packageInfo = {
 	version: version};
 
@@ -14936,10 +14940,11 @@ function createSmithyApiNoAuthHttpAuthOption(authParameters) {
 const defaultSSOHttpAuthSchemeProvider = (authParameters) => {
     const options = [];
     switch (authParameters.operation) {
-        case "GetRoleCredentials": {
-            options.push(createSmithyApiNoAuthHttpAuthOption());
-            break;
-        }
+        case "GetRoleCredentials":
+            {
+                options.push(createSmithyApiNoAuthHttpAuthOption());
+                break;
+            }
         default: {
             options.push(createAwsAuthSigv4HttpAuthOption(authParameters));
         }
@@ -14967,7 +14972,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.31";
+var version = "3.997.33";
 var packageInfo = {
 	version: version};
 
@@ -15622,7 +15627,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.31";
+var version = "3.997.33";
 var packageInfo = {
 	version: version};
 
@@ -22068,7 +22073,7 @@ exports.resolveRegionConfig = resolveRegionConfig;
 /***/ 2085:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-const { CONFIG_PREFIX_SEPARATOR, loadConfig } = __nccwpck_require__(7291);
+const { CONFIG_PREFIX_SEPARATOR, booleanSelector, SelectorType, loadConfig } = __nccwpck_require__(7291);
 const { toEndpointV1, getSmithyContext, normalizeProvider, isValidHostLabel } = __nccwpck_require__(4534);
 exports.isValidHostLabel = isValidHostLabel;
 exports.middlewareEndpointToEndpointV1 = toEndpointV1;
@@ -22089,14 +22094,16 @@ const getEndpointUrlConfig = (serviceId) => ({
         return undefined;
     },
     configFileSelector: (profile, config) => {
-        if (config && profile.services) {
-            const servicesSection = config[["services", profile.services].join(CONFIG_PREFIX_SEPARATOR)];
-            if (servicesSection) {
-                const servicePrefixParts = serviceId.split(" ").map((w) => w.toLowerCase());
-                const endpointUrl = servicesSection[[servicePrefixParts.join("_"), CONFIG_ENDPOINT_URL].join(CONFIG_PREFIX_SEPARATOR)];
-                if (endpointUrl)
-                    return endpointUrl;
+        if (profile.services) {
+            const servicesSectionKey = ["services", profile.services].join(CONFIG_PREFIX_SEPARATOR);
+            if (!config || !config[servicesSectionKey]) {
+                throw new Error(`The services section "${profile.services}" specified in the profile is not present in the shared configuration file.`);
             }
+            const servicesSection = config[servicesSectionKey];
+            const servicePrefixParts = serviceId.split(" ").map((w) => w.toLowerCase());
+            const endpointUrl = servicesSection[[servicePrefixParts.join("_"), CONFIG_ENDPOINT_URL].join(CONFIG_PREFIX_SEPARATOR)];
+            if (endpointUrl)
+                return endpointUrl;
         }
         const endpointUrl = profile[CONFIG_ENDPOINT_URL];
         if (endpointUrl)
@@ -22106,7 +22113,21 @@ const getEndpointUrlConfig = (serviceId) => ({
     default: undefined,
 });
 
-const getEndpointFromConfig = async (serviceId) => loadConfig(getEndpointUrlConfig(serviceId ?? ""))();
+const ENV_IGNORE_CONFIGURED_ENDPOINT_URLS = "AWS_IGNORE_CONFIGURED_ENDPOINT_URLS";
+const CONFIG_IGNORE_CONFIGURED_ENDPOINT_URLS = "ignore_configured_endpoint_urls";
+const ignoreConfiguredEndpointUrlsConfigSelectors = {
+    environmentVariableSelector: (env) => booleanSelector(env, ENV_IGNORE_CONFIGURED_ENDPOINT_URLS, SelectorType.ENV),
+    configFileSelector: (profile) => booleanSelector(profile, CONFIG_IGNORE_CONFIGURED_ENDPOINT_URLS, SelectorType.CONFIG),
+    default: false,
+};
+
+const getEndpointFromConfig = async (serviceId) => {
+    const ignore = await loadConfig(ignoreConfiguredEndpointUrlsConfigSelectors)();
+    if (ignore) {
+        return undefined;
+    }
+    return loadConfig(getEndpointUrlConfig(serviceId ?? ""))();
+};
 
 const resolveParamsForS3 = async (endpointParams) => {
     const bucket = endpointParams?.Bucket || "";
@@ -22197,7 +22218,7 @@ const createConfigValueProvider = (configKey, canonicalEndpointParamKey, config,
 
 function bindGetEndpointFromInstructions(getEndpointFromConfig) {
     return async (commandInput, instructionsSupplier, clientConfig, context) => {
-        if (!clientConfig.isCustomEndpoint) {
+        if (!clientConfig.isCustomEndpoint && !clientConfig.ignoreConfiguredEndpointUrls) {
             let endpointFromConfig;
             if (clientConfig.serviceConfiguredEndpoint) {
                 endpointFromConfig = await clientConfig.serviceConfiguredEndpoint();
@@ -22208,6 +22229,7 @@ function bindGetEndpointFromInstructions(getEndpointFromConfig) {
             if (endpointFromConfig) {
                 clientConfig.endpoint = () => Promise.resolve(toEndpointV1(endpointFromConfig));
                 clientConfig.isCustomEndpoint = true;
+                context?.logger?.debug?.(`@smithy/core/endpoints - resolved endpoint from config: ${endpointFromConfig}`);
             }
         }
         const endpointParams = await resolveParams(commandInput, instructionsSupplier, clientConfig);
@@ -22338,6 +22360,7 @@ function bindResolveEndpointConfig(getEndpointFromConfig) {
             isCustomEndpoint,
             useDualstackEndpoint: normalizeProvider(useDualstackEndpoint ?? false),
             useFipsEndpoint: normalizeProvider(useFipsEndpoint ?? false),
+            ignoreConfiguredEndpointUrls: !!input.ignoreConfiguredEndpointUrls,
         });
         let configuredEndpointPromise = undefined;
         resolvedConfig.serviceConfiguredEndpoint = async () => {
@@ -22936,6 +22959,7 @@ exports.resolveParams = resolveParams;
 const { Crc32 } = __nccwpck_require__(9542);
 const { toHex, fromHex, toUtf8, fromUtf8 } = __nccwpck_require__(2430);
 const { Readable } = __nccwpck_require__(7075);
+const { TypeRegistry } = __nccwpck_require__(6890);
 
 class Int64 {
     bytes;
@@ -23551,12 +23575,14 @@ class EventStreamSerde {
     deserializer;
     serdeContext;
     defaultContentType;
-    constructor({ marshaller, serializer, deserializer, serdeContext, defaultContentType, }) {
+    compositeErrorRegistry;
+    constructor({ marshaller, serializer, deserializer, serdeContext, defaultContentType, compositeErrorRegistry, }) {
         this.marshaller = marshaller;
         this.serializer = serializer;
         this.deserializer = deserializer;
         this.serdeContext = serdeContext;
         this.defaultContentType = defaultContentType;
+        this.compositeErrorRegistry = compositeErrorRegistry;
     }
     async serializeEventStream({ eventStream, requestSchema, initialRequest, }) {
         const marshaller = this.marshaller;
@@ -23672,16 +23698,9 @@ class EventStreamSerde {
                             }
                         }
                     }
-                    if (hasBindings) {
-                        return {
-                            [unionMember]: out,
-                        };
-                    }
-                    if (body.byteLength === 0) {
-                        return {
-                            [unionMember]: {},
-                        };
-                    }
+                    return {
+                        [unionMember]: await this.readEventMember(eventStreamSchema, body, hasBindings, out),
+                    };
                 }
                 return {
                     [unionMember]: await this.deserializer.read(eventStreamSchema, body),
@@ -23720,6 +23739,33 @@ class EventStreamSerde {
                 }
             },
         };
+    }
+    async readEventMember(eventStreamSchema, body, hasBindings, out) {
+        let ErrCtor;
+        const staticStructuralSchema = eventStreamSchema.getSchema();
+        if (Array.isArray(staticStructuralSchema) && staticStructuralSchema[0] === -3) {
+            const namespace = staticStructuralSchema[1];
+            const nsRegistry = TypeRegistry.for(namespace);
+            this.compositeErrorRegistry?.copyFrom(nsRegistry);
+            ErrCtor = (this.compositeErrorRegistry ?? nsRegistry)?.getErrorCtor(staticStructuralSchema);
+        }
+        const dataObject = hasBindings
+            ? out
+            : body.byteLength === 0
+                ? {}
+                : await this.deserializer.read(eventStreamSchema, body);
+        if (ErrCtor) {
+            const message = dataObject.message ?? dataObject.Message ?? "Unknown";
+            const metadata = {};
+            const $fault = eventStreamSchema.getMergedTraits().error;
+            if ($fault) {
+                metadata.$fault = $fault;
+            }
+            return Object.assign(new ErrCtor({}), metadata, {
+                message,
+            }, dataObject);
+        }
+        return dataObject;
     }
     writeEventBody(unionMember, unionSchema, event) {
         const serializer = this.serializer;
@@ -23989,6 +24035,7 @@ class HttpProtocol extends SerdeContext {
             deserializer: this.deserializer,
             serdeContext: this.serdeContext,
             defaultContentType: this.getDefaultContentType(),
+            compositeErrorRegistry: this.compositeErrorRegistry,
         });
     }
     resolveEventStreamMarshaller(importedProvider) {
@@ -27454,6 +27501,7 @@ let ChecksumStream$1 = class ChecksumStream extends Readable {
         this.source.on("data", this.onSourceData);
         this.source.on("end", this.onSourceEnd);
         this.source.on("error", this.onSourceError);
+        this.source.on("close", this.onSourceClose);
         this.source.pause();
     }
     onSourceData = (chunk) => {
@@ -27493,10 +27541,19 @@ let ChecksumStream$1 = class ChecksumStream extends Readable {
     onSourceError = (error) => {
         this.destroy(error);
     };
-    _read(size) {
+    onSourceClose = () => {
+        if (!this.destroyed && !this.source.readableEnded) {
+            this.destroy(new Error("Connection lost or stream closed before all data was received."));
+        }
+    };
+    _read(_size) {
         this.source.resume();
     }
     _destroy(error, callback) {
+        this.source?.removeListener("data", this.onSourceData);
+        this.source?.removeListener("end", this.onSourceEnd);
+        this.source?.removeListener("error", this.onSourceError);
+        this.source?.removeListener("close", this.onSourceClose);
         this.source?.destroy();
         callback(error);
     }
