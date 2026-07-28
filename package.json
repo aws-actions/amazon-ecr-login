@@ -39,7 +39,7 @@
     "@vercel/ncc": "^0.44.1",
     "aws-sdk-client-mock": "^4.1.0",
     "eslint": "^10.7.0",
-    "globals": "^17.7.0",
+    "globals": "^17.8.0",
     "jest": "^30.4.2"
   }
 }
