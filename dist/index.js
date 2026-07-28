@@ -2583,7 +2583,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.1091.0";
+var version = "3.1096.0";
 var packageInfo = {
 	version: version};
 
@@ -8097,24 +8097,30 @@ exports.userAgentMiddleware = userAgentMiddleware;
 /***/ 7523:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-const { HttpResponse, HttpRequest } = __nccwpck_require__(3422);
-const { normalizeProvider, memoizeIdentityProvider, isIdentityExpired, doesIdentityRequireRefresh } = __nccwpck_require__(402);
-const { ProviderError } = __nccwpck_require__(7291);
+const { ProviderError, booleanSelector, SelectorType, loadConfig } = __nccwpck_require__(7291);
 const { setCredentialFeature } = __nccwpck_require__(5152);
+const { normalizeProvider, memoizeIdentityProvider, isIdentityExpired, doesIdentityRequireRefresh } = __nccwpck_require__(402);
 const { SignatureV4 } = __nccwpck_require__(5118);
+const { HttpResponse, HttpRequest } = __nccwpck_require__(3422);
 
 const getDateHeader = (response) => HttpResponse.isInstance(response) ? (response.headers?.date ?? response.headers?.Date) : undefined;
+const getAgeHeader = (response) => HttpResponse.isInstance(response) ? (response.headers?.age ?? response.headers?.Age) : undefined;
 
 const getSkewCorrectedDate = (systemClockOffset) => new Date(Date.now() + systemClockOffset);
 
-const isClockSkewed = (clockTime, systemClockOffset) => Math.abs(getSkewCorrectedDate(systemClockOffset).getTime() - clockTime) >= 300000;
-
-const getUpdatedSystemClockOffset = (clockTime, currentSystemClockOffset) => {
-    const clockTimeInMs = Date.parse(clockTime);
-    if (isClockSkewed(clockTimeInMs, currentSystemClockOffset)) {
-        return clockTimeInMs - Date.now();
+const getUpdatedSystemClockOffset = (clockTime, currentSystemClockOffset, timeRequestSent, ageHeader) => {
+    if (ageHeader !== undefined) {
+        return currentSystemClockOffset;
     }
-    return currentSystemClockOffset;
+    const serverTime = Date.parse(clockTime);
+    const timeResponseReceived = Date.now();
+    if (timeRequestSent !== undefined && timeResponseReceived - timeRequestSent > 900_000) {
+        return currentSystemClockOffset;
+    }
+    const candidateSkew = timeRequestSent !== undefined
+        ? serverTime - (timeRequestSent + timeResponseReceived) / 2
+        : serverTime - timeResponseReceived;
+    return candidateSkew;
 };
 
 const throwSigningPropertyError = (name, property) => {
@@ -8156,9 +8162,14 @@ class AwsSdkSigV4Signer {
                 signingName = second?.signingName ?? signingName;
             }
         }
-        signingProperties._preRequestSystemClockOffset = config.systemClockOffset;
+        const noSkewCorrection = (await config.disableClockSkewCorrection?.()) === true;
+        signingProperties._disableClockSkewCorrection = noSkewCorrection;
+        if (!noSkewCorrection) {
+            signingProperties._preRequestSystemClockOffset = config.systemClockOffset;
+            signingProperties._requestSentAt = Date.now();
+        }
         const signedRequest = await signer.sign(httpRequest, {
-            signingDate: getSkewCorrectedDate(config.systemClockOffset),
+            signingDate: noSkewCorrection ? new Date() : getSkewCorrectedDate(config.systemClockOffset),
             signingRegion: signingRegion,
             signingService: signingName,
         });
@@ -8167,27 +8178,36 @@ class AwsSdkSigV4Signer {
     errorHandler(signingProperties) {
         return (error) => {
             const errorException = error;
-            const serverTime = errorException.ServerTime ?? getDateHeader(errorException.$response);
-            if (serverTime) {
-                const config = throwSigningPropertyError("config", signingProperties.config);
-                const preRequestOffset = signingProperties._preRequestSystemClockOffset;
-                const newOffset = getUpdatedSystemClockOffset(serverTime, config.systemClockOffset);
-                const isLocalCorrection = newOffset !== config.systemClockOffset;
-                const isConcurrentCorrection = preRequestOffset !== undefined && preRequestOffset !== newOffset;
-                const clockSkewCorrected = isLocalCorrection || isConcurrentCorrection;
-                if (clockSkewCorrected && errorException.$metadata) {
+            if (!signingProperties._disableClockSkewCorrection) {
+                const serverTime = errorException.ServerTime ?? getDateHeader(errorException.$response);
+                if (serverTime) {
+                    const config = throwSigningPropertyError("config", signingProperties.config);
+                    const preRequestOffset = signingProperties._preRequestSystemClockOffset;
+                    const timeRequestSent = signingProperties._requestSentAt;
+                    const ageHeader = getAgeHeader(errorException.$response);
+                    const newOffset = getUpdatedSystemClockOffset(serverTime, config.systemClockOffset, timeRequestSent, ageHeader);
                     config.systemClockOffset = newOffset;
-                    errorException.$metadata.clockSkewCorrected = true;
+                    const skewExceedsThreshold = Math.abs(newOffset) >= 240_000;
+                    const isLocalCorrection = newOffset !== preRequestOffset;
+                    const isConcurrentCorrection = preRequestOffset !== undefined && preRequestOffset !== newOffset;
+                    if (skewExceedsThreshold && (isLocalCorrection || isConcurrentCorrection) && errorException.$metadata) {
+                        errorException.$metadata.clockSkewCorrected = true;
+                    }
                 }
             }
             throw error;
         };
     }
     successHandler(httpResponse, signingProperties) {
+        if (signingProperties._disableClockSkewCorrection) {
+            return;
+        }
         const dateHeader = getDateHeader(httpResponse);
         if (dateHeader) {
             const config = throwSigningPropertyError("config", signingProperties.config);
-            config.systemClockOffset = getUpdatedSystemClockOffset(dateHeader, config.systemClockOffset);
+            const timeRequestSent = signingProperties._requestSentAt;
+            const ageHeader = getAgeHeader(httpResponse);
+            config.systemClockOffset = getUpdatedSystemClockOffset(dateHeader, config.systemClockOffset, timeRequestSent, ageHeader);
         }
     }
 }
@@ -8202,9 +8222,14 @@ class AwsSdkSigV4ASigner extends AwsSdkSigV4Signer {
         const configResolvedSigningRegionSet = await config.sigv4aSigningRegionSet?.();
         const multiRegionOverride = (configResolvedSigningRegionSet ??
             signingRegionSet ?? [signingRegion]).join(",");
-        signingProperties._preRequestSystemClockOffset = config.systemClockOffset;
+        const noSkewCorrection = (await config.disableClockSkewCorrection?.()) === true;
+        signingProperties._disableClockSkewCorrection = noSkewCorrection;
+        if (!noSkewCorrection) {
+            signingProperties._preRequestSystemClockOffset = config.systemClockOffset;
+            signingProperties._requestSentAt = Date.now();
+        }
         const signedRequest = await signer.sign(httpRequest, {
-            signingDate: getSkewCorrectedDate(config.systemClockOffset),
+            signingDate: noSkewCorrection ? new Date() : getSkewCorrectedDate(config.systemClockOffset),
             signingRegion: multiRegionOverride,
             signingService: signingName,
         });
@@ -8261,7 +8286,7 @@ const NODE_SIGV4A_CONFIG_OPTIONS = {
     default: undefined,
 };
 
-const resolveAwsSdkSigV4Config = (config) => {
+const bindResolveAwsSdkSigV4Config = (defaultDisableClockSkewCorrection) => (config) => {
     let inputCredentials = config.credentials;
     let isUserSupplied = !!config.credentials;
     let resolvedCredentials = undefined;
@@ -8359,11 +8384,11 @@ const resolveAwsSdkSigV4Config = (config) => {
         systemClockOffset,
         signingEscapePath,
         signer,
+        disableClockSkewCorrection: normalizeProvider(config.disableClockSkewCorrection ?? defaultDisableClockSkewCorrection),
     });
     return resolvedConfig;
 };
-const resolveAWSSDKSigV4Config = resolveAwsSdkSigV4Config;
-function normalizeCredentialProvider(config, { credentials, credentialDefaultProvider, }) {
+function normalizeCredentialProvider(config, { credentials, credentialDefaultProvider }) {
     let credentialsProvider;
     if (credentials) {
         if (!credentials?.memoized) {
@@ -8397,6 +8422,19 @@ function bindCallerConfig(config, credentialsProvider) {
     fn.configBound = true;
     return fn;
 }
+
+const ENV_DISABLE_CLOCK_SKEW_CORRECTION = "AWS_DISABLE_CLOCK_SKEW_CORRECTION";
+const CONFIG_DISABLE_CLOCK_SKEW_CORRECTION = "disable_clock_skew_correction";
+const NODE_DISABLE_CLOCK_SKEW_CORRECTION_CONFIG_OPTIONS = {
+    environmentVariableSelector: (env) => booleanSelector(env, ENV_DISABLE_CLOCK_SKEW_CORRECTION, SelectorType.ENV),
+    configFileSelector: (profile) => booleanSelector(profile, CONFIG_DISABLE_CLOCK_SKEW_CORRECTION, SelectorType.CONFIG),
+    default: false,
+};
+
+const DEFAULT_DISABLE_CLOCK_SKEW_CORRECTION = loadConfig(NODE_DISABLE_CLOCK_SKEW_CORRECTION_CONFIG_OPTIONS);
+
+const resolveAwsSdkSigV4Config = bindResolveAwsSdkSigV4Config(DEFAULT_DISABLE_CLOCK_SKEW_CORRECTION);
+const resolveAWSSDKSigV4Config = resolveAwsSdkSigV4Config;
 
 exports.AWSSDKSigV4Signer = AWSSDKSigV4Signer;
 exports.AwsSdkSigV4ASigner = AwsSdkSigV4ASigner;
@@ -8698,12 +8736,18 @@ function jsonReviver(key, value, context) {
     if (context?.source) {
         const numericString = context.source;
         if (typeof value === "number") {
-            if (value > Number.MAX_SAFE_INTEGER || value < Number.MIN_SAFE_INTEGER || numericString !== String(value)) {
-                const isFractional = numericString.includes(".");
-                if (isFractional) {
+            const inSafeRange = value <= Number.MAX_SAFE_INTEGER && value >= Number.MIN_SAFE_INTEGER;
+            if (!inSafeRange || numericString !== String(value)) {
+                if (inSafeRange && /[eE]/.test(numericString) && String(Number(numericString)) === String(value)) {
+                    return value;
+                }
+                if (isFractionalNumeric(numericString)) {
                     return new NumericValue(numericString, "bigDecimal");
                 }
                 else {
+                    if (/[eE]/.test(numericString)) {
+                        return BigInt(Number(numericString));
+                    }
                     return BigInt(numericString);
                 }
             }
@@ -8711,25 +8755,114 @@ function jsonReviver(key, value, context) {
     }
     return value;
 }
+function isFractionalNumeric(s) {
+    const dotIndex = s.indexOf(".");
+    if (dotIndex === -1) {
+        return false;
+    }
+    const eIndex = s.search(/[eE]/);
+    if (eIndex === -1) {
+        return true;
+    }
+    const fracDigits = eIndex - dotIndex - 1;
+    const exp = parseInt(s.slice(eIndex + 1), 10);
+    return exp < fracDigits;
+}
+
+const REVIVER_SYMBOL = Symbol.for("@aws-sdk/reviver");
+function needsReviver(schema) {
+    const ns = NormalizedSchema.of(schema);
+    const raw = ns.getSchema();
+    if (Array.isArray(raw) && ns.isStructSchema()) {
+        if (REVIVER_SYMBOL in raw) {
+            return raw[REVIVER_SYMBOL];
+        }
+        const result = _check(ns, new Set());
+        raw[REVIVER_SYMBOL] = result;
+        return result;
+    }
+    return _check(ns, new Set());
+}
+function _check(ns, seen) {
+    const raw = ns.getSchema();
+    if (seen.has(raw)) {
+        return false;
+    }
+    seen.add(raw);
+    if (ns.isBigIntegerSchema() || ns.isBigDecimalSchema()) {
+        return true;
+    }
+    if (ns.isStructSchema()) {
+        for (const [, memberSchema] of ns.structIterator()) {
+            if (_check(memberSchema, seen)) {
+                return true;
+            }
+        }
+    }
+    else if (ns.isListSchema() || ns.isMapSchema()) {
+        if (_check(ns.getValueSchema(), seen)) {
+            return true;
+        }
+    }
+    else if (ns.isDocumentSchema()) {
+        return true;
+    }
+    return false;
+}
 
 const collectBodyString = (streamBody, context) => collectBody(streamBody, context).then((body) => (context?.utf8Encoder ?? toUtf8)(body));
 
-const parseJsonBody = (streamBody, context) => collectBodyString(streamBody, context).then((encoded) => {
-    if (encoded.length) {
+let canParseBuffer;
+function detectBufferParsing() {
+    if (canParseBuffer === undefined) {
         try {
-            return JSON.parse(encoded);
-        }
-        catch (e) {
-            if (e?.name === "SyntaxError") {
-                Object.defineProperty(e, "$responseBodyText", {
-                    value: encoded,
-                });
+            if (typeof Buffer !== "function") {
+                canParseBuffer = false;
             }
-            throw e;
+            else {
+                const result = JSON.parse(Buffer.from([0x7b, 0x7d]));
+                canParseBuffer = result !== null && typeof result === "object";
+            }
+        }
+        catch {
+            canParseBuffer = false;
         }
     }
-    return {};
-});
+    return canParseBuffer;
+}
+
+async function parseJsonBody(streamBody, context, schema) {
+    let parsingInput;
+    if (detectBufferParsing() && typeof streamBody?.[Symbol.asyncIterator] === "function") {
+        const buffer = await collectBody(streamBody, context);
+        if (typeof Buffer === "function") {
+            if (Buffer.isBuffer(buffer)) {
+                parsingInput = buffer;
+            }
+            else {
+                parsingInput = Buffer.from(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+            }
+        }
+    }
+    if (!parsingInput) {
+        parsingInput = await collectBodyString(streamBody, context);
+    }
+    if (parsingInput.length === 0) {
+        return {};
+    }
+    const reviver = schema && needsReviver(schema) ? jsonReviver : undefined;
+    try {
+        return JSON.parse(parsingInput, reviver);
+    }
+    catch (e) {
+        if (e?.name === "SyntaxError") {
+            Object.defineProperty(e, "$responseBodyText", {
+                value: typeof parsingInput === "string" ? parsingInput : parsingInput.toString("utf8"),
+            });
+        }
+        throw e;
+    }
+}
 const parseJsonErrorBody = async (errorBody, context) => {
     const value = await parseJsonBody(errorBody, context);
     value.message = value.message ?? value.Message;
@@ -8783,6 +8916,10 @@ const loadErrorCode = ({ headers }, data, order) => {
     }
 };
 
+function writeKey(obj) {
+    Object.defineProperty(obj, "__proto__", { value: undefined, writable: true, enumerable: true, configurable: true });
+}
+
 class JsonShapeDeserializer extends SerdeContextConfig {
     settings;
     constructor(settings) {
@@ -8790,7 +8927,8 @@ class JsonShapeDeserializer extends SerdeContextConfig {
         this.settings = settings;
     }
     async read(schema, data) {
-        return this._read(schema, typeof data === "string" ? JSON.parse(data, jsonReviver) : await parseJsonBody(data, this.serdeContext));
+        const reviver = needsReviver(schema) ? jsonReviver : undefined;
+        return this._read(schema, typeof data === "string" ? JSON.parse(data, reviver) : await parseJsonBody(data, this.serdeContext, schema));
     }
     readObject(schema, data) {
         return this._read(schema, data);
@@ -8851,6 +8989,9 @@ class JsonShapeDeserializer extends SerdeContextConfig {
                 const mapMember = ns.getValueSchema();
                 const out = {};
                 for (const _k in value) {
+                    if (_k === "__proto__") {
+                        writeKey(out);
+                    }
                     out[_k] = this._read(mapMember, value[_k]);
                 }
                 return out;
@@ -8909,6 +9050,9 @@ class JsonShapeDeserializer extends SerdeContextConfig {
             if (isObject) {
                 const out = Array.isArray(value) ? [] : {};
                 for (const k in value) {
+                    if (k === "__proto__") {
+                        writeKey(out);
+                    }
                     const v = value[k];
                     if (v instanceof NumericValue) {
                         out[k] = v;
@@ -9034,6 +9178,9 @@ class JsonShapeSerializer extends SerdeContextConfig {
                     const { $unknown } = record;
                     if (Array.isArray($unknown)) {
                         const [k, v] = $unknown;
+                        if (k === "__proto__") {
+                            writeKey(out);
+                        }
                         out[k] = this._write(15, v);
                     }
                 }
@@ -9066,6 +9213,9 @@ class JsonShapeSerializer extends SerdeContextConfig {
                 for (const _k in value) {
                     const _v = value[_k];
                     if (sparse || _v != null) {
+                        if (_k === "__proto__") {
+                            writeKey(out);
+                        }
                         out[_k] = this._write(mapMember, _v);
                     }
                 }
@@ -9131,6 +9281,9 @@ class JsonShapeSerializer extends SerdeContextConfig {
                 const out = Array.isArray(value) ? [] : {};
                 for (const k in value) {
                     const v = value[k];
+                    if (k === "__proto__") {
+                        writeKey(out);
+                    }
                     if (v instanceof NumericValue) {
                         this.useReplacer = true;
                         out[k] = v;
@@ -9454,6 +9607,9 @@ class XmlShapeDeserializer extends SerdeContextConfig {
                 for (const entry of entries) {
                     const key = entry[keyProperty];
                     const value = entry[valueProperty];
+                    if (key === "__proto__") {
+                        writeKey(buffer);
+                    }
                     buffer[key] = this.readSchema(memberNs, value);
                 }
                 return buffer;
@@ -13076,7 +13232,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.33";
+var version = "3.997.36";
 var packageInfo = {
 	version: version};
 
@@ -13694,7 +13850,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.33";
+var version = "3.997.36";
 var packageInfo = {
 	version: version};
 
@@ -14291,7 +14447,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.33";
+var version = "3.997.36";
 var packageInfo = {
 	version: version};
 
@@ -14972,7 +15128,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.33";
+var version = "3.997.36";
 var packageInfo = {
 	version: version};
 
@@ -15627,7 +15783,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.33";
+var version = "3.997.36";
 var packageInfo = {
 	version: version};
 
@@ -17557,6 +17713,9 @@ class XmlNode {
     }
 }
 
+function writeKey(obj) {
+    Object.defineProperty(obj, "__proto__", { value: undefined, writable: true, enumerable: true, configurable: true });
+}
 function parseXML(xml) {
     const state = new AwsXmlParser(xml);
     return state.parse();
@@ -17642,7 +17801,7 @@ class AwsXmlParser {
             tag += p.x[p.i++];
         }
         let hasAttrs = false;
-        const attrs = Object.create(null);
+        const attrs = {};
         while (p.i < p.z) {
             p.trim();
             if (">/".includes(p.x[p.i])) {
@@ -17658,6 +17817,9 @@ class AwsXmlParser {
             }
             ++p.i;
             p.trim();
+            if (name === "__proto__") {
+                writeKey(attrs);
+            }
             attrs[name] = p.readAttrValue();
             hasAttrs = true;
         }
@@ -17670,7 +17832,6 @@ class AwsXmlParser {
                 throw new Error("@aws-sdk XML parse error: expected > at the end of self-closing tag.");
             }
             ++p.i;
-            Object.setPrototypeOf(attrs, Object.prototype);
             return { tag, value: hasAttrs ? attrs : "" };
         }
         if (p.x[p.i] !== ">") {
@@ -17726,7 +17887,7 @@ class AwsXmlParser {
             }
             return { tag, value: text };
         }
-        const obj = Object.create(null);
+        const obj = {};
         for (const text of textParts) {
             if (text.trim() === "" && text.includes("\n")) {
                 continue;
@@ -17734,6 +17895,9 @@ class AwsXmlParser {
             obj["#text"] = "#text" in obj ? obj["#text"] + text : text;
         }
         for (const child of childTags) {
+            if (child.tag === "__proto__") {
+                writeKey(obj);
+            }
             if (child.tag in obj) {
                 if (Array.isArray(obj[child.tag])) {
                     obj[child.tag].push(child.value);
@@ -17747,9 +17911,11 @@ class AwsXmlParser {
             }
         }
         for (const [k, v] of Object.entries(attrs)) {
+            if (k === "__proto__") {
+                writeKey(obj);
+            }
             obj[k] = v;
         }
-        Object.setPrototypeOf(obj, Object.prototype);
         return { tag, value: obj };
     }
     static ENTITIES = {
@@ -18289,7 +18455,7 @@ exports.setFeature = setFeature;
 /***/ 4645:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-const { nv, NumericValue, calculateBodyLength, _parseEpochTimestamp, fromBase64, generateIdempotencyToken } = __nccwpck_require__(2430);
+const { nv, NumericValue, calculateBodyLength, generateIdempotencyToken, fromBase64, _parseEpochTimestamp } = __nccwpck_require__(2430);
 const { HttpRequest, collectBody, SerdeContext, RpcProtocol } = __nccwpck_require__(3422);
 const { NormalizedSchema, deref, TypeRegistry } = __nccwpck_require__(6890);
 const { getSmithyContext } = __nccwpck_require__(4534);
@@ -18460,7 +18626,7 @@ function bytesToFloat16(a, b) {
 }
 function decodeMap(at, to) {
     const mapDataLength = decodeCount(at, to);
-    if (mapDataLength < 15) {
+    if (mapDataLength < 25) {
         return decodeMapSmall(at, to, mapDataLength);
     }
     return decodeMapLarge(at, to, mapDataLength);
@@ -19224,18 +19390,6 @@ const buildHttpRpcRequest = async (context, headers, path, resolvedHostname, bod
     return new HttpRequest(contents);
 };
 
-class CborCodec extends SerdeContext {
-    createSerializer() {
-        const serializer = new CborShapeSerializer();
-        serializer.setSerdeContext(this.serdeContext);
-        return serializer;
-    }
-    createDeserializer() {
-        const deserializer = new CborShapeDeserializer();
-        deserializer.setSerdeContext(this.serdeContext);
-        return deserializer;
-    }
-}
 class CborShapeSerializer extends SerdeContext {
     value;
     write(schema, value) {
@@ -19326,6 +19480,7 @@ class CborShapeSerializer extends SerdeContext {
         return buffer;
     }
 }
+
 class CborShapeDeserializer extends SerdeContext {
     read(schema, bytes) {
         const data = cbor.deserialize(bytes);
@@ -19433,6 +19588,19 @@ class CborShapeDeserializer extends SerdeContext {
         else {
             return value;
         }
+    }
+}
+
+class CborCodec extends SerdeContext {
+    createSerializer() {
+        const serializer = new CborShapeSerializer();
+        serializer.setSerdeContext(this.serdeContext);
+        return serializer;
+    }
+    createDeserializer() {
+        const deserializer = new CborShapeDeserializer();
+        deserializer.setSerdeContext(this.serdeContext);
+        return deserializer;
     }
 }
 
@@ -24934,6 +25102,7 @@ const isStreamingPayload = (request) => request?.body instanceof Readable ||
     (typeof ReadableStream !== "undefined" && request?.body instanceof ReadableStream);
 
 const CLOCK_SKEW_ERROR_CODES = [
+    "AccessDeniedException",
     "AuthFailure",
     "InvalidSignatureException",
     "RequestExpired",
@@ -26306,6 +26475,9 @@ class NormalizedSchema {
         }
         struct[anno.it] = it;
     }
+    structIteratorCbor() {
+        throw new Error("@smithy/core/schema - structIteratorCbor not loaded.");
+    }
 }
 function member(memberSchema, memberName) {
     if (memberSchema instanceof NormalizedSchema) {
@@ -27238,7 +27410,7 @@ const splitHeader = (value) => {
     });
 };
 
-const format = /^-?\d*(\.\d+)?$/;
+const format = /^-?((0|[1-9]\d*)(\.\d+)?|\.\d+)([eE][+-]?\d+)?$/;
 class NumericValue {
     string;
     type;
@@ -27246,7 +27418,7 @@ class NumericValue {
         this.string = string;
         this.type = type;
         if (!format.test(string)) {
-            throw new Error(`@smithy/core/serde - NumericValue must only contain [0-9], at most one decimal point ".", and an optional negation prefix "-".`);
+            throw new Error(`@smithy/core/serde - NumericValue string must conform to the Smithy bigDecimal format. Received: "${string}"`);
         }
     }
     toString() {
