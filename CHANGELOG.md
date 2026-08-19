@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.1.7](https://github.com/aws-actions/amazon-ecr-login/compare/v2.1.6...v2.1.7) (2026-08-19)
+
+
+### Dependency Updates
+
+* **deps:** bump @aws-sdk/client-ecr from 3.1065.0 to 3.1070.0 ([#1126](https://github.com/aws-actions/amazon-ecr-login/issues/1126)) ([6b86bc4](https://github.com/aws-actions/amazon-ecr-login/commit/6b86bc4f54f28eae7ce58e3052a96a291ec4190c))
+* **deps:** bump @aws-sdk/client-ecr from 3.1070.0 to 3.1075.0 ([#1143](https://github.com/aws-actions/amazon-ecr-login/issues/1143)) ([03af930](https://github.com/aws-actions/amazon-ecr-login/commit/03af930bf506bd6248b72eede0e63e136563e817))
+* **deps:** bump @aws-sdk/client-ecr from 3.1075.0 to 3.1077.0 ([#1157](https://github.com/aws-actions/amazon-ecr-login/issues/1157)) ([bb421a1](https://github.com/aws-actions/amazon-ecr-login/commit/bb421a12b6da3c5445b9389a07a8221c89ab57d1))
+* **deps:** bump @aws-sdk/client-ecr from 3.1077.0 to 3.1081.0 ([#1168](https://github.com/aws-actions/amazon-ecr-login/issues/1168)) ([d919116](https://github.com/aws-actions/amazon-ecr-login/commit/d919116f4e6ab0b5511e63a333933068f4241252))
+* **deps:** bump @aws-sdk/client-ecr from 3.1081.0 to 3.1087.0 ([#1178](https://github.com/aws-actions/amazon-ecr-login/issues/1178)) ([614e36e](https://github.com/aws-actions/amazon-ecr-login/commit/614e36e72bb4c5e0ccf22b1820da2ebe5f05bedf))
+* **deps:** bump @aws-sdk/client-ecr from 3.1087.0 to 3.1092.0 ([#1188](https://github.com/aws-actions/amazon-ecr-login/issues/1188)) ([3b6f0a0](https://github.com/aws-actions/amazon-ecr-login/commit/3b6f0a0caa63c6fee18e9ba5655703349438040d))
+* **deps:** bump @aws-sdk/client-ecr from 3.1092.0 to 3.1097.0 ([#1201](https://github.com/aws-actions/amazon-ecr-login/issues/1201)) ([4500b38](https://github.com/aws-actions/amazon-ecr-login/commit/4500b3878f6601a8c211f76102effe98c705f88e))
+* **deps:** bump @aws-sdk/client-ecr from 3.1097.0 to 3.1101.0 ([#1213](https://github.com/aws-actions/amazon-ecr-login/issues/1213)) ([aae720d](https://github.com/aws-actions/amazon-ecr-login/commit/aae720d4d0146c726fd6066446189c2f1ec81195))
+* **deps:** bump @aws-sdk/client-ecr from 3.1101.0 to 3.1106.0 ([#1227](https://github.com/aws-actions/amazon-ecr-login/issues/1227)) ([9af171f](https://github.com/aws-actions/amazon-ecr-login/commit/9af171fceb6732521349792d2e67c098cf292beb))
+* **deps:** bump @aws-sdk/client-ecr from 3.1106.0 to 3.1111.0 ([#1242](https://github.com/aws-actions/amazon-ecr-login/issues/1242)) ([824b400](https://github.com/aws-actions/amazon-ecr-login/commit/824b40079c82c7ba2b0bd59514e1384cd22feb15))
+* **deps:** bump @aws-sdk/client-ecr-public from 3.1065.0 to 3.1070.0 ([#1128](https://github.com/aws-actions/amazon-ecr-login/issues/1128)) ([11c47d5](https://github.com/aws-actions/amazon-ecr-login/commit/11c47d5d81fbad8d2b9e10b3858784c0ed0cc020))
+* **deps:** bump @aws-sdk/client-ecr-public from 3.1070.0 to 3.1077.0 ([#1153](https://github.com/aws-actions/amazon-ecr-login/issues/1153)) ([8ec6197](https://github.com/aws-actions/amazon-ecr-login/commit/8ec6197dfde42a45a0b5ca9c3429e34745c5641c))
+* **deps:** bump @aws-sdk/client-ecr-public from 3.1077.0 to 3.1087.0 ([#1177](https://github.com/aws-actions/amazon-ecr-login/issues/1177)) ([59fc7b6](https://github.com/aws-actions/amazon-ecr-login/commit/59fc7b6e2f8be4f6d69525c8ab6c7681fe551702))
+* **deps:** bump @aws-sdk/client-ecr-public from 3.1087.0 to 3.1092.0 ([#1190](https://github.com/aws-actions/amazon-ecr-login/issues/1190)) ([9371741](https://github.com/aws-actions/amazon-ecr-login/commit/937174183e2c9eb6712fb95b09ff5558d3353e9f))
+* **deps:** bump @aws-sdk/client-ecr-public from 3.1092.0 to 3.1097.0 ([#1202](https://github.com/aws-actions/amazon-ecr-login/issues/1202)) ([75acf21](https://github.com/aws-actions/amazon-ecr-login/commit/75acf217c8ba5eb6d1ee384fbd47e401c8e52d34))
+* **deps:** bump @aws-sdk/client-ecr-public from 3.1097.0 to 3.1106.0 ([#1226](https://github.com/aws-actions/amazon-ecr-login/issues/1226)) ([b4eaaad](https://github.com/aws-actions/amazon-ecr-login/commit/b4eaaadf8e25a158595a53e0727b29dfa244ffb7))
+* **deps:** bump @aws-sdk/client-ecr-public from 3.1106.0 to 3.1111.0 ([#1238](https://github.com/aws-actions/amazon-ecr-login/issues/1238)) ([c2241b0](https://github.com/aws-actions/amazon-ecr-login/commit/c2241b0dc12f127270ff2afe9496a8a6e81dc5f4))
+* **deps:** bump @aws-sdk/credential-providers ([#1127](https://github.com/aws-actions/amazon-ecr-login/issues/1127)) ([256282f](https://github.com/aws-actions/amazon-ecr-login/commit/256282f8a0d6a8caaaf5b434f51b75f589fbf48b))
+* **deps:** bump @aws-sdk/credential-providers ([#1141](https://github.com/aws-actions/amazon-ecr-login/issues/1141)) ([2568748](https://github.com/aws-actions/amazon-ecr-login/commit/2568748b5db5c05d0b7c041d7e952d9becdfed46))
+* **deps:** bump @aws-sdk/credential-providers ([#1155](https://github.com/aws-actions/amazon-ecr-login/issues/1155)) ([087c584](https://github.com/aws-actions/amazon-ecr-login/commit/087c584ffb77ea01976e79202c10729cb372d12b))
+* **deps:** bump @aws-sdk/credential-providers ([#1170](https://github.com/aws-actions/amazon-ecr-login/issues/1170)) ([492cea5](https://github.com/aws-actions/amazon-ecr-login/commit/492cea5c1815d11eb047fd50fba66de54e004ef6))
+* **deps:** bump @aws-sdk/credential-providers ([#1176](https://github.com/aws-actions/amazon-ecr-login/issues/1176)) ([441c5b0](https://github.com/aws-actions/amazon-ecr-login/commit/441c5b0847caaaabf632ee6c90ffef328410d243))
+* **deps:** bump @aws-sdk/credential-providers ([#1189](https://github.com/aws-actions/amazon-ecr-login/issues/1189)) ([73db547](https://github.com/aws-actions/amazon-ecr-login/commit/73db547cf53e1be52d3772886a4c12b13a647531))
+* **deps:** bump @aws-sdk/credential-providers ([#1199](https://github.com/aws-actions/amazon-ecr-login/issues/1199)) ([eab2273](https://github.com/aws-actions/amazon-ecr-login/commit/eab2273dac3b0d994b71ed2153ad68ac522179c9))
+* **deps:** bump @aws-sdk/credential-providers ([#1215](https://github.com/aws-actions/amazon-ecr-login/issues/1215)) ([ed3f169](https://github.com/aws-actions/amazon-ecr-login/commit/ed3f169a4056cc96226ad135fd210b88b17449b8))
+* **deps:** bump @aws-sdk/credential-providers ([#1228](https://github.com/aws-actions/amazon-ecr-login/issues/1228)) ([f66571e](https://github.com/aws-actions/amazon-ecr-login/commit/f66571e67aca2ce8b2b854c0fe49e175da17b65e))
+* **deps:** bump @aws-sdk/credential-providers ([#1241](https://github.com/aws-actions/amazon-ecr-login/issues/1241)) ([12a27d2](https://github.com/aws-actions/amazon-ecr-login/commit/12a27d23f10272316b05383f1e1031d11b014bd0))
+* **deps:** bump actions/checkout from 6 to 7 ([#1142](https://github.com/aws-actions/amazon-ecr-login/issues/1142)) ([18d03b5](https://github.com/aws-actions/amazon-ecr-login/commit/18d03b5e1a5a3a77403553c624fe75f33e38afdd))
+* **deps:** bump undici from 6.24.0 to 6.27.0 ([#1137](https://github.com/aws-actions/amazon-ecr-login/issues/1137)) ([8838183](https://github.com/aws-actions/amazon-ecr-login/commit/883818333232533aaa9bc6b9deef2635914188ae))
+* **deps:** bump undici from 6.27.0 to 6.28.0 ([#1219](https://github.com/aws-actions/amazon-ecr-login/issues/1219)) ([ea87948](https://github.com/aws-actions/amazon-ecr-login/commit/ea87948944996f9a0a88cb9ebf59a928ef95a9d8))
+
 ### [2.1.6](https://github.com/aws-actions/amazon-ecr-login/compare/v2.1.5...v2.1.6) (2026-06-10)
 
 
