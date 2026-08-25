@@ -2583,7 +2583,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.1110.0";
+var version = "3.1115.0";
 var packageInfo = {
 	version: version};
 
@@ -6259,12 +6259,13 @@ __webpack_unused_export__ = waitUntilLifecyclePolicyPreviewComplete;
 /***/ 6710:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
+const { hasOwn } = __nccwpck_require__(2430);
+const { streamCollector } = __nccwpck_require__(2430);
+exports.streamCollector = streamCollector;
 const { buildQueryString, HttpResponse } = __nccwpck_require__(3422);
 const node_https = __nccwpck_require__(4708);
 const { Readable } = __nccwpck_require__(7075);
 const http2 = __nccwpck_require__(2467);
-const { streamCollector } = __nccwpck_require__(2430);
-exports.streamCollector = streamCollector;
 
 function buildAbortError(abortSignal) {
     const reason = abortSignal && typeof abortSignal === "object" && "reason" in abortSignal
@@ -6291,6 +6292,8 @@ const NODEJS_TIMEOUT_ERROR_CODES = ["ECONNRESET", "EPIPE", "ETIMEDOUT"];
 const getTransformedHeaders = (headers) => {
     const transformedHeaders = {};
     for (const name in headers) {
+        if (!hasOwn(headers, name))
+            continue;
         const headerValues = headers[name];
         transformedHeaders[name] = Array.isArray(headerValues) ? headerValues.join(",") : headerValues;
     }
@@ -6492,6 +6495,8 @@ class NodeHttpHandler {
         }
         if (sockets && requests) {
             for (const origin in sockets) {
+                if (!hasOwn(sockets, origin))
+                    continue;
                 const socketsInUse = sockets[origin]?.length ?? 0;
                 const requestsEnqueued = requests[origin]?.length ?? 0;
                 if (socketsInUse >= maxSockets && requestsEnqueued >= 2 * maxSockets) {
@@ -6527,6 +6532,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             this.config = await this.configProvider;
         }
         const config = this.config;
+        const logger = config.logger;
         const isSSL = request.protocol === "https:";
         if (!isSSL && !this.config.httpAgent) {
             this.config.httpAgent = await this.config.httpAgentProvider();
@@ -6570,7 +6576,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
                 });
             }
             socketWarningTimeoutId = timing.setTimeout(() => {
-                this.socketWarningTimestamp = NodeHttpHandler.checkSocketUsage(agent, this.socketWarningTimestamp, config.logger);
+                this.socketWarningTimestamp = NodeHttpHandler.checkSocketUsage(agent, this.socketWarningTimestamp, logger);
             }, config.socketAcquisitionWarningTimeout ?? (config.requestTimeout ?? 2000) + (config.connectionTimeout ?? 1000));
             const queryString = request.query ? buildQueryString(request.query) : "";
             let auth = undefined;
@@ -6637,7 +6643,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             }
             const effectiveRequestTimeout = requestTimeout ?? config.requestTimeout;
             connectionTimeoutId = setConnectionTimeout(req, reject, config.connectionTimeout);
-            requestTimeoutId = setRequestTimeout(req, reject, effectiveRequestTimeout, config.throwOnRequestTimeout, config.logger ?? console);
+            requestTimeoutId = setRequestTimeout(req, reject, effectiveRequestTimeout, config.throwOnRequestTimeout, logger ?? console);
             socketTimeoutId = setSocketTimeout(req, reject, config.socketTimeout);
             const httpAgent = nodeHttpsOptions.agent;
             if (typeof httpAgent === "object" && "keepAlive" in httpAgent) {
@@ -6655,6 +6661,12 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
     updateHttpClientConfig(key, value) {
         this.config = undefined;
         this.configProvider = this.configProvider.then((config) => {
+            if (key === Symbol.for("logger")) {
+                return {
+                    ...config,
+                    logger: config.logger ?? value,
+                };
+            }
             return {
                 ...config,
                 [key]: value,
@@ -11861,12 +11873,13 @@ exports.fromHttp = fromHttp;
 /***/ 2402:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
+const { hasOwn } = __nccwpck_require__(2430);
+const { streamCollector } = __nccwpck_require__(2430);
+exports.streamCollector = streamCollector;
 const { buildQueryString, HttpResponse } = __nccwpck_require__(3422);
 const node_https = __nccwpck_require__(4708);
 const { Readable } = __nccwpck_require__(7075);
 const http2 = __nccwpck_require__(2467);
-const { streamCollector } = __nccwpck_require__(2430);
-exports.streamCollector = streamCollector;
 
 function buildAbortError(abortSignal) {
     const reason = abortSignal && typeof abortSignal === "object" && "reason" in abortSignal
@@ -11893,6 +11906,8 @@ const NODEJS_TIMEOUT_ERROR_CODES = ["ECONNRESET", "EPIPE", "ETIMEDOUT"];
 const getTransformedHeaders = (headers) => {
     const transformedHeaders = {};
     for (const name in headers) {
+        if (!hasOwn(headers, name))
+            continue;
         const headerValues = headers[name];
         transformedHeaders[name] = Array.isArray(headerValues) ? headerValues.join(",") : headerValues;
     }
@@ -12094,6 +12109,8 @@ class NodeHttpHandler {
         }
         if (sockets && requests) {
             for (const origin in sockets) {
+                if (!hasOwn(sockets, origin))
+                    continue;
                 const socketsInUse = sockets[origin]?.length ?? 0;
                 const requestsEnqueued = requests[origin]?.length ?? 0;
                 if (socketsInUse >= maxSockets && requestsEnqueued >= 2 * maxSockets) {
@@ -12129,6 +12146,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             this.config = await this.configProvider;
         }
         const config = this.config;
+        const logger = config.logger;
         const isSSL = request.protocol === "https:";
         if (!isSSL && !this.config.httpAgent) {
             this.config.httpAgent = await this.config.httpAgentProvider();
@@ -12172,7 +12190,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
                 });
             }
             socketWarningTimeoutId = timing.setTimeout(() => {
-                this.socketWarningTimestamp = NodeHttpHandler.checkSocketUsage(agent, this.socketWarningTimestamp, config.logger);
+                this.socketWarningTimestamp = NodeHttpHandler.checkSocketUsage(agent, this.socketWarningTimestamp, logger);
             }, config.socketAcquisitionWarningTimeout ?? (config.requestTimeout ?? 2000) + (config.connectionTimeout ?? 1000));
             const queryString = request.query ? buildQueryString(request.query) : "";
             let auth = undefined;
@@ -12239,7 +12257,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             }
             const effectiveRequestTimeout = requestTimeout ?? config.requestTimeout;
             connectionTimeoutId = setConnectionTimeout(req, reject, config.connectionTimeout);
-            requestTimeoutId = setRequestTimeout(req, reject, effectiveRequestTimeout, config.throwOnRequestTimeout, config.logger ?? console);
+            requestTimeoutId = setRequestTimeout(req, reject, effectiveRequestTimeout, config.throwOnRequestTimeout, logger ?? console);
             socketTimeoutId = setSocketTimeout(req, reject, config.socketTimeout);
             const httpAgent = nodeHttpsOptions.agent;
             if (typeof httpAgent === "object" && "keepAlive" in httpAgent) {
@@ -12257,6 +12275,12 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
     updateHttpClientConfig(key, value) {
         this.config = undefined;
         this.configProvider = this.configProvider.then((config) => {
+            if (key === Symbol.for("logger")) {
+                return {
+                    ...config,
+                    logger: config.logger ?? value,
+                };
+            }
             return {
                 ...config,
                 [key]: value,
@@ -14156,7 +14180,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.42";
+var version = "3.997.43";
 var packageInfo = {
 	version: version};
 
@@ -14774,7 +14798,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.42";
+var version = "3.997.43";
 var packageInfo = {
 	version: version};
 
@@ -15371,7 +15395,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.42";
+var version = "3.997.43";
 var packageInfo = {
 	version: version};
 
@@ -16052,7 +16076,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.42";
+var version = "3.997.43";
 var packageInfo = {
 	version: version};
 
@@ -16707,7 +16731,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.42";
+var version = "3.997.43";
 var packageInfo = {
 	version: version};
 
@@ -17332,12 +17356,13 @@ exports.getDefaultRoleAssumerWithWebIdentity = getDefaultRoleAssumerWithWebIdent
 /***/ 2764:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
+const { hasOwn } = __nccwpck_require__(2430);
+const { streamCollector } = __nccwpck_require__(2430);
+exports.streamCollector = streamCollector;
 const { buildQueryString, HttpResponse } = __nccwpck_require__(3422);
 const node_https = __nccwpck_require__(4708);
 const { Readable } = __nccwpck_require__(7075);
 const http2 = __nccwpck_require__(2467);
-const { streamCollector } = __nccwpck_require__(2430);
-exports.streamCollector = streamCollector;
 
 function buildAbortError(abortSignal) {
     const reason = abortSignal && typeof abortSignal === "object" && "reason" in abortSignal
@@ -17364,6 +17389,8 @@ const NODEJS_TIMEOUT_ERROR_CODES = ["ECONNRESET", "EPIPE", "ETIMEDOUT"];
 const getTransformedHeaders = (headers) => {
     const transformedHeaders = {};
     for (const name in headers) {
+        if (!hasOwn(headers, name))
+            continue;
         const headerValues = headers[name];
         transformedHeaders[name] = Array.isArray(headerValues) ? headerValues.join(",") : headerValues;
     }
@@ -17565,6 +17592,8 @@ class NodeHttpHandler {
         }
         if (sockets && requests) {
             for (const origin in sockets) {
+                if (!hasOwn(sockets, origin))
+                    continue;
                 const socketsInUse = sockets[origin]?.length ?? 0;
                 const requestsEnqueued = requests[origin]?.length ?? 0;
                 if (socketsInUse >= maxSockets && requestsEnqueued >= 2 * maxSockets) {
@@ -17600,6 +17629,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             this.config = await this.configProvider;
         }
         const config = this.config;
+        const logger = config.logger;
         const isSSL = request.protocol === "https:";
         if (!isSSL && !this.config.httpAgent) {
             this.config.httpAgent = await this.config.httpAgentProvider();
@@ -17643,7 +17673,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
                 });
             }
             socketWarningTimeoutId = timing.setTimeout(() => {
-                this.socketWarningTimestamp = NodeHttpHandler.checkSocketUsage(agent, this.socketWarningTimestamp, config.logger);
+                this.socketWarningTimestamp = NodeHttpHandler.checkSocketUsage(agent, this.socketWarningTimestamp, logger);
             }, config.socketAcquisitionWarningTimeout ?? (config.requestTimeout ?? 2000) + (config.connectionTimeout ?? 1000));
             const queryString = request.query ? buildQueryString(request.query) : "";
             let auth = undefined;
@@ -17710,7 +17740,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             }
             const effectiveRequestTimeout = requestTimeout ?? config.requestTimeout;
             connectionTimeoutId = setConnectionTimeout(req, reject, config.connectionTimeout);
-            requestTimeoutId = setRequestTimeout(req, reject, effectiveRequestTimeout, config.throwOnRequestTimeout, config.logger ?? console);
+            requestTimeoutId = setRequestTimeout(req, reject, effectiveRequestTimeout, config.throwOnRequestTimeout, logger ?? console);
             socketTimeoutId = setSocketTimeout(req, reject, config.socketTimeout);
             const httpAgent = nodeHttpsOptions.agent;
             if (typeof httpAgent === "object" && "keepAlive" in httpAgent) {
@@ -17728,6 +17758,12 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
     updateHttpClientConfig(key, value) {
         this.config = undefined;
         this.configProvider = this.configProvider.then((config) => {
+            if (key === Symbol.for("logger")) {
+                return {
+                    ...config,
+                    logger: config.logger ?? value,
+                };
+            }
             return {
                 ...config,
                 [key]: value,
@@ -18415,7 +18451,7 @@ const writeSSOTokenToFile = (id, ssoToken) => {
     return writeFile(tokenFilepath, tokenString);
 };
 
-const lastRefreshAttemptTime = new Date(0);
+const lastRefreshAttemptTimes = new Map();
 const fromSso = (init = {}) => async ({ callerClientConfig } = {}) => {
     init.logger?.debug("@aws-sdk/token-providers - fromSso");
     const profiles = await parseKnownFiles(init);
@@ -18452,11 +18488,15 @@ const fromSso = (init = {}) => async ({ callerClientConfig } = {}) => {
     validateTokenKey("accessToken", ssoToken.accessToken);
     validateTokenKey("expiresAt", ssoToken.expiresAt);
     const { accessToken, expiresAt } = ssoToken;
-    const existingToken = { token: accessToken, expiration: new Date(expiresAt) };
+    const existingToken = {
+        token: accessToken,
+        expiration: new Date(expiresAt),
+    };
     if (existingToken.expiration.getTime() - Date.now() > EXPIRE_WINDOW_MS) {
         return existingToken;
     }
-    if (Date.now() - lastRefreshAttemptTime.getTime() < 30 * 1000) {
+    const lastRefreshAttemptTime = lastRefreshAttemptTimes.get(ssoSessionName) ?? 0;
+    if (Date.now() - lastRefreshAttemptTime < 30 * 1000) {
         validateTokenExpiry(existingToken);
         return existingToken;
     }
@@ -18464,7 +18504,7 @@ const fromSso = (init = {}) => async ({ callerClientConfig } = {}) => {
     validateTokenKey("clientSecret", ssoToken.clientSecret, true);
     validateTokenKey("refreshToken", ssoToken.refreshToken, true);
     try {
-        lastRefreshAttemptTime.setTime(Date.now());
+        lastRefreshAttemptTimes.set(ssoSessionName, Date.now());
         const newSsoOidcToken = await getNewSsoOidcToken(ssoToken, ssoRegion, init, callerClientConfig);
         validateTokenKey("accessToken", newSsoOidcToken.accessToken);
         validateTokenKey("expiresIn", newSsoOidcToken.expiresIn);
@@ -19030,7 +19070,7 @@ exports.InvokeStoreBase = InvokeStoreBase;
 /***/ 402:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-const { getSmithyContext } = __nccwpck_require__(4534);
+const { getSmithyContext, hasOwn } = __nccwpck_require__(4534);
 exports.getSmithyContext = getSmithyContext;
 const { HttpRequest } = __nccwpck_require__(3422);
 const { requestBuilder } = __nccwpck_require__(3422);
@@ -19235,6 +19275,8 @@ class DefaultIdentityProviderConfig {
     authSchemes = new Map();
     constructor(config) {
         for (const key in config) {
+            if (!hasOwn(config, key))
+                continue;
             const value = config[key];
             if (value !== undefined) {
                 this.authSchemes.set(key, value);
@@ -19380,9 +19422,9 @@ exports.setFeature = setFeature;
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 const { nv, NumericValue, calculateBodyLength, generateIdempotencyToken, fromBase64, _parseEpochTimestamp } = __nccwpck_require__(2430);
+const { hasOwn, getSmithyContext } = __nccwpck_require__(4534);
 const { HttpRequest, collectBody, SerdeContext, RpcProtocol } = __nccwpck_require__(3422);
 const { NormalizedSchema, deref, TypeRegistry } = __nccwpck_require__(6890);
-const { getSmithyContext } = __nccwpck_require__(4534);
 
 const majorUint64 = 0;
 const majorNegativeInt64 = 1;
@@ -19680,23 +19722,39 @@ function decodeTagValue(at, to, minor, unsignedInt, offset) {
     }
     else if (minor === 4) {
         const decimalFraction = decode(at + offset, to);
-        const [exponent, mantissa] = decimalFraction;
+        const [rawExponent, mantissa] = decimalFraction;
         const normalizer = mantissa < 0 ? -1 : 1;
-        const mantissaStr = "0".repeat(Math.abs(exponent) + 1) + String(BigInt(normalizer) * BigInt(mantissa));
-        let numericString;
+        const absMantissa = BigInt(normalizer) * BigInt(mantissa);
+        const mantissaDigits = String(absMantissa);
         const sign = mantissa < 0 ? "-" : "";
-        numericString =
-            exponent === 0
-                ? mantissaStr
-                : mantissaStr.slice(0, mantissaStr.length + exponent) + "." + mantissaStr.slice(exponent);
-        numericString = numericString.replace(/^0+/g, "");
-        if (numericString === "") {
-            numericString = "0";
+        let numericString;
+        const isSmallExponent = typeof rawExponent === "number" && Math.abs(rawExponent) <= 2 ** 28;
+        if (isSmallExponent) {
+            const exponent = rawExponent;
+            const mantissaStr = "0".repeat(Math.abs(exponent) + 1) + mantissaDigits;
+            numericString =
+                exponent === 0
+                    ? mantissaStr
+                    : mantissaStr.slice(0, mantissaStr.length + exponent) + "." + mantissaStr.slice(exponent);
+            numericString = numericString.replace(/^0+/g, "");
+            if (numericString === "") {
+                numericString = "0";
+            }
+            if (numericString[0] === ".") {
+                numericString = "0" + numericString;
+            }
+            numericString = sign + numericString;
         }
-        if (numericString[0] === ".") {
-            numericString = "0" + numericString;
+        else {
+            const bigExponent = BigInt(rawExponent);
+            if (mantissaDigits.length === 1) {
+                numericString = sign + mantissaDigits + "e" + String(bigExponent);
+            }
+            else {
+                const adjustedExp = bigExponent + BigInt(mantissaDigits.length - 1);
+                numericString = sign + mantissaDigits[0] + "." + mantissaDigits.slice(1) + "e" + String(adjustedExp);
+            }
         }
-        numericString = sign + numericString;
         _offset = offset + _offset;
         return nv(numericString);
     }
@@ -20045,13 +20103,21 @@ function encode(_input) {
         }
         else if (typeof input === "object") {
             if (input instanceof NumericValue) {
-                const decimalIndex = input.string.indexOf(".");
-                const exponent = decimalIndex === -1 ? 0 : decimalIndex - input.string.length + 1;
-                const mantissa = BigInt(input.string.replace(".", ""));
+                let str = input.string;
+                let expOffset = BigInt(0);
+                const eIndex = str.search(/[eE]/);
+                if (eIndex !== -1) {
+                    expOffset = BigInt(str.slice(eIndex + 1));
+                    str = str.slice(0, eIndex);
+                }
+                const decimalIndex = str.indexOf(".");
+                const fractionDigits = decimalIndex === -1 ? 0 : str.length - decimalIndex - 1;
+                const exponent = expOffset - BigInt(fractionDigits);
+                const mantissa = BigInt(str.replace(".", ""));
                 data[cursor$1++] = 0b110_00100;
                 encodeInteger(majorList, 2);
                 encodeStack.push(mantissa);
-                encodeStack.push(exponent);
+                encodeStack.push(exponent >= -0x20000000000000n && exponent <= 0x1fffffffffffffn ? Number(exponent) : exponent);
                 continue;
             }
             if (input[tagSymbol]) {
@@ -20269,6 +20335,8 @@ const loadSmithyRpcV2CborErrorCode = (output, data) => {
     }
     let codeKey;
     for (const key in data) {
+        if (!hasOwn(data, key))
+            continue;
         if (key.toLowerCase() === "code") {
             codeKey = key;
             break;
@@ -20301,6 +20369,8 @@ const buildHttpRpcRequest = async (context, headers, path, resolvedHostname, bod
     }
     if (endpoint.headers) {
         for (const name in endpoint.headers) {
+            if (!hasOwn(endpoint.headers, name))
+                continue;
             contents.headers[name] = endpoint.headers[name];
         }
     }
@@ -20561,6 +20631,8 @@ function writeStruct(ns, value, serdeContext) {
     }
     if (typeof value.__type === "string") {
         for (const k in value) {
+            if (!hasOwn(value, k))
+                continue;
             if (!memberNames.includes(k)) {
                 writeString(k);
                 writeUntypedValue(value[k]);
@@ -20626,6 +20698,8 @@ function writeMap(ns, value, isDocument, serdeContext) {
     const valueSchema = ns.getValueSchema();
     const keys = [];
     for (const k in value) {
+        if (!hasOwn(value, k))
+            continue;
         const v = value[k];
         if (isDocument ? v !== undefined : v != null || sparse) {
             keys.push(k);
@@ -20887,14 +20961,27 @@ function writeTag(tagValue, innerValue) {
     writeUntypedValue(innerValue);
 }
 function writeNumericValue(nv) {
-    const decimalIndex = nv.string.indexOf(".");
-    const exponent = decimalIndex === -1 ? 0 : decimalIndex - nv.string.length + 1;
-    const mantissa = BigInt(nv.string.replace(".", ""));
+    let str = nv.string;
+    let expOffset = BigInt(0);
+    const eIndex = str.search(/[eE]/);
+    if (eIndex !== -1) {
+        expOffset = BigInt(str.slice(eIndex + 1));
+        str = str.slice(0, eIndex);
+    }
+    const decimalIndex = str.indexOf(".");
+    const fractionDigits = decimalIndex === -1 ? 0 : str.length - decimalIndex - 1;
+    const exponent = expOffset - BigInt(fractionDigits);
+    const mantissa = BigInt(str.replace(".", ""));
     ensure(9);
     buf[cursor++] = 0b110_00100;
     encodeHeader(majorList, 2);
     ensure(9);
-    writeInteger(exponent);
+    if (exponent >= -0x20000000000000n && exponent <= 0x1fffffffffffffn) {
+        writeInteger(Number(exponent));
+    }
+    else {
+        writeBigInt(exponent);
+    }
     writeBigInt(mantissa);
 }
 function writeTimestamp(date) {
@@ -21026,6 +21113,8 @@ function readStruct(ns, count, startPos) {
     if (isUnion) {
         let resultEmpty = true;
         for (const _ in result) {
+            if (!hasOwn(result, _))
+                continue;
             resultEmpty = false;
             break;
         }
@@ -21065,23 +21154,39 @@ function readTag(ns) {
     if (tagNumber === 4) {
         const docSchema = NormalizedSchema.of(15);
         const pair = readValue(docSchema);
-        const [exponent, mantissa] = pair;
+        const [rawExponent, mantissa] = pair;
         const normalizer = mantissa < 0 ? -1 : 1;
-        const mantissaStr = "0".repeat(Math.abs(exponent) + 1) + String(BigInt(normalizer) * BigInt(mantissa));
-        let numericString;
+        const absMantissa = BigInt(normalizer) * BigInt(mantissa);
+        const mantissaDigits = String(absMantissa);
         const sign = mantissa < 0 ? "-" : "";
-        numericString =
-            exponent === 0
-                ? mantissaStr
-                : mantissaStr.slice(0, mantissaStr.length + exponent) + "." + mantissaStr.slice(exponent);
-        numericString = numericString.replace(/^0+/g, "");
-        if (numericString === "") {
-            numericString = "0";
+        let numericString;
+        const isSmallExponent = typeof rawExponent === "number" && Math.abs(rawExponent) <= 2 ** 28;
+        if (isSmallExponent) {
+            const exponent = rawExponent;
+            const mantissaStr = "0".repeat(Math.abs(exponent) + 1) + mantissaDigits;
+            numericString =
+                exponent === 0
+                    ? mantissaStr
+                    : mantissaStr.slice(0, mantissaStr.length + exponent) + "." + mantissaStr.slice(exponent);
+            numericString = numericString.replace(/^0+/g, "");
+            if (numericString === "") {
+                numericString = "0";
+            }
+            if (numericString[0] === ".") {
+                numericString = "0" + numericString;
+            }
+            numericString = sign + numericString;
         }
-        if (numericString[0] === ".") {
-            numericString = "0" + numericString;
+        else {
+            const bigExponent = BigInt(rawExponent);
+            if (mantissaDigits.length === 1) {
+                numericString = sign + mantissaDigits + "e" + String(bigExponent);
+            }
+            else {
+                const adjustedExp = bigExponent + BigInt(mantissaDigits.length - 1);
+                numericString = sign + mantissaDigits[0] + "." + mantissaDigits.slice(1) + "e" + String(adjustedExp);
+            }
         }
-        numericString = sign + numericString;
         return nv(numericString);
     }
     const docSchema = NormalizedSchema.of(15);
@@ -21178,6 +21283,8 @@ function readMapIndefinite(ns) {
                 if (isUnion) {
                     let resultEmpty = true;
                     for (const _ in result) {
+                        if (!hasOwn(result, _))
+                            continue;
                         resultEmpty = false;
                         break;
                     }
@@ -21482,6 +21589,8 @@ function transformObject(ns, value) {
     if (ns.isMapSchema()) {
         const targetSchema = ns.getValueSchema();
         for (const key in value) {
+            if (!hasOwn(value, key))
+                continue;
             newObject[key] = transformObject(targetSchema, value[key]);
         }
     }
@@ -21491,6 +21600,8 @@ function transformObject(ns, value) {
         if (isUnion) {
             keys = new Set();
             for (const k in value) {
+                if (!hasOwn(value, k))
+                    continue;
                 if (k !== "__type") {
                     keys.add(k);
                 }
@@ -21507,6 +21618,8 @@ function transformObject(ns, value) {
         if (isUnion && keys?.size === 1) {
             let newObjectEmpty = true;
             for (const _ in newObject) {
+                if (!hasOwn(newObject, _))
+                    continue;
                 newObjectEmpty = false;
                 break;
             }
@@ -21517,6 +21630,8 @@ function transformObject(ns, value) {
         }
         else if (typeof value.__type === "string") {
             for (const k in value) {
+                if (!hasOwn(value, k))
+                    continue;
                 if (!(k in newObject)) {
                     newObject[k] = value[k];
                 }
@@ -21568,10 +21683,9 @@ class SmithyRpcV2CborProtocol extends RpcProtocol {
                 this.serializer.write(15, {});
                 request.body = this.serializer.flush();
             }
-            try {
+            if (request.body instanceof Uint8Array) {
                 request.headers["content-length"] = String(request.body.byteLength);
             }
-            catch (ignored) { }
         }
         const { service, operation } = getSmithyContext(context);
         const path = `/service/${service}/operation/${operation}`;
@@ -21680,6 +21794,8 @@ class CborShapeSerializer extends SerdeContext {
             if (ns.isMapSchema()) {
                 const sparse = !!ns.getMergedTraits().sparse;
                 for (const key in sourceObject) {
+                    if (!hasOwn(sourceObject, key))
+                        continue;
                     const value = this.serialize(ns.getValueSchema(), sourceObject[key]);
                     if (value != null || sparse) {
                         newObject[key] = value;
@@ -21700,6 +21816,8 @@ class CborShapeSerializer extends SerdeContext {
                 }
                 else if (typeof sourceObject.__type === "string") {
                     for (const k in sourceObject) {
+                        if (!hasOwn(sourceObject, k))
+                            continue;
                         if (!(k in newObject)) {
                             newObject[k] = this.serialize(15, sourceObject[k]);
                         }
@@ -21716,6 +21834,8 @@ class CborShapeSerializer extends SerdeContext {
                     return newArray;
                 }
                 for (const key in sourceObject) {
+                    if (!hasOwn(sourceObject, key))
+                        continue;
                     newObject[key] = this.serialize(ns.getValueSchema(), sourceObject[key]);
                 }
             }
@@ -21790,6 +21910,8 @@ class CborShapeDeserializer extends SerdeContext {
             if (ns.isMapSchema()) {
                 const targetSchema = ns.getValueSchema();
                 for (const key in value) {
+                    if (!hasOwn(value, key))
+                        continue;
                     const itemValue = this.readValue(targetSchema, value[key]);
                     newObject[key] = itemValue;
                 }
@@ -21800,6 +21922,8 @@ class CborShapeDeserializer extends SerdeContext {
                 if (isUnion) {
                     keys = new Set();
                     for (const k in value) {
+                        if (!hasOwn(value, k))
+                            continue;
                         if (k !== "__type") {
                             keys.add(k);
                         }
@@ -21816,6 +21940,8 @@ class CborShapeDeserializer extends SerdeContext {
                 if (isUnion && keys?.size === 1) {
                     let newObjectEmpty = true;
                     for (const _ in newObject) {
+                        if (!hasOwn(newObject, _))
+                            continue;
                         newObjectEmpty = false;
                         break;
                     }
@@ -21826,6 +21952,8 @@ class CborShapeDeserializer extends SerdeContext {
                 }
                 else if (typeof value.__type === "string") {
                     for (const k in value) {
+                        if (!hasOwn(value, k))
+                            continue;
                         if (!(k in newObject)) {
                             newObject[k] = value[k];
                         }
@@ -22449,6 +22577,7 @@ exports.readableStreamHasher = readableStreamHasher;
 /***/ 2658:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
+const { hasOwn } = __nccwpck_require__(4534);
 const { getSmithyContext, normalizeProvider } = __nccwpck_require__(4534);
 exports.getSmithyContext = getSmithyContext;
 exports.normalizeProvider = normalizeProvider;
@@ -23318,6 +23447,8 @@ const knownAlgorithms = Object.values(AlgorithmId);
 const getChecksumConfiguration = (runtimeConfig) => {
     const checksumAlgorithms = [];
     for (const id in AlgorithmId) {
+        if (!hasOwn(AlgorithmId, id))
+            continue;
         const algorithmId = AlgorithmId[id];
         if (runtimeConfig[algorithmId] === undefined) {
             continue;
@@ -23391,7 +23522,9 @@ const getArrayIfSingleItem = (mayBeArray) => Array.isArray(mayBeArray) ? mayBeAr
 const getValueFromTextNode = (obj) => {
     const textNodeName = "#text";
     for (const key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key) && obj[key][textNodeName] !== undefined) {
+        if (!hasOwn(obj, key))
+            continue;
+        if (obj[key][textNodeName] !== undefined) {
             obj[key] = obj[key][textNodeName];
         }
         else if (typeof obj[key] === "object" && obj[key] !== null) {
@@ -23432,7 +23565,9 @@ function map(arg0, arg1, arg2) {
             instructions = arg1;
         }
     }
-    for (const key of Object.keys(instructions)) {
+    for (const key in instructions) {
+        if (!hasOwn(instructions, key))
+            continue;
         if (!Array.isArray(instructions[key])) {
             target[key] = instructions[key];
             continue;
@@ -23451,6 +23586,8 @@ const convertMap = (target) => {
 const take = (source, instructions) => {
     const out = {};
     for (const key in instructions) {
+        if (!hasOwn(instructions, key))
+            continue;
         applyInstruction(out, source, instructions, key);
     }
     return out;
@@ -23530,7 +23667,9 @@ const _json = (obj) => {
     }
     if (typeof obj === "object") {
         const target = {};
-        for (const key of Object.keys(obj)) {
+        for (const key in obj) {
+            if (!hasOwn(obj, key))
+                continue;
             if (obj[key] == null) {
                 continue;
             }
@@ -24388,7 +24527,7 @@ exports.resolveRegionConfig = resolveRegionConfig;
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 const { CONFIG_PREFIX_SEPARATOR, booleanSelector, SelectorType, loadConfig } = __nccwpck_require__(7291);
-const { toEndpointV1, getSmithyContext, normalizeProvider, isValidHostLabel } = __nccwpck_require__(4534);
+const { toEndpointV1, getSmithyContext, normalizeProvider, isValidHostLabel, hasOwn } = __nccwpck_require__(4534);
 exports.isValidHostLabel = isValidHostLabel;
 exports.middlewareEndpointToEndpointV1 = toEndpointV1;
 exports.toEndpointV1 = toEndpointV1;
@@ -25219,6 +25358,8 @@ const resolveEndpoint = (ruleSetObject, options) => {
     const { parameters, rules } = ruleSetObject;
     options.logger?.debug?.(`${debugId} Initial EndpointParams: ${toDebugString(endpointParams)}`);
     for (const paramKey in parameters) {
+        if (!hasOwn(parameters, paramKey))
+            continue;
         const parameter = parameters[paramKey];
         const endpointParam = endpointParams[paramKey];
         if (endpointParam == null && parameter.default != null) {
@@ -25271,6 +25412,7 @@ exports.resolveParams = resolveParams;
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 const { Crc32 } = __nccwpck_require__(9542);
+const { hasOwn } = __nccwpck_require__(4534);
 const { toHex, fromHex, toUtf8, fromUtf8 } = __nccwpck_require__(2430);
 const { Readable } = __nccwpck_require__(7075);
 const { TypeRegistry } = __nccwpck_require__(6890);
@@ -25328,7 +25470,9 @@ class HeaderMarshaller {
     }
     format(headers) {
         const chunks = [];
-        for (const headerName of Object.keys(headers)) {
+        for (const headerName in headers) {
+            if (!hasOwn(headers, headerName))
+                continue;
             const bytes = this.fromUtf8(headerName);
             chunks.push(Uint8Array.from([bytes.byteLength]), bytes, this.formatHeaderValue(headers[headerName]));
         }
@@ -25343,27 +25487,27 @@ class HeaderMarshaller {
     formatHeaderValue(header) {
         switch (header.type) {
             case "boolean":
-                return Uint8Array.from([header.value ? HEADER_VALUE_TYPE.boolTrue : HEADER_VALUE_TYPE.boolFalse]);
+                return Uint8Array.from([header.value ? 0 : 1]);
             case "byte":
-                return Uint8Array.from([HEADER_VALUE_TYPE.byte, header.value]);
+                return Uint8Array.from([2, header.value]);
             case "short":
                 const shortView = new DataView(new ArrayBuffer(3));
-                shortView.setUint8(0, HEADER_VALUE_TYPE.short);
+                shortView.setUint8(0, 3);
                 shortView.setInt16(1, header.value, false);
                 return new Uint8Array(shortView.buffer);
             case "integer":
                 const intView = new DataView(new ArrayBuffer(5));
-                intView.setUint8(0, HEADER_VALUE_TYPE.integer);
+                intView.setUint8(0, 4);
                 intView.setInt32(1, header.value, false);
                 return new Uint8Array(intView.buffer);
             case "long":
                 const longBytes = new Uint8Array(9);
-                longBytes[0] = HEADER_VALUE_TYPE.long;
+                longBytes[0] = 5;
                 longBytes.set(header.value.bytes, 1);
                 return longBytes;
             case "binary":
                 const binView = new DataView(new ArrayBuffer(3 + header.value.byteLength));
-                binView.setUint8(0, HEADER_VALUE_TYPE.byteArray);
+                binView.setUint8(0, 6);
                 binView.setUint16(1, header.value.byteLength, false);
                 const binBytes = new Uint8Array(binView.buffer);
                 binBytes.set(header.value, 3);
@@ -25371,14 +25515,14 @@ class HeaderMarshaller {
             case "string":
                 const utf8Bytes = this.fromUtf8(header.value);
                 const strView = new DataView(new ArrayBuffer(3 + utf8Bytes.byteLength));
-                strView.setUint8(0, HEADER_VALUE_TYPE.string);
+                strView.setUint8(0, 7);
                 strView.setUint16(1, utf8Bytes.byteLength, false);
                 const strBytes = new Uint8Array(strView.buffer);
                 strBytes.set(utf8Bytes, 3);
                 return strBytes;
             case "timestamp":
                 const tsBytes = new Uint8Array(9);
-                tsBytes[0] = HEADER_VALUE_TYPE.timestamp;
+                tsBytes[0] = 8;
                 tsBytes.set(Int64.fromNumber(header.value.valueOf()).bytes, 1);
                 return tsBytes;
             case "uuid":
@@ -25386,7 +25530,7 @@ class HeaderMarshaller {
                     throw new Error(`Invalid UUID received: ${header.value}`);
                 }
                 const uuidBytes = new Uint8Array(17);
-                uuidBytes[0] = HEADER_VALUE_TYPE.uuid;
+                uuidBytes[0] = 9;
                 uuidBytes.set(fromHex(header.value.replace(/-/g, "")), 1);
                 return uuidBytes;
         }
@@ -25399,46 +25543,46 @@ class HeaderMarshaller {
             const name = this.toUtf8(new Uint8Array(headers.buffer, headers.byteOffset + position, nameLength));
             position += nameLength;
             switch (headers.getUint8(position++)) {
-                case HEADER_VALUE_TYPE.boolTrue:
+                case 0:
                     out[name] = {
                         type: BOOLEAN_TAG,
                         value: true,
                     };
                     break;
-                case HEADER_VALUE_TYPE.boolFalse:
+                case 1:
                     out[name] = {
                         type: BOOLEAN_TAG,
                         value: false,
                     };
                     break;
-                case HEADER_VALUE_TYPE.byte:
+                case 2:
                     out[name] = {
                         type: BYTE_TAG,
                         value: headers.getInt8(position++),
                     };
                     break;
-                case HEADER_VALUE_TYPE.short:
+                case 3:
                     out[name] = {
                         type: SHORT_TAG,
                         value: headers.getInt16(position, false),
                     };
                     position += 2;
                     break;
-                case HEADER_VALUE_TYPE.integer:
+                case 4:
                     out[name] = {
                         type: INT_TAG,
                         value: headers.getInt32(position, false),
                     };
                     position += 4;
                     break;
-                case HEADER_VALUE_TYPE.long:
+                case 5:
                     out[name] = {
                         type: LONG_TAG,
                         value: new Int64(new Uint8Array(headers.buffer, headers.byteOffset + position, 8)),
                     };
                     position += 8;
                     break;
-                case HEADER_VALUE_TYPE.byteArray:
+                case 6:
                     const binaryLength = headers.getUint16(position, false);
                     position += 2;
                     out[name] = {
@@ -25447,7 +25591,7 @@ class HeaderMarshaller {
                     };
                     position += binaryLength;
                     break;
-                case HEADER_VALUE_TYPE.string:
+                case 7:
                     const stringLength = headers.getUint16(position, false);
                     position += 2;
                     out[name] = {
@@ -25456,14 +25600,14 @@ class HeaderMarshaller {
                     };
                     position += stringLength;
                     break;
-                case HEADER_VALUE_TYPE.timestamp:
+                case 8:
                     out[name] = {
                         type: TIMESTAMP_TAG,
                         value: new Date(new Int64(new Uint8Array(headers.buffer, headers.byteOffset + position, 8)).valueOf()),
                     };
                     position += 8;
                     break;
-                case HEADER_VALUE_TYPE.uuid:
+                case 9:
                     const uuidBytes = new Uint8Array(headers.buffer, headers.byteOffset + position, 16);
                     position += 16;
                     out[name] = {
@@ -25898,7 +26042,7 @@ class EventStreamSerde {
         this.defaultContentType = defaultContentType;
         this.compositeErrorRegistry = compositeErrorRegistry;
     }
-    async serializeEventStream({ eventStream, requestSchema, initialRequest, }) {
+    async serializeEventStream({ eventStream, requestSchema, initialRequest, initialMessageType, }) {
         const marshaller = this.marshaller;
         const eventStreamMember = requestSchema.getEventStreamMember();
         const unionSchema = requestSchema.getMemberSchema(eventStreamMember);
@@ -25909,7 +26053,7 @@ class EventStreamSerde {
             async *[Symbol.asyncIterator]() {
                 if (initialRequest) {
                     const headers = {
-                        ":event-type": { type: "string", value: "initial-request" },
+                        ":event-type": { type: "string", value: initialMessageType ?? "initial-request" },
                         ":message-type": { type: "string", value: "event" },
                         ":content-type": { type: "string", value: defaultContentType },
                     };
@@ -25935,6 +26079,8 @@ class EventStreamSerde {
             }
             let unionMember = "";
             for (const key in event) {
+                if (!hasOwn(event, key))
+                    continue;
                 if (key !== "__type") {
                     unionMember = key;
                     break;
@@ -25953,7 +26099,7 @@ class EventStreamSerde {
             };
         });
     }
-    async deserializeEventStream({ response, responseSchema, initialResponseContainer, }) {
+    async deserializeEventStream({ response, responseSchema, initialResponseContainer, initialMessageType, }) {
         const marshaller = this.marshaller;
         const eventStreamMember = responseSchema.getEventStreamMember();
         const unionSchema = responseSchema.getMemberSchema(eventStreamMember);
@@ -25962,13 +26108,15 @@ class EventStreamSerde {
         const asyncIterable = marshaller.deserialize(response.body, async (event) => {
             let unionMember = "";
             for (const key in event) {
+                if (!hasOwn(event, key))
+                    continue;
                 if (key !== "__type") {
                     unionMember = key;
                     break;
                 }
             }
             const body = event[unionMember].body;
-            if (unionMember === "initial-response") {
+            if (unionMember === (initialMessageType ?? "initial-response")) {
                 const dataObject = await this.deserializer.read(responseSchema, body);
                 delete dataObject[eventStreamMember];
                 return {
@@ -26036,6 +26184,8 @@ class EventStreamSerde {
                 throw new Error("@smithy::core/protocols - initial-response event encountered in event stream but no response schema given.");
             }
             for (const key in firstEvent.value) {
+                if (!hasOwn(firstEvent.value, key))
+                    continue;
                 initialResponseContainer[key] = firstEvent.value[key];
             }
         }
@@ -26193,14 +26343,14 @@ exports.universalEventStreamSerdeProvider = eventStreamSerdeProvider$1;
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 const { Uint8ArrayBlobAdapter, sdkStreamMixin, splitEvery, splitHeader, fromBase64, _parseEpochTimestamp, _parseRfc7231DateTime, _parseRfc3339DateTimeWithOffset, LazyJsonString, NumericValue, toUtf8, fromUtf8, generateIdempotencyToken, toBase64, dateToUtcString, quoteHeader } = __nccwpck_require__(2430);
-const { TypeRegistry, NormalizedSchema, translateTraits } = __nccwpck_require__(6890);
-const { HttpRequest, HttpResponse, isValidHostname } = __nccwpck_require__(4534);
+const { HttpRequest, HttpResponse, hasOwn, isValidHostname } = __nccwpck_require__(4534);
 const { parseQueryString, parseUrl } = __nccwpck_require__(4534);
 exports.HttpRequest = HttpRequest;
 exports.HttpResponse = HttpResponse;
 exports.isValidHostname = isValidHostname;
 exports.parseQueryString = parseQueryString;
 exports.parseUrl = parseUrl;
+const { TypeRegistry, NormalizedSchema, translateTraits } = __nccwpck_require__(6890);
 const { FieldPosition } = __nccwpck_require__(2526);
 
 const collectBody = async (streamBody = new Uint8Array(), context) => {
@@ -26269,6 +26419,8 @@ class HttpProtocol extends SerdeContext {
             }
             if (endpoint.headers) {
                 for (const name in endpoint.headers) {
+                    if (!hasOwn(endpoint.headers, name))
+                        continue;
                     request.headers[name] = endpoint.headers[name].join(", ");
                 }
             }
@@ -26284,6 +26436,8 @@ class HttpProtocol extends SerdeContext {
             };
             if (endpoint.headers) {
                 for (const name in endpoint.headers) {
+                    if (!hasOwn(endpoint.headers, name))
+                        continue;
                     request.headers[name] = endpoint.headers[name];
                 }
             }
@@ -26463,6 +26617,8 @@ class HttpBindingProtocol extends HttpProtocol {
             }
             else if (typeof memberTraits.httpPrefixHeaders === "string") {
                 for (const key in inputMemberValue) {
+                    if (!hasOwn(inputMemberValue, key))
+                        continue;
                     const val = inputMemberValue[key];
                     const amalgam = memberTraits.httpPrefixHeaders + key;
                     serializer.write([memberNs.getValueSchema(), { httpHeader: amalgam }], val);
@@ -26509,6 +26665,8 @@ class HttpBindingProtocol extends HttpProtocol {
         const traits = ns.getMergedTraits();
         if (traits.httpQueryParams) {
             for (const key in data) {
+                if (!hasOwn(data, key))
+                    continue;
                 if (!(key in query)) {
                     const val = data[key];
                     const valueSchema = ns.getValueSchema();
@@ -26552,6 +26710,8 @@ class HttpBindingProtocol extends HttpProtocol {
             throw new Error("@smithy/core/protocols - HTTP Protocol error handler failed to throw.");
         }
         for (const header in response.headers) {
+            if (!hasOwn(response.headers, header))
+                continue;
             const value = response.headers[header];
             delete response.headers[header];
             response.headers[header.toLowerCase()] = value;
@@ -26639,6 +26799,8 @@ class HttpBindingProtocol extends HttpProtocol {
             else if (memberTraits.httpPrefixHeaders !== undefined) {
                 dataObject[memberName] = {};
                 for (const header in response.headers) {
+                    if (!hasOwn(response.headers, header))
+                        continue;
                     if (header.startsWith(memberTraits.httpPrefixHeaders)) {
                         const value = response.headers[header];
                         const valueSchema = memberSchema.getValueSchema();
@@ -26688,10 +26850,9 @@ class RpcProtocol extends HttpProtocol {
             if (eventStreamMember) {
                 if (input[eventStreamMember]) {
                     const initialRequest = {};
-                    for (const [memberName, memberSchema] of ns.structIterator()) {
-                        if (memberName !== eventStreamMember && input[memberName]) {
-                            serializer.write(memberSchema, input[memberName]);
-                            initialRequest[memberName] = serializer.flush();
+                    for (const [memberName] of ns.structIterator()) {
+                        if (memberName !== eventStreamMember && input[memberName] != null) {
+                            initialRequest[memberName] = input[memberName];
                         }
                     }
                     payload = await this.serializeEventStream({
@@ -26725,6 +26886,8 @@ class RpcProtocol extends HttpProtocol {
             throw new Error("@smithy/core/protocols - RPC Protocol error handler failed to throw.");
         }
         for (const header in response.headers) {
+            if (!hasOwn(response.headers, header))
+                continue;
             const value = response.headers[header];
             delete response.headers[header];
             response.headers[header.toLowerCase()] = value;
@@ -27122,24 +27285,27 @@ class Fields {
 }
 
 const getHttpHandlerExtensionConfiguration = (runtimeConfig) => {
+    if (runtimeConfig.logger && runtimeConfig.logger.constructor?.name !== "NoOpLogger") {
+        runtimeConfig.requestHandler?.updateHttpClientConfig?.(Symbol.for("logger"), runtimeConfig.logger);
+    }
     return {
         setHttpHandler(handler) {
-            runtimeConfig.httpHandler = handler;
+            runtimeConfig.requestHandler = handler;
         },
         httpHandler() {
-            return runtimeConfig.httpHandler;
+            return runtimeConfig.requestHandler;
         },
         updateHttpClientConfig(key, value) {
-            runtimeConfig.httpHandler?.updateHttpClientConfig(key, value);
+            runtimeConfig.requestHandler?.updateHttpClientConfig(key, value);
         },
         httpHandlerConfigs() {
-            return runtimeConfig.httpHandler.httpHandlerConfigs();
+            return runtimeConfig.requestHandler.httpHandlerConfigs();
         },
     };
 };
 const resolveHttpHandlerRuntimeConfig = (httpHandlerExtensionConfiguration) => {
     return {
-        httpHandler: httpHandlerExtensionConfiguration.httpHandler(),
+        requestHandler: httpHandlerExtensionConfiguration.httpHandler(),
     };
 };
 
@@ -27155,10 +27321,12 @@ function contentLengthMiddleware(bodyLengthChecker) {
                     .indexOf(CONTENT_LENGTH_HEADER) === -1) {
                 try {
                     const length = bodyLengthChecker(body);
-                    request.headers = {
-                        ...request.headers,
-                        [CONTENT_LENGTH_HEADER]: String(length),
-                    };
+                    if (length != null) {
+                        request.headers = {
+                            ...request.headers,
+                            [CONTENT_LENGTH_HEADER]: String(length),
+                        };
+                    }
                 }
                 catch (ignored) {
                 }
@@ -27243,6 +27411,7 @@ const { Readable } = __nccwpck_require__(7075);
 const { NoOpLogger, normalizeProvider } = __nccwpck_require__(2658);
 const { HttpResponse, HttpRequest } = __nccwpck_require__(3422);
 const { parseRfc7231DateTime, v4 } = __nccwpck_require__(2430);
+const { hasOwn } = __nccwpck_require__(4534);
 
 const isStreamingPayload = (request) => request?.body instanceof Readable ||
     (typeof ReadableStream !== "undefined" && request?.body instanceof ReadableStream);
@@ -27335,7 +27504,9 @@ function parseRetryAfterHeader(response, logger) {
     if (!HttpResponse.isInstance(response)) {
         return;
     }
-    for (const header of Object.keys(response.headers)) {
+    for (const header in response.headers) {
+        if (!hasOwn(response.headers, header))
+            continue;
         const h = header.toLowerCase();
         if (h === "retry-after") {
             const retryAfter = response.headers[header];
@@ -28799,8 +28970,9 @@ exports.translateTraits = translateTraits;
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 const { createHmac, createHash, getRandomValues } = __nccwpck_require__(7598);
+const { hasOwn, HttpResponse } = __nccwpck_require__(4534);
+exports.hasOwn = hasOwn;
 const { ReadStream, lstatSync, fstatSync } = __nccwpck_require__(3024);
-const { HttpResponse } = __nccwpck_require__(4534);
 const { toEndpointV1 } = __nccwpck_require__(2085);
 const { Readable, Writable, PassThrough } = __nccwpck_require__(7075);
 
@@ -29059,6 +29231,8 @@ const expectUnion = (value) => {
     const asObject = expectObject(value);
     const setKeys = [];
     for (const k in asObject) {
+        if (!hasOwn(asObject, k))
+            continue;
         if (asObject[k] != null) {
             setKeys.push(k);
         }
@@ -30554,6 +30728,10 @@ const { SMITHY_CONTEXT_KEY } = __nccwpck_require__(2526);
 
 const getSmithyContext = (context) => context[SMITHY_CONTEXT_KEY] || (context[SMITHY_CONTEXT_KEY] = {});
 
+function hasOwn(o, k) {
+    return Object.prototype.hasOwnProperty.call(o, k);
+}
+
 class HttpRequest {
     method;
     protocol;
@@ -30713,6 +30891,8 @@ const toEndpointV1 = (endpoint) => {
             if (endpoint.headers) {
                 v1Endpoint.headers = {};
                 for (const name in endpoint.headers) {
+                    if (!hasOwn(endpoint.headers, name))
+                        continue;
                     v1Endpoint.headers[name.toLowerCase()] = endpoint.headers[name].join(", ");
                 }
             }
@@ -30726,6 +30906,7 @@ const toEndpointV1 = (endpoint) => {
 exports.HttpRequest = HttpRequest;
 exports.HttpResponse = HttpResponse;
 exports.getSmithyContext = getSmithyContext;
+exports.hasOwn = hasOwn;
 exports.isValidHostLabel = isValidHostLabel;
 exports.isValidHostname = isValidHostname;
 exports.normalizeProvider = normalizeProvider;
