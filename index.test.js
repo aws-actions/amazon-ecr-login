@@ -84,7 +84,7 @@ describe('Login to ECR', () => {
     expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
     expect(exec.exec).toHaveBeenNthCalledWith(1,
       'docker',
-      ['login', '-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
+      ['login', '-u', 'hello', '--password-stdin', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
       expect.anything());
     expect(core.saveState).toHaveBeenNthCalledWith(1, 'registries', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
     expect(exec.exec).toHaveBeenCalledTimes(1);
@@ -121,11 +121,11 @@ describe('Login to ECR', () => {
 
     expect(exec.exec).toHaveBeenNthCalledWith(1,
       'docker',
-      ['login', '-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
+      ['login', '-u', 'hello', '--password-stdin', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
       expect.anything());
     expect(exec.exec).toHaveBeenNthCalledWith(2,
       'docker',
-      ['login', '-u', 'foo', '-p', 'bar', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
+      ['login', '-u', 'foo', '--password-stdin', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
       expect.anything());
     expect(core.saveState).toHaveBeenNthCalledWith(1, 'registries', '123456789012.dkr.ecr.aws-region-1.amazonaws.com,111111111111.dkr.ecr.aws-region-1.amazonaws.com');
     expect(exec.exec).toHaveBeenCalledTimes(2);
@@ -160,7 +160,7 @@ describe('Login to ECR', () => {
     expect(exec.exec).toHaveBeenCalledTimes(1);
     expect(exec.exec).toHaveBeenNthCalledWith(1,
       'docker',
-      ['login', '-u', 'foo', '-p', 'bar', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
+      ['login', '-u', 'foo', '--password-stdin', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
       expect.anything());
     expect(core.saveState).toHaveBeenCalledWith('registries', '111111111111.dkr.ecr.aws-region-1.amazonaws.com');
     expect(exec.exec).toHaveBeenCalledTimes(1);
@@ -177,6 +177,66 @@ describe('Login to ECR', () => {
     expect(core.setFailed).toHaveBeenCalled();
     expect(core.setOutput).toHaveBeenCalledWith('registry', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
     expect(core.saveState).toHaveBeenCalledTimes(0);
+  });
+
+  test('passes the docker password on stdin instead of in the process arguments', async () => {
+    ecrMock.on(GetAuthorizationTokenCommand).resolves(defaultOutputToken);
+
+    await run();
+
+    const [, args, options] = exec.exec.mock.calls[0];
+    expect(args).toContain('--password-stdin');
+    expect(args).not.toContain('-p');
+    expect(args).not.toContain('world');
+    expect(options.input).toEqual(Buffer.from('world'));
+  });
+
+  test('passes each registry password on stdin when logging into multiple registries', async () => {
+    const mockInputs = {
+      'mask-password': '',
+      'registries': '123456789012,111111111111',
+      'registry-type': '',
+      'skip-logout': ''
+    };
+    core.getInput.mockImplementation(mockGetInput(mockInputs));
+    ecrMock.on(GetAuthorizationTokenCommand).resolves({
+      authorizationData: [
+        {
+          authorizationToken: Buffer.from('hello:world').toString('base64'),
+          proxyEndpoint: 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'
+        },
+        {
+          authorizationToken: Buffer.from('foo:bar').toString('base64'),
+          proxyEndpoint: 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'
+        }
+      ]
+    });
+
+    await run();
+
+    expect(exec.exec.mock.calls[0][2].input).toEqual(Buffer.from('world'));
+    expect(exec.exec.mock.calls[1][2].input).toEqual(Buffer.from('bar'));
+    for (const [, args] of exec.exec.mock.calls) {
+      expect(args).not.toContain('world');
+      expect(args).not.toContain('bar');
+    }
+  });
+
+  test('does not let a docker warning stand in for the failure reason', async () => {
+    ecrMock.on(GetAuthorizationTokenCommand).resolves(defaultOutputToken);
+    exec.exec.mockImplementation((commandLine, args, options) => {
+      options.listeners.stderr('WARNING! Using --password via the CLI is insecure. Use --password-stdin.\n');
+      options.listeners.stderr('Error response from daemon: Get "https://123456789012.dkr.ecr.aws-region-1.amazonaws.com/v2/": ' +
+        'net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)\n');
+      return 1;
+    });
+
+    await run();
+
+    const message = core.setFailed.mock.calls[0][0];
+    expect(message.split('\n')[0]).not.toContain('WARNING!');
+    expect(message).toContain('Error response from daemon');
+    expect(message).toContain('Using --password via the CLI is insecure');
   });
 
   test('logged-in registries are saved as state even if the action fails', async () => {
@@ -214,14 +274,15 @@ describe('Login to ECR', () => {
     });
     expect(exec.exec).toHaveBeenNthCalledWith(1,
       'docker',
-      ['login', '-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
+      ['login', '-u', 'hello', '--password-stdin', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
       expect.anything());
     expect(exec.exec).toHaveBeenNthCalledWith(2,
       'docker',
-      ['login', '-u', 'foo', '-p', 'bar', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
+      ['login', '-u', 'foo', '--password-stdin', 'https://111111111111.dkr.ecr.aws-region-1.amazonaws.com'],
       expect.anything());
     expect(core.saveState).toHaveBeenCalledWith('registries', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
-    expect(core.setFailed).toHaveBeenCalledWith('Could not login to registry 111111111111.dkr.ecr.aws-region-1.amazonaws.com: Some fancy error from docker login stderr');
+    expect(core.setFailed).toHaveBeenCalledWith(expect.stringContaining('Could not login to registry 111111111111.dkr.ecr.aws-region-1.amazonaws.com'));
+    expect(core.setFailed).toHaveBeenCalledWith(expect.stringContaining('Some fancy error from docker login stderr'));
     expect(exec.exec).toHaveBeenCalledTimes(2);
     expect(core.setOutput).toHaveBeenCalledTimes(2);
     expect(core.saveState).toHaveBeenCalledTimes(1);
@@ -296,7 +357,7 @@ describe('Login to ECR', () => {
     expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
     expect(exec.exec).toHaveBeenNthCalledWith(1,
       'docker',
-      ['login', '-u', 'hello', '-p', 'world', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
+      ['login', '-u', 'hello', '--password-stdin', 'https://123456789012.dkr.ecr.aws-region-1.amazonaws.com'],
       expect.anything());
     expect(core.saveState).toHaveBeenCalledTimes(0);
   });
@@ -471,7 +532,7 @@ describe('Login to ECR Public', () => {
       expect(exec.exec).toHaveBeenCalledTimes(1);
       expect(exec.exec).toHaveBeenNthCalledWith(1,
         'docker',
-        ['login', '-u', 'hello', '-p', 'world', 'public.ecr.aws'],
+        ['login', '-u', 'hello', '--password-stdin', 'public.ecr.aws'],
         expect.anything());
       expect(core.saveState).toHaveBeenCalledWith('registries', 'public.ecr.aws');
       expect(exec.exec).toHaveBeenCalledTimes(1);
@@ -498,7 +559,7 @@ describe('Login to ECR Public', () => {
       expect(core.setOutput).toHaveBeenNthCalledWith(1, 'registry', 'public.ecr.aws');
       expect(exec.exec).toHaveBeenNthCalledWith(1,
         'docker',
-        ['login', '-u', 'hello', '-p', 'world', 'public.ecr.aws'],
+        ['login', '-u', 'hello', '--password-stdin', 'public.ecr.aws'],
         expect.anything());
       expect(core.saveState).toHaveBeenNthCalledWith(1, 'registries', 'public.ecr.aws');
       expect(exec.exec).toHaveBeenCalledTimes(1);
@@ -597,7 +658,7 @@ describe('Pod Identity Support', () => {
     expect(process.env.AWS_SDK_LOAD_CONFIG).toBe('1');
     expect(exec.exec).toHaveBeenCalledWith(
       'docker',
-      ['login', '-u', 'AWS', '-p', 'token', TEST_CONSTANTS.REGISTRY_ENDPOINT],
+      ['login', '-u', 'AWS', '--password-stdin', TEST_CONSTANTS.REGISTRY_ENDPOINT],
       expect.anything()
     );
   });
@@ -616,7 +677,7 @@ describe('Pod Identity Support', () => {
     expect(process.env.AWS_SDK_LOAD_CONFIG).toBeUndefined();
     expect(exec.exec).toHaveBeenCalledWith(
       'docker',
-      ['login', '-u', 'AWS', '-p', 'token', TEST_CONSTANTS.REGISTRY_ENDPOINT],
+      ['login', '-u', 'AWS', '--password-stdin', TEST_CONSTANTS.REGISTRY_ENDPOINT],
       expect.anything()
     );
   });
@@ -636,7 +697,7 @@ describe('Pod Identity Support', () => {
     expect(process.env.AWS_SDK_LOAD_CONFIG).toBeUndefined();
     expect(exec.exec).toHaveBeenCalledWith(
       'docker',
-      ['login', '-u', 'AWS', '-p', 'token', TEST_CONSTANTS.REGISTRY_ENDPOINT],
+      ['login', '-u', 'AWS', '--password-stdin', TEST_CONSTANTS.REGISTRY_ENDPOINT],
       expect.anything()
     );
   });
@@ -664,7 +725,7 @@ describe('Pod Identity Support', () => {
     expect(process.env.AWS_SDK_LOAD_CONFIG).toBe('1');
     expect(exec.exec).toHaveBeenCalledWith(
       'docker',
-      ['login', '-u', 'AWS', '-p', 'token', TEST_CONSTANTS.REGISTRY_ENDPOINT],
+      ['login', '-u', 'AWS', '--password-stdin', TEST_CONSTANTS.REGISTRY_ENDPOINT],
       expect.anything()
     );
   });
@@ -686,7 +747,7 @@ describe('Pod Identity Support', () => {
     expect(process.env.AWS_SDK_LOAD_CONFIG).toBeUndefined();
     expect(exec.exec).toHaveBeenCalledWith(
       'docker',
-      ['login', '-u', 'AWS', '-p', 'token', TEST_CONSTANTS.REGISTRY_ENDPOINT],
+      ['login', '-u', 'AWS', '--password-stdin', TEST_CONSTANTS.REGISTRY_ENDPOINT],
       expect.anything()
     );
   });
