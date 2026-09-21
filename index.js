@@ -1,7 +1,6 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import { HttpsProxyAgent } from 'https-proxy-agent';
-import { NodeHttpHandler } from '@aws-sdk/node-http-handler';
 import { fromHttp } from '@aws-sdk/credential-providers';
 import { ECRClient, GetAuthorizationTokenCommand } from '@aws-sdk/client-ecr';
 import { ECRPUBLICClient, GetAuthorizationTokenCommand as GetAuthorizationTokenCommandPublic } from '@aws-sdk/client-ecr-public';
@@ -75,10 +74,11 @@ async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
   const ecrClient = new ECRClient({
     customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
     credentials: getCredentials(), // Added credentials setting
-    requestHandler: new NodeHttpHandler({
+    requestHandler: {
+      // Options, not an instance: the client builds the handler from the @smithy/node-http-handler it ships with.
       httpAgent: httpsProxyAgent,
       httpsAgent: httpsProxyAgent
-    }),
+    },
   });
   const command = new GetAuthorizationTokenCommand(authTokenRequest);
   const authTokenResponse = await ecrClient.send(command);
@@ -99,10 +99,11 @@ async function getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
     // Authenticating to ECR Public auth only works in us-east-1
     region: "us-east-1",
     credentials: getCredentials(),
-    requestHandler: new NodeHttpHandler({
+    requestHandler: {
+      // Options, not an instance: the client builds the handler from the @smithy/node-http-handler it ships with.
       httpAgent: httpsProxyAgent,
       httpsAgent: httpsProxyAgent
-    }),
+    },
   });
   const command = new GetAuthorizationTokenCommandPublic(authTokenRequest);
   const authTokenResponse = await ecrPublicClient.send(command);
