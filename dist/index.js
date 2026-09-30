@@ -2595,7 +2595,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.1135.0";
+var version = "3.1140.0";
 var packageInfo = {
 	version: version};
 
@@ -3768,10 +3768,10 @@ const _vSUA = "vulnerabilitySourceUpdatedAt";
 const _vUA = "vendorUpdatedAt";
 const _ve = "version";
 const n0 = "com.amazonaws.ecr";
-const _s_registry = TypeRegistry.for(_s);
+const _s_registry = new TypeRegistry(_s);
 var ECRServiceException$ = [-3, _s, "ECRServiceException", 0, [], []];
 _s_registry.registerError(ECRServiceException$, ECRServiceException);
-const n0_registry = TypeRegistry.for(n0);
+const n0_registry = new TypeRegistry(n0);
 var BlockedByOrganizationPolicyException$ = [-3, n0, _BBOPE,
     { [_e]: _c },
     [_m],
@@ -6764,6 +6764,7 @@ class ClientHttp2SessionRef {
     destroy() {
         this.refs = 0;
         if (!this.session.destroyed) {
+            this.session.setTimeout(0);
             this.session.destroy();
         }
     }
@@ -6881,9 +6882,8 @@ class NodeHttp2ConnectionManager {
         session.on("error", ensureDestroyed);
         session.on("frameError", ensureDestroyed);
         session.on("close", ensureDestroyed);
-        if (connectionConfiguration.requestTimeout) {
-            session.setTimeout(connectionConfiguration.requestTimeout, ensureDestroyed);
-        }
+        const timeout = connectionConfiguration.requestTimeout ?? 300_000;
+        session.setTimeout(timeout, ensureDestroyed);
         ref.retain();
         return ref;
     }
@@ -7090,6 +7090,9 @@ class NodeHttp2Handler {
                 resolve({ response: httpResponse });
                 if (useIsolatedSession) {
                     session.close();
+                    clientHttp2Stream.on("end", () => {
+                        ref.destroy();
+                    });
                 }
             });
             clientHttp2Stream.on("close", () => {
@@ -7100,7 +7103,11 @@ class NodeHttp2Handler {
                     this.connectionManager.release(requestContext, ref);
                 }
                 if (!fulfilled) {
-                    rejectWithDestroy(new Error("Unexpected error: http2 request did not get a response"));
+                    const error = new Error("Unexpected error: http2 request did not get a response");
+                    if (session.destroyed) {
+                        error.name = "TimeoutError";
+                    }
+                    rejectWithDestroy(error);
                 }
             });
             writeRequestBodyPromise = writeRequestBody(clientHttp2Stream, request, effectiveRequestTimeout);
@@ -12378,6 +12385,7 @@ class ClientHttp2SessionRef {
     destroy() {
         this.refs = 0;
         if (!this.session.destroyed) {
+            this.session.setTimeout(0);
             this.session.destroy();
         }
     }
@@ -12495,9 +12503,8 @@ class NodeHttp2ConnectionManager {
         session.on("error", ensureDestroyed);
         session.on("frameError", ensureDestroyed);
         session.on("close", ensureDestroyed);
-        if (connectionConfiguration.requestTimeout) {
-            session.setTimeout(connectionConfiguration.requestTimeout, ensureDestroyed);
-        }
+        const timeout = connectionConfiguration.requestTimeout ?? 300_000;
+        session.setTimeout(timeout, ensureDestroyed);
         ref.retain();
         return ref;
     }
@@ -12704,6 +12711,9 @@ class NodeHttp2Handler {
                 resolve({ response: httpResponse });
                 if (useIsolatedSession) {
                     session.close();
+                    clientHttp2Stream.on("end", () => {
+                        ref.destroy();
+                    });
                 }
             });
             clientHttp2Stream.on("close", () => {
@@ -12714,7 +12724,11 @@ class NodeHttp2Handler {
                     this.connectionManager.release(requestContext, ref);
                 }
                 if (!fulfilled) {
-                    rejectWithDestroy(new Error("Unexpected error: http2 request did not get a response"));
+                    const error = new Error("Unexpected error: http2 request did not get a response");
+                    if (session.destroyed) {
+                        error.name = "TimeoutError";
+                    }
+                    rejectWithDestroy(error);
                 }
             });
             writeRequestBodyPromise = writeRequestBody(clientHttp2Stream, request, effectiveRequestTimeout);
@@ -14194,7 +14208,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.44";
+var version = "3.997.45";
 var packageInfo = {
 	version: version};
 
@@ -14422,10 +14436,10 @@ const _m = "message";
 const _s = "smithy.ts.sdk.synthetic.com.amazonaws.cognitoidentity";
 const _se = "server";
 const n0 = "com.amazonaws.cognitoidentity";
-const _s_registry = TypeRegistry.for(_s);
+const _s_registry = new TypeRegistry(_s);
 var CognitoIdentityServiceException$ = [-3, _s, "CognitoIdentityServiceException", 0, [], []];
 _s_registry.registerError(CognitoIdentityServiceException$, CognitoIdentityServiceException);
-const n0_registry = TypeRegistry.for(n0);
+const n0_registry = new TypeRegistry(n0);
 var ExternalServiceException$ = [-3, n0, _ESE,
     { [_e]: _c, [_hE]: 400 },
     [_m],
@@ -14812,7 +14826,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.44";
+var version = "3.997.45";
 var packageInfo = {
 	version: version};
 
@@ -15036,10 +15050,10 @@ const _tO = "tokenOutput";
 const _tT = "tokenType";
 const _tt = "token_type";
 const n0 = "com.amazonaws.signin";
-const _s_registry = TypeRegistry.for(_s);
+const _s_registry = new TypeRegistry(_s);
 var SigninServiceException$ = [-3, _s, "SigninServiceException", 0, [], []];
 _s_registry.registerError(SigninServiceException$, SigninServiceException);
-const n0_registry = TypeRegistry.for(n0);
+const n0_registry = new TypeRegistry(n0);
 var AccessDeniedException$ = [-3, n0, _ADE,
     { [_e]: _c },
     [_e, _m],
@@ -15409,7 +15423,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.44";
+var version = "3.997.45";
 var packageInfo = {
 	version: version};
 
@@ -15703,10 +15717,10 @@ const _sc = "scope";
 const _se = "server";
 const _tT = "tokenType";
 const n0 = "com.amazonaws.ssooidc";
-const _s_registry = TypeRegistry.for(_s);
+const _s_registry = new TypeRegistry(_s);
 var SSOOIDCServiceException$ = [-3, _s, "SSOOIDCServiceException", 0, [], []];
 _s_registry.registerError(SSOOIDCServiceException$, SSOOIDCServiceException);
-const n0_registry = TypeRegistry.for(n0);
+const n0_registry = new TypeRegistry(n0);
 var AccessDeniedException$ = [-3, n0, _ADE,
     { [_e]: _c, [_hE]: 400 },
     [_e, _r, _ed],
@@ -16090,7 +16104,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.44";
+var version = "3.997.45";
 var packageInfo = {
 	version: version};
 
@@ -16242,10 +16256,10 @@ const _sAK = "secretAccessKey";
 const _sT = "sessionToken";
 const _xasbt = "x-amz-sso_bearer_token";
 const n0 = "com.amazonaws.sso";
-const _s_registry = TypeRegistry.for(_s);
+const _s_registry = new TypeRegistry(_s);
 var SSOServiceException$ = [-3, _s, "SSOServiceException", 0, [], []];
 _s_registry.registerError(SSOServiceException$, SSOServiceException);
-const n0_registry = TypeRegistry.for(n0);
+const n0_registry = new TypeRegistry(n0);
 var InvalidRequestException$ = [-3, n0, _IRE,
     { [_e]: _c, [_hE]: 400 },
     [_m],
@@ -16745,7 +16759,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.44";
+var version = "3.997.45";
 var packageInfo = {
 	version: version};
 
@@ -16864,6 +16878,7 @@ const _IDPRCE = "IDPRejectedClaimException";
 const _IITE = "InvalidIdentityTokenException";
 const _K = "Key";
 const _MPDE = "MalformedPolicyDocumentException";
+const _MSTS = "MinimumSessionTokenSize";
 const _P = "Policy";
 const _PA = "PolicyArns";
 const _PAr = "ProviderArn";
@@ -16883,6 +16898,8 @@ const _SFWIT = "SubjectFromWebIdentityToken";
 const _SI = "SourceIdentity";
 const _SN = "SerialNumber";
 const _ST = "SessionToken";
+const _STS = "SessionTokenSize";
+const _STU = "SessionTokenUtilization";
 const _T = "Tags";
 const _TC = "TokenCode";
 const _TTK = "TransitiveTagKeys";
@@ -16901,10 +16918,10 @@ const _pDLT = "policyDescriptorListType";
 const _s = "smithy.ts.sdk.synthetic.com.amazonaws.sts";
 const _tLT = "tagListType";
 const n0 = "com.amazonaws.sts";
-const _s_registry = TypeRegistry.for(_s);
+const _s_registry = new TypeRegistry(_s);
 var STSServiceException$ = [-3, _s, "STSServiceException", 0, [], []];
 _s_registry.registerError(STSServiceException$, STSServiceException);
-const n0_registry = TypeRegistry.for(n0);
+const n0_registry = new TypeRegistry(n0);
 var ExpiredTokenException$ = [-3, n0, _ETE,
     { [_aQE]: [`ExpiredTokenException`, 400], [_e]: _c, [_hE]: 400 },
     [_m],
@@ -16960,23 +16977,23 @@ var AssumedRoleUser$ = [3, n0, _ARU,
 ];
 var AssumeRoleRequest$ = [3, n0, _ARR,
     0,
-    [_RA, _RSN, _PA, _P, _DS, _T, _TTK, _EI, _SN, _TC, _SI, _PC],
-    [0, 0, () => policyDescriptorListType, 0, 1, () => tagListType, 64 | 0, 0, 0, 0, 0, () => ProvidedContextsListType], 2
+    [_RA, _RSN, _PA, _P, _DS, _T, _TTK, _EI, _SN, _TC, _SI, _PC, _MSTS],
+    [0, 0, () => policyDescriptorListType, 0, 1, () => tagListType, 64 | 0, 0, 0, 0, 0, () => ProvidedContextsListType, 1], 2
 ];
 var AssumeRoleResponse$ = [3, n0, _ARRs,
     0,
-    [_C, _ARU, _PPS, _SI],
-    [[() => Credentials$, 0], () => AssumedRoleUser$, 1, 0]
+    [_C, _ARU, _PPS, _SI, _STU, _STS],
+    [[() => Credentials$, 0], () => AssumedRoleUser$, 1, 0, 1, 1]
 ];
 var AssumeRoleWithWebIdentityRequest$ = [3, n0, _ARWWIR,
     0,
-    [_RA, _RSN, _WIT, _PI, _PA, _P, _DS],
-    [0, 0, [() => clientTokenType, 0], 0, () => policyDescriptorListType, 0, 1], 3
+    [_RA, _RSN, _WIT, _PI, _PA, _P, _DS, _MSTS],
+    [0, 0, [() => clientTokenType, 0], 0, () => policyDescriptorListType, 0, 1, 1], 3
 ];
 var AssumeRoleWithWebIdentityResponse$ = [3, n0, _ARWWIRs,
     0,
-    [_C, _SFWIT, _ARU, _PPS, _Pr, _Au, _SI],
-    [[() => Credentials$, 0], 0, () => AssumedRoleUser$, 1, 0, 0, 0]
+    [_C, _SFWIT, _ARU, _PPS, _Pr, _Au, _SI, _STU, _STS],
+    [[() => Credentials$, 0], 0, () => AssumedRoleUser$, 1, 0, 0, 0, 1, 1]
 ];
 var Credentials$ = [3, n0, _C,
     0,
@@ -17863,6 +17880,7 @@ class ClientHttp2SessionRef {
     destroy() {
         this.refs = 0;
         if (!this.session.destroyed) {
+            this.session.setTimeout(0);
             this.session.destroy();
         }
     }
@@ -17980,9 +17998,8 @@ class NodeHttp2ConnectionManager {
         session.on("error", ensureDestroyed);
         session.on("frameError", ensureDestroyed);
         session.on("close", ensureDestroyed);
-        if (connectionConfiguration.requestTimeout) {
-            session.setTimeout(connectionConfiguration.requestTimeout, ensureDestroyed);
-        }
+        const timeout = connectionConfiguration.requestTimeout ?? 300_000;
+        session.setTimeout(timeout, ensureDestroyed);
         ref.retain();
         return ref;
     }
@@ -18189,6 +18206,9 @@ class NodeHttp2Handler {
                 resolve({ response: httpResponse });
                 if (useIsolatedSession) {
                     session.close();
+                    clientHttp2Stream.on("end", () => {
+                        ref.destroy();
+                    });
                 }
             });
             clientHttp2Stream.on("close", () => {
@@ -18199,7 +18219,11 @@ class NodeHttp2Handler {
                     this.connectionManager.release(requestContext, ref);
                 }
                 if (!fulfilled) {
-                    rejectWithDestroy(new Error("Unexpected error: http2 request did not get a response"));
+                    const error = new Error("Unexpected error: http2 request did not get a response");
+                    if (session.destroyed) {
+                        error.name = "TimeoutError";
+                    }
+                    rejectWithDestroy(error);
                 }
             });
             writeRequestBodyPromise = writeRequestBody(clientHttp2Stream, request, effectiveRequestTimeout);
@@ -20339,25 +20363,10 @@ const loadSmithyRpcV2CborErrorCode = (output, data) => {
         if (cleanValue.indexOf(":") >= 0) {
             cleanValue = cleanValue.split(":")[0];
         }
-        if (cleanValue.indexOf("#") >= 0) {
-            cleanValue = cleanValue.split("#")[1];
-        }
         return cleanValue;
     };
     if (data["__type"] !== undefined) {
         return sanitizeErrorCode(data["__type"]);
-    }
-    let codeKey;
-    for (const key in data) {
-        if (!hasOwn(data, key))
-            continue;
-        if (key.toLowerCase() === "code") {
-            codeKey = key;
-            break;
-        }
-    }
-    if (codeKey && data[codeKey] !== undefined) {
-        return sanitizeErrorCode(data[codeKey]);
     }
 };
 const checkCborResponse = (response) => {
@@ -21715,37 +21724,37 @@ class SmithyRpcV2CborProtocol extends RpcProtocol {
         return super.deserializeResponse(operationSchema, context, response);
     }
     async handleError(operationSchema, context, response, dataObject, metadata) {
-        const errorName = loadSmithyRpcV2CborErrorCode(response, dataObject) ?? "Unknown";
+        const errorIdentifier = loadSmithyRpcV2CborErrorCode(response, dataObject) ?? "Unknown";
+        const preferredNamespaces = ["*"];
+        const { defaultNamespace } = this.options;
+        preferredNamespaces.unshift(defaultNamespace);
+        const [namespace, errorShapeName] = (() => {
+            if (errorIdentifier.includes("#")) {
+                return errorIdentifier.split("#");
+            }
+            return [undefined, errorIdentifier];
+        })();
+        if (namespace) {
+            preferredNamespaces.unshift(namespace);
+        }
         const errorMetadata = {
             $metadata: metadata,
-            $fault: response.statusCode <= 500 ? "client" : "server",
+            $fault: response.statusCode < 500 ? "client" : "server",
         };
-        let namespace = this.options.defaultNamespace;
-        if (errorName.includes("#")) {
-            [namespace] = errorName.split("#");
+        const preferredRegistries = [this.compositeErrorRegistry];
+        if (namespace) {
+            preferredRegistries.push(TypeRegistry.for(namespace));
         }
-        const registry = this.compositeErrorRegistry;
-        const nsRegistry = TypeRegistry.for(namespace);
-        registry.copyFrom(nsRegistry);
-        let errorSchema;
-        try {
-            errorSchema = registry.getSchema(errorName);
-        }
-        catch (ignored) {
+        preferredRegistries.push(TypeRegistry.for(defaultNamespace));
+        const [errorSchema, ErrorCtor, errorMode] = this.resolveError(errorShapeName, preferredNamespaces, preferredRegistries);
+        if (errorMode === "native" || errorMode === "synthetic") {
             if (dataObject.Message) {
                 dataObject.message = dataObject.Message;
             }
-            const syntheticRegistry = TypeRegistry.for("smithy.ts.sdk.synthetic." + namespace);
-            registry.copyFrom(syntheticRegistry);
-            const baseExceptionSchema = registry.getBaseException();
-            if (baseExceptionSchema) {
-                const ErrorCtor = registry.getErrorCtor(baseExceptionSchema);
-                throw Object.assign(new ErrorCtor({ name: errorName }), errorMetadata, dataObject);
-            }
-            throw Object.assign(new Error(errorName), errorMetadata, dataObject);
+            const error = errorMode === "synthetic" ? new ErrorCtor({ name: errorShapeName }) : new Error(errorShapeName);
+            throw Object.assign(error, errorMetadata, dataObject);
         }
         const ns = NormalizedSchema.of(errorSchema);
-        const ErrorCtor = registry.getErrorCtor(errorSchema);
         const message = dataObject.message ?? dataObject.Message ?? "Unknown";
         const exception = new ErrorCtor({});
         const output = {};
@@ -23183,20 +23192,27 @@ class Command {
         }
         const stack = clientStack.concat(this.middlewareStack);
         const { logger } = configuration;
+        const additionalSmithyContext = additionalContext[SMITHY_CONTEXT_KEY];
         const handlerExecutionContext = {
             logger,
             clientName,
             commandName,
             inputFilterSensitiveLog,
             outputFilterSensitiveLog,
+            ...additionalContext,
             [SMITHY_CONTEXT_KEY]: {
+                ...additionalSmithyContext,
                 commandInstance: this,
                 ...smithyContext,
+                ...(options?.metricsRecorder === undefined ? {} : { metricsRecorder: options.metricsRecorder }),
             },
-            ...additionalContext,
         };
         const { requestHandler } = configuration;
         let requestOptions = options ?? {};
+        if (requestOptions.metricsRecorder) {
+            requestOptions = { ...requestOptions };
+            delete requestOptions.metricsRecorder;
+        }
         if (smithyContext.eventStream) {
             requestOptions = {
                 isEventStream: true,
@@ -23379,10 +23395,25 @@ class ServiceException extends Error {
             return ServiceException.isInstance(instance);
         }
         if (ServiceException.isInstance(instance)) {
-            if (candidate.name && this.name) {
-                return this.prototype.isPrototypeOf(instance) || candidate.name === this.name;
+            if (this.prototype.isPrototypeOf(instance)) {
+                return true;
             }
-            return this.prototype.isPrototypeOf(instance);
+            const targetName = this.name;
+            if (!targetName || !candidate.name) {
+                return false;
+            }
+            if (candidate.name === targetName) {
+                return true;
+            }
+            let proto = Object.getPrototypeOf(candidate);
+            while (proto && proto !== Object.prototype) {
+                const ctorName = proto.constructor?.name;
+                if (ctorName && ctorName !== "Error" && ctorName === targetName) {
+                    return true;
+                }
+                proto = Object.getPrototypeOf(proto);
+            }
+            return false;
         }
         return false;
     }
@@ -26397,7 +26428,7 @@ class HttpProtocol extends SerdeContext {
     constructor(options) {
         super();
         this.options = options;
-        this.compositeErrorRegistry = TypeRegistry.for(options.defaultNamespace);
+        this.compositeErrorRegistry = new TypeRegistry(options.defaultNamespace);
         for (const etr of options.errorTypeRegistries ?? []) {
             this.compositeErrorRegistry.copyFrom(etr);
         }
@@ -26492,6 +26523,47 @@ class HttpProtocol extends SerdeContext {
             cfId: output.headers["x-amz-cf-id"],
         };
     }
+    resolveError(name, namespaces, registries) {
+        const defaultErrorSchema = [-3, "", "Error", 0, [], [], 0];
+        let schema;
+        for (const registry of registries) {
+            for (const ns of namespaces) {
+                try {
+                    if (ns === "*") {
+                        schema = registry.getSchema(name);
+                    }
+                    else {
+                        schema = registry.getSchema(ns + "#" + name);
+                    }
+                    const errorCtor = registry.getErrorCtor(schema);
+                    if (errorCtor) {
+                        return [schema, errorCtor, "modeled"];
+                    }
+                    else {
+                        const syntheticErrorSchema = registry.getBaseException();
+                        if (syntheticErrorSchema) {
+                            const syntheticErrorCtor = registry.getErrorCtor(syntheticErrorSchema);
+                            if (syntheticErrorCtor) {
+                                return [schema, syntheticErrorCtor, "synthetic"];
+                            }
+                        }
+                    }
+                }
+                catch (ignored) {
+                }
+            }
+        }
+        for (const registry of registries) {
+            const syntheticErrorSchema = registry.getBaseException();
+            if (syntheticErrorSchema) {
+                const syntheticErrorCtor = registry.getErrorCtor(syntheticErrorSchema);
+                if (syntheticErrorCtor) {
+                    return [syntheticErrorSchema, syntheticErrorCtor, "synthetic"];
+                }
+            }
+        }
+        return [defaultErrorSchema, Error, "native"];
+    }
     async serializeEventStream({ eventStream, requestSchema, initialRequest, }) {
         const eventStreamSerde = await this.loadEventStreamCapability();
         return eventStreamSerde.serializeEventStream({
@@ -26520,13 +26592,6 @@ class HttpProtocol extends SerdeContext {
             compositeErrorRegistry: this.compositeErrorRegistry,
         });
     }
-    resolveEventStreamMarshaller(importedProvider) {
-        const context = this.serdeContext;
-        if (context.eventStreamMarshaller) {
-            return context.eventStreamMarshaller;
-        }
-        return importedProvider(this.serdeContext);
-    }
     getDefaultContentType() {
         throw new Error(`@smithy/core/protocols - ${this.constructor.name} getDefaultContentType() implementation missing.`);
     }
@@ -26539,6 +26604,13 @@ class HttpProtocol extends SerdeContext {
             throw new Error("@smithy/core - HttpProtocol: eventStreamMarshaller missing in serdeContext.");
         }
         return context.eventStreamMarshaller;
+    }
+    resolveEventStreamMarshaller(importedProvider) {
+        const context = this.serdeContext;
+        if (context.eventStreamMarshaller) {
+            return context.eventStreamMarshaller;
+        }
+        return importedProvider(this.serdeContext);
     }
 }
 
@@ -27480,16 +27552,17 @@ const isBrowserNetworkError = (error) => {
 const isThrottlingError = (error) => error.$metadata?.httpStatusCode === 429 ||
     THROTTLING_ERROR_CODES.includes(error.name) ||
     error.$retryable?.throttling == true;
-const isTransientError = (error, depth = 0) => isRetryableByTrait(error) ||
-    isClockSkewCorrectedError(error) ||
-    (error.name === "InvalidSignatureException" && error.message?.includes("Signature expired")) ||
-    TRANSIENT_ERROR_CODES.includes(error.name) ||
-    NODEJS_TIMEOUT_ERROR_CODES.includes(error?.code || "") ||
-    NODEJS_NETWORK_ERROR_CODES.includes(error?.code || "") ||
-    TRANSIENT_ERROR_STATUS_CODES.includes(error.$metadata?.httpStatusCode || 0) ||
-    isBrowserNetworkError(error) ||
-    isNodeJsHttp2TransientError(error) ||
-    (error.cause !== undefined && depth <= 10 && isTransientError(error.cause, depth + 1));
+const isTransientError = (error, depth = 0) => error?.name !== "AbortError" &&
+    (isRetryableByTrait(error) ||
+        isClockSkewCorrectedError(error) ||
+        (error.name === "InvalidSignatureException" && error.message?.includes("Signature expired")) ||
+        TRANSIENT_ERROR_CODES.includes(error.name) ||
+        NODEJS_TIMEOUT_ERROR_CODES.includes(error?.code || "") ||
+        NODEJS_NETWORK_ERROR_CODES.includes(error?.code || "") ||
+        TRANSIENT_ERROR_STATUS_CODES.includes(error.$metadata?.httpStatusCode || 0) ||
+        isBrowserNetworkError(error) ||
+        isNodeJsHttp2TransientError(error) ||
+        (error.cause !== undefined && depth <= 10 && isTransientError(error.cause, depth + 1)));
 const isServerError = (error) => {
     if (error.$metadata?.httpStatusCode !== undefined) {
         const statusCode = error.$metadata.httpStatusCode;
@@ -28856,12 +28929,12 @@ class TypeRegistry {
         this.namespace = namespace;
         this.schemas = schemas;
         this.exceptions = exceptions;
+        if (!TypeRegistry.registries.has(namespace)) {
+            TypeRegistry.registries.set(namespace, this);
+        }
     }
     static for(namespace) {
-        if (!TypeRegistry.registries.has(namespace)) {
-            TypeRegistry.registries.set(namespace, new TypeRegistry(namespace));
-        }
-        return TypeRegistry.registries.get(namespace);
+        return TypeRegistry.registries.get(namespace) ?? new TypeRegistry(namespace);
     }
     copyFrom(other) {
         const { schemas, exceptions } = this;
@@ -28879,7 +28952,9 @@ class TypeRegistry {
     register(shapeId, schema) {
         const qualifiedName = this.normalizeShapeId(shapeId);
         for (const r of [this, TypeRegistry.for(qualifiedName.split("#")[0])]) {
-            r.schemas.set(qualifiedName, schema);
+            if (!r.schemas.has(qualifiedName)) {
+                r.schemas.set(qualifiedName, schema);
+            }
         }
     }
     getSchema(shapeId) {
@@ -28904,9 +28979,12 @@ class TypeRegistry {
     registerError(es, ctor) {
         const $error = es;
         const ns = $error[1];
+        const qualifiedName = ns + "#" + $error[2];
         for (const r of [this, TypeRegistry.for(ns)]) {
-            r.schemas.set(ns + "#" + $error[2], $error);
-            r.exceptions.set($error, ctor);
+            if (!r.schemas.has(qualifiedName) && !r.exceptions.has($error)) {
+                r.schemas.set(qualifiedName, $error);
+                r.exceptions.set($error, ctor);
+            }
         }
     }
     getErrorCtor(es) {
@@ -30337,6 +30415,8 @@ const getAwsChunkedEncodingStream$1 = (readableStream, options) => {
         checksumLocationName !== undefined &&
         streamHasher !== undefined;
     const digest = checksumRequired ? streamHasher(checksumAlgorithmFn, readableStream) : undefined;
+    Promise.resolve(digest).catch(() => {
+    });
     const reader = readableStream.getReader();
     return new ReadableStream({
         async pull(controller) {
@@ -30369,8 +30449,12 @@ function getAwsChunkedEncodingStream(stream, options) {
         checksumLocationName !== undefined &&
         streamHasher !== undefined;
     const digest = checksumRequired ? streamHasher(checksumAlgorithmFn, readable) : undefined;
+    Promise.resolve(digest).catch(() => {
+    });
     const awsChunkedEncodingStream = new Readable({
-        read: () => { },
+        read() {
+            readable.resume();
+        },
     });
     readable.on("data", (data) => {
         const length = bodyLengthChecker(data) || 0;
@@ -30379,16 +30463,27 @@ function getAwsChunkedEncodingStream(stream, options) {
         }
         awsChunkedEncodingStream.push(`${length.toString(16)}\r\n`);
         awsChunkedEncodingStream.push(data);
-        awsChunkedEncodingStream.push("\r\n");
-    });
-    readable.on("end", async () => {
-        awsChunkedEncodingStream.push(`0\r\n`);
-        if (checksumRequired) {
-            const checksum = base64Encoder(await digest);
-            awsChunkedEncodingStream.push(`${checksumLocationName}:${checksum}\r\n`);
-            awsChunkedEncodingStream.push(`\r\n`);
+        if (!awsChunkedEncodingStream.push("\r\n")) {
+            readable.pause();
         }
-        awsChunkedEncodingStream.push(null);
+    });
+    readable.on("error", (err) => {
+        awsChunkedEncodingStream.destroy(err);
+    });
+    readable.pause();
+    readable.on("end", async () => {
+        try {
+            awsChunkedEncodingStream.push(`0\r\n`);
+            if (checksumRequired) {
+                const checksum = base64Encoder(await digest);
+                awsChunkedEncodingStream.push(`${checksumLocationName}:${checksum}\r\n`);
+                awsChunkedEncodingStream.push(`\r\n`);
+            }
+            awsChunkedEncodingStream.push(null);
+        }
+        catch (err) {
+            awsChunkedEncodingStream.destroy(err);
+        }
     });
     return awsChunkedEncodingStream;
 }
@@ -32290,14 +32385,16 @@ exports.buildQueryString = buildQueryString;
 /***/ 5118:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-const { fromUtf8, fromHex, toHex, toUint8Array, isArrayBuffer } = __nccwpck_require__(2430);
+const { hasOwn, fromUtf8, fromHex, toHex, toUint8Array, isArrayBuffer } = __nccwpck_require__(2430);
 const { normalizeProvider } = __nccwpck_require__(2658);
 const { escapeUri, HttpRequest } = __nccwpck_require__(3422);
 
 class HeaderFormatter {
     format(headers) {
         const chunks = [];
-        for (const headerName of Object.keys(headers)) {
+        for (const headerName in headers) {
+            if (!hasOwn(headers, headerName))
+                continue;
             const bytes = fromUtf8(headerName);
             chunks.push(Uint8Array.from([bytes.byteLength]), bytes, this.formatHeaderValue(headers[headerName]));
         }
@@ -32312,27 +32409,27 @@ class HeaderFormatter {
     formatHeaderValue(header) {
         switch (header.type) {
             case "boolean":
-                return Uint8Array.from([header.value ? HEADER_VALUE_TYPE.boolTrue : HEADER_VALUE_TYPE.boolFalse]);
+                return Uint8Array.from([header.value ? 0 : 1]);
             case "byte":
-                return Uint8Array.from([HEADER_VALUE_TYPE.byte, header.value]);
+                return Uint8Array.from([2, header.value]);
             case "short":
                 const shortView = new DataView(new ArrayBuffer(3));
-                shortView.setUint8(0, HEADER_VALUE_TYPE.short);
+                shortView.setUint8(0, 3);
                 shortView.setInt16(1, header.value, false);
                 return new Uint8Array(shortView.buffer);
             case "integer":
                 const intView = new DataView(new ArrayBuffer(5));
-                intView.setUint8(0, HEADER_VALUE_TYPE.integer);
+                intView.setUint8(0, 4);
                 intView.setInt32(1, header.value, false);
                 return new Uint8Array(intView.buffer);
             case "long":
                 const longBytes = new Uint8Array(9);
-                longBytes[0] = HEADER_VALUE_TYPE.long;
+                longBytes[0] = 5;
                 longBytes.set(header.value.bytes, 1);
                 return longBytes;
             case "binary":
                 const binView = new DataView(new ArrayBuffer(3 + header.value.byteLength));
-                binView.setUint8(0, HEADER_VALUE_TYPE.byteArray);
+                binView.setUint8(0, 6);
                 binView.setUint16(1, header.value.byteLength, false);
                 const binBytes = new Uint8Array(binView.buffer);
                 binBytes.set(header.value, 3);
@@ -32340,14 +32437,14 @@ class HeaderFormatter {
             case "string":
                 const utf8Bytes = fromUtf8(header.value);
                 const strView = new DataView(new ArrayBuffer(3 + utf8Bytes.byteLength));
-                strView.setUint8(0, HEADER_VALUE_TYPE.string);
+                strView.setUint8(0, 7);
                 strView.setUint16(1, utf8Bytes.byteLength, false);
                 const strBytes = new Uint8Array(strView.buffer);
                 strBytes.set(utf8Bytes, 3);
                 return strBytes;
             case "timestamp":
                 const tsBytes = new Uint8Array(9);
-                tsBytes[0] = HEADER_VALUE_TYPE.timestamp;
+                tsBytes[0] = 8;
                 tsBytes.set(Int64.fromNumber(header.value.valueOf()).bytes, 1);
                 return tsBytes;
             case "uuid":
@@ -32355,7 +32452,7 @@ class HeaderFormatter {
                     throw new Error(`Invalid UUID received: ${header.value}`);
                 }
                 const uuidBytes = new Uint8Array(17);
-                uuidBytes[0] = HEADER_VALUE_TYPE.uuid;
+                uuidBytes[0] = 9;
                 uuidBytes.set(fromHex(header.value.replace(/-/g, "")), 1);
                 return uuidBytes;
         }
@@ -32466,7 +32563,9 @@ const MAX_PRESIGNED_TTL = 60 * 60 * 24 * 7;
 const getCanonicalQuery = ({ query = {} }) => {
     const keys = [];
     const serialized = {};
-    for (const key of Object.keys(query)) {
+    for (const key in query) {
+        if (!hasOwn(query, key))
+            continue;
         if (key.toLowerCase() === SIGNATURE_HEADER) {
             continue;
         }
@@ -32627,13 +32726,18 @@ const getCanonicalHeaders = ({ headers }, unsignableHeaders, signableHeaders) =>
                 continue;
             }
         }
-        canonical[canonicalHeaderName] = headers[headerName].trim().replace(/\s+/g, " ");
+        canonical[canonicalHeaderName] = headers[headerName]
+            .replace(/[\r\n]/g, " ")
+            .replace(/[ \t]+/g, " ")
+            .replace(/^ | $/g, "");
     }
     return canonical;
 };
 
 const getPayloadHash = async ({ headers, body }, hashConstructor) => {
-    for (const headerName of Object.keys(headers)) {
+    for (const headerName in headers) {
+        if (!hasOwn(headers, headerName))
+            continue;
         if (headerName.toLowerCase() === SHA256_HEADER) {
             return headers[headerName];
         }
@@ -32651,7 +32755,9 @@ const getPayloadHash = async ({ headers, body }, hashConstructor) => {
 
 const hasHeader = (soughtHeader, headers) => {
     soughtHeader = soughtHeader.toLowerCase();
-    for (const headerName of Object.keys(headers)) {
+    for (const headerName in headers) {
+        if (!hasOwn(headers, headerName))
+            continue;
         if (soughtHeader === headerName.toLowerCase()) {
             return true;
         }
@@ -32661,7 +32767,9 @@ const hasHeader = (soughtHeader, headers) => {
 
 const moveHeadersToQuery = (request, options = {}) => {
     const { headers, query = {} } = HttpRequest.clone(request);
-    for (const name of Object.keys(headers)) {
+    for (const name in headers) {
+        if (!hasOwn(headers, name))
+            continue;
         const lname = name.toLowerCase();
         if ((lname.slice(0, 6) === "x-amz-" && !options.unhoistableHeaders?.has(lname)) ||
             options.hoistableHeaders?.has(lname)) {
@@ -32678,7 +32786,9 @@ const moveHeadersToQuery = (request, options = {}) => {
 
 const prepareRequest = (request) => {
     request = HttpRequest.clone(request);
-    for (const headerName of Object.keys(request.headers)) {
+    for (const headerName in request.headers) {
+        if (!hasOwn(request.headers, headerName))
+            continue;
         if (GENERATED_HEADERS.indexOf(headerName.toLowerCase()) > -1) {
             delete request.headers[headerName];
         }
