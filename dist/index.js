@@ -2602,7 +2602,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.1145.0";
+var version = "3.1148.0";
 var packageInfo = {
 	version: version};
 
@@ -2686,6 +2686,7 @@ const defaultEndpointResolver = (endpointParams, context = {}) => {
 customEndpointFunctions.aws = awsEndpointFunctions;
 
 class ECRServiceException extends ServiceException {
+    static shapeId = "smithy.ts.sdk.synthetic.com.amazonaws.ecr#ECRServiceException";
     constructor(options) {
         super(options);
         Object.setPrototypeOf(this, ECRServiceException.prototype);
@@ -2693,6 +2694,7 @@ class ECRServiceException extends ServiceException {
 }
 
 class InvalidParameterException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#InvalidParameterException";
     name = "InvalidParameterException";
     $fault = "client";
     constructor(opts) {
@@ -2705,6 +2707,7 @@ class InvalidParameterException extends ECRServiceException {
     }
 }
 class RepositoryNotFoundException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#RepositoryNotFoundException";
     name = "RepositoryNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -2717,6 +2720,7 @@ class RepositoryNotFoundException extends ECRServiceException {
     }
 }
 class ServerException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#ServerException";
     name = "ServerException";
     $fault = "server";
     constructor(opts) {
@@ -2729,6 +2733,7 @@ class ServerException extends ECRServiceException {
     }
 }
 class LimitExceededException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#LimitExceededException";
     name = "LimitExceededException";
     $fault = "client";
     constructor(opts) {
@@ -2741,6 +2746,7 @@ class LimitExceededException extends ECRServiceException {
     }
 }
 class UnableToGetUpstreamImageException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#UnableToGetUpstreamImageException";
     name = "UnableToGetUpstreamImageException";
     $fault = "client";
     constructor(opts) {
@@ -2753,6 +2759,7 @@ class UnableToGetUpstreamImageException extends ECRServiceException {
     }
 }
 class ValidationException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#ValidationException";
     name = "ValidationException";
     $fault = "client";
     constructor(opts) {
@@ -2765,6 +2772,7 @@ class ValidationException extends ECRServiceException {
     }
 }
 class EmptyUploadException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#EmptyUploadException";
     name = "EmptyUploadException";
     $fault = "client";
     constructor(opts) {
@@ -2777,6 +2785,7 @@ class EmptyUploadException extends ECRServiceException {
     }
 }
 class InvalidLayerException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#InvalidLayerException";
     name = "InvalidLayerException";
     $fault = "client";
     constructor(opts) {
@@ -2789,6 +2798,7 @@ class InvalidLayerException extends ECRServiceException {
     }
 }
 class KmsException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#KmsException";
     name = "KmsException";
     $fault = "client";
     kmsError;
@@ -2803,6 +2813,7 @@ class KmsException extends ECRServiceException {
     }
 }
 class LayerAlreadyExistsException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#LayerAlreadyExistsException";
     name = "LayerAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -2815,6 +2826,7 @@ class LayerAlreadyExistsException extends ECRServiceException {
     }
 }
 class LayerPartTooSmallException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#LayerPartTooSmallException";
     name = "LayerPartTooSmallException";
     $fault = "client";
     constructor(opts) {
@@ -2827,6 +2839,7 @@ class LayerPartTooSmallException extends ECRServiceException {
     }
 }
 class UploadNotFoundException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#UploadNotFoundException";
     name = "UploadNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -2839,6 +2852,7 @@ class UploadNotFoundException extends ECRServiceException {
     }
 }
 class PullThroughCacheRuleAlreadyExistsException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#PullThroughCacheRuleAlreadyExistsException";
     name = "PullThroughCacheRuleAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -2851,6 +2865,7 @@ class PullThroughCacheRuleAlreadyExistsException extends ECRServiceException {
     }
 }
 class SecretNotFoundException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#SecretNotFoundException";
     name = "SecretNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -2863,6 +2878,7 @@ class SecretNotFoundException extends ECRServiceException {
     }
 }
 class UnableToAccessSecretException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#UnableToAccessSecretException";
     name = "UnableToAccessSecretException";
     $fault = "client";
     constructor(opts) {
@@ -2875,6 +2891,7 @@ class UnableToAccessSecretException extends ECRServiceException {
     }
 }
 class UnableToDecryptSecretValueException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#UnableToDecryptSecretValueException";
     name = "UnableToDecryptSecretValueException";
     $fault = "client";
     constructor(opts) {
@@ -2887,6 +2904,7 @@ class UnableToDecryptSecretValueException extends ECRServiceException {
     }
 }
 class UnsupportedUpstreamRegistryException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#UnsupportedUpstreamRegistryException";
     name = "UnsupportedUpstreamRegistryException";
     $fault = "client";
     constructor(opts) {
@@ -2899,6 +2917,7 @@ class UnsupportedUpstreamRegistryException extends ECRServiceException {
     }
 }
 class InvalidTagParameterException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#InvalidTagParameterException";
     name = "InvalidTagParameterException";
     $fault = "client";
     constructor(opts) {
@@ -2911,6 +2930,7 @@ class InvalidTagParameterException extends ECRServiceException {
     }
 }
 class RepositoryAlreadyExistsException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#RepositoryAlreadyExistsException";
     name = "RepositoryAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -2923,6 +2943,7 @@ class RepositoryAlreadyExistsException extends ECRServiceException {
     }
 }
 class TooManyTagsException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#TooManyTagsException";
     name = "TooManyTagsException";
     $fault = "client";
     constructor(opts) {
@@ -2935,6 +2956,7 @@ class TooManyTagsException extends ECRServiceException {
     }
 }
 class TemplateAlreadyExistsException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#TemplateAlreadyExistsException";
     name = "TemplateAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -2947,6 +2969,7 @@ class TemplateAlreadyExistsException extends ECRServiceException {
     }
 }
 class LifecyclePolicyNotFoundException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#LifecyclePolicyNotFoundException";
     name = "LifecyclePolicyNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -2959,6 +2982,7 @@ class LifecyclePolicyNotFoundException extends ECRServiceException {
     }
 }
 class PullThroughCacheRuleNotFoundException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#PullThroughCacheRuleNotFoundException";
     name = "PullThroughCacheRuleNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -2971,6 +2995,7 @@ class PullThroughCacheRuleNotFoundException extends ECRServiceException {
     }
 }
 class RegistryPolicyNotFoundException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#RegistryPolicyNotFoundException";
     name = "RegistryPolicyNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -2983,6 +3008,7 @@ class RegistryPolicyNotFoundException extends ECRServiceException {
     }
 }
 class RepositoryNotEmptyException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#RepositoryNotEmptyException";
     name = "RepositoryNotEmptyException";
     $fault = "client";
     constructor(opts) {
@@ -2995,6 +3021,7 @@ class RepositoryNotEmptyException extends ECRServiceException {
     }
 }
 class TemplateNotFoundException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#TemplateNotFoundException";
     name = "TemplateNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -3007,6 +3034,7 @@ class TemplateNotFoundException extends ECRServiceException {
     }
 }
 class RepositoryPolicyNotFoundException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#RepositoryPolicyNotFoundException";
     name = "RepositoryPolicyNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -3019,6 +3047,7 @@ class RepositoryPolicyNotFoundException extends ECRServiceException {
     }
 }
 class SigningConfigurationNotFoundException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#SigningConfigurationNotFoundException";
     name = "SigningConfigurationNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -3031,6 +3060,7 @@ class SigningConfigurationNotFoundException extends ECRServiceException {
     }
 }
 class ExclusionNotFoundException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#ExclusionNotFoundException";
     name = "ExclusionNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -3043,6 +3073,7 @@ class ExclusionNotFoundException extends ECRServiceException {
     }
 }
 class ImageNotFoundException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#ImageNotFoundException";
     name = "ImageNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -3055,6 +3086,7 @@ class ImageNotFoundException extends ECRServiceException {
     }
 }
 class ScanNotFoundException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#ScanNotFoundException";
     name = "ScanNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -3067,6 +3099,7 @@ class ScanNotFoundException extends ECRServiceException {
     }
 }
 class LayerInaccessibleException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#LayerInaccessibleException";
     name = "LayerInaccessibleException";
     $fault = "client";
     constructor(opts) {
@@ -3079,6 +3112,7 @@ class LayerInaccessibleException extends ECRServiceException {
     }
 }
 class LayersNotFoundException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#LayersNotFoundException";
     name = "LayersNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -3091,6 +3125,7 @@ class LayersNotFoundException extends ECRServiceException {
     }
 }
 class UnableToGetUpstreamLayerException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#UnableToGetUpstreamLayerException";
     name = "UnableToGetUpstreamLayerException";
     $fault = "client";
     constructor(opts) {
@@ -3103,6 +3138,7 @@ class UnableToGetUpstreamLayerException extends ECRServiceException {
     }
 }
 class LifecyclePolicyPreviewNotFoundException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#LifecyclePolicyPreviewNotFoundException";
     name = "LifecyclePolicyPreviewNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -3115,6 +3151,7 @@ class LifecyclePolicyPreviewNotFoundException extends ECRServiceException {
     }
 }
 class UnableToListUpstreamImageReferrersException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#UnableToListUpstreamImageReferrersException";
     name = "UnableToListUpstreamImageReferrersException";
     $fault = "client";
     constructor(opts) {
@@ -3127,6 +3164,7 @@ class UnableToListUpstreamImageReferrersException extends ECRServiceException {
     }
 }
 class ImageAlreadyExistsException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#ImageAlreadyExistsException";
     name = "ImageAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -3139,6 +3177,7 @@ class ImageAlreadyExistsException extends ECRServiceException {
     }
 }
 class ImageDigestDoesNotMatchException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#ImageDigestDoesNotMatchException";
     name = "ImageDigestDoesNotMatchException";
     $fault = "client";
     constructor(opts) {
@@ -3151,6 +3190,7 @@ class ImageDigestDoesNotMatchException extends ECRServiceException {
     }
 }
 class ImageTagAlreadyExistsException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#ImageTagAlreadyExistsException";
     name = "ImageTagAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -3163,6 +3203,7 @@ class ImageTagAlreadyExistsException extends ECRServiceException {
     }
 }
 class ReferencedImagesNotFoundException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#ReferencedImagesNotFoundException";
     name = "ReferencedImagesNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -3175,6 +3216,7 @@ class ReferencedImagesNotFoundException extends ECRServiceException {
     }
 }
 class BlockedByOrganizationPolicyException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#BlockedByOrganizationPolicyException";
     name = "BlockedByOrganizationPolicyException";
     $fault = "client";
     constructor(opts) {
@@ -3187,6 +3229,7 @@ class BlockedByOrganizationPolicyException extends ECRServiceException {
     }
 }
 class ExclusionAlreadyExistsException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#ExclusionAlreadyExistsException";
     name = "ExclusionAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -3199,6 +3242,7 @@ class ExclusionAlreadyExistsException extends ECRServiceException {
     }
 }
 class ImageArchivedException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#ImageArchivedException";
     name = "ImageArchivedException";
     $fault = "client";
     constructor(opts) {
@@ -3211,6 +3255,7 @@ class ImageArchivedException extends ECRServiceException {
     }
 }
 class UnsupportedImageTypeException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#UnsupportedImageTypeException";
     name = "UnsupportedImageTypeException";
     $fault = "client";
     constructor(opts) {
@@ -3223,6 +3268,7 @@ class UnsupportedImageTypeException extends ECRServiceException {
     }
 }
 class LifecyclePolicyPreviewInProgressException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#LifecyclePolicyPreviewInProgressException";
     name = "LifecyclePolicyPreviewInProgressException";
     $fault = "client";
     constructor(opts) {
@@ -3235,6 +3281,7 @@ class LifecyclePolicyPreviewInProgressException extends ECRServiceException {
     }
 }
 class ImageStorageClassUpdateNotSupportedException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#ImageStorageClassUpdateNotSupportedException";
     name = "ImageStorageClassUpdateNotSupportedException";
     $fault = "client";
     constructor(opts) {
@@ -3247,6 +3294,7 @@ class ImageStorageClassUpdateNotSupportedException extends ECRServiceException {
     }
 }
 class InvalidLayerPartException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#InvalidLayerPartException";
     name = "InvalidLayerPartException";
     $fault = "client";
     registryId;
@@ -14215,7 +14263,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.45";
+var version = "3.997.46";
 var packageInfo = {
 	version: version};
 
@@ -14293,6 +14341,7 @@ const defaultEndpointResolver = (endpointParams, context = {}) => {
 customEndpointFunctions.aws = awsEndpointFunctions;
 
 class CognitoIdentityServiceException extends ServiceException {
+    static shapeId = "smithy.ts.sdk.synthetic.com.amazonaws.cognitoidentity#CognitoIdentityServiceException";
     constructor(options) {
         super(options);
         Object.setPrototypeOf(this, CognitoIdentityServiceException.prototype);
@@ -14300,6 +14349,7 @@ class CognitoIdentityServiceException extends ServiceException {
 }
 
 class ExternalServiceException extends CognitoIdentityServiceException {
+    static shapeId = "com.amazonaws.cognitoidentity#ExternalServiceException";
     name = "ExternalServiceException";
     $fault = "client";
     constructor(opts) {
@@ -14312,6 +14362,7 @@ class ExternalServiceException extends CognitoIdentityServiceException {
     }
 }
 class InternalErrorException extends CognitoIdentityServiceException {
+    static shapeId = "com.amazonaws.cognitoidentity#InternalErrorException";
     name = "InternalErrorException";
     $fault = "server";
     constructor(opts) {
@@ -14324,6 +14375,7 @@ class InternalErrorException extends CognitoIdentityServiceException {
     }
 }
 class InvalidIdentityPoolConfigurationException extends CognitoIdentityServiceException {
+    static shapeId = "com.amazonaws.cognitoidentity#InvalidIdentityPoolConfigurationException";
     name = "InvalidIdentityPoolConfigurationException";
     $fault = "client";
     constructor(opts) {
@@ -14336,6 +14388,7 @@ class InvalidIdentityPoolConfigurationException extends CognitoIdentityServiceEx
     }
 }
 class InvalidParameterException extends CognitoIdentityServiceException {
+    static shapeId = "com.amazonaws.cognitoidentity#InvalidParameterException";
     name = "InvalidParameterException";
     $fault = "client";
     constructor(opts) {
@@ -14348,6 +14401,7 @@ class InvalidParameterException extends CognitoIdentityServiceException {
     }
 }
 class NotAuthorizedException extends CognitoIdentityServiceException {
+    static shapeId = "com.amazonaws.cognitoidentity#NotAuthorizedException";
     name = "NotAuthorizedException";
     $fault = "client";
     constructor(opts) {
@@ -14360,6 +14414,7 @@ class NotAuthorizedException extends CognitoIdentityServiceException {
     }
 }
 class ResourceConflictException extends CognitoIdentityServiceException {
+    static shapeId = "com.amazonaws.cognitoidentity#ResourceConflictException";
     name = "ResourceConflictException";
     $fault = "client";
     constructor(opts) {
@@ -14372,6 +14427,7 @@ class ResourceConflictException extends CognitoIdentityServiceException {
     }
 }
 class ResourceNotFoundException extends CognitoIdentityServiceException {
+    static shapeId = "com.amazonaws.cognitoidentity#ResourceNotFoundException";
     name = "ResourceNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -14384,6 +14440,7 @@ class ResourceNotFoundException extends CognitoIdentityServiceException {
     }
 }
 class TooManyRequestsException extends CognitoIdentityServiceException {
+    static shapeId = "com.amazonaws.cognitoidentity#TooManyRequestsException";
     name = "TooManyRequestsException";
     $fault = "client";
     constructor(opts) {
@@ -14396,6 +14453,7 @@ class TooManyRequestsException extends CognitoIdentityServiceException {
     }
 }
 class LimitExceededException extends CognitoIdentityServiceException {
+    static shapeId = "com.amazonaws.cognitoidentity#LimitExceededException";
     name = "LimitExceededException";
     $fault = "client";
     constructor(opts) {
@@ -14833,7 +14891,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.45";
+var version = "3.997.46";
 var packageInfo = {
 	version: version};
 
@@ -14950,6 +15008,7 @@ const defaultEndpointResolver = (endpointParams, context = {}) => {
 customEndpointFunctions.aws = awsEndpointFunctions;
 
 class SigninServiceException extends ServiceException {
+    static shapeId = "smithy.ts.sdk.synthetic.com.amazonaws.signin#SigninServiceException";
     constructor(options) {
         super(options);
         Object.setPrototypeOf(this, SigninServiceException.prototype);
@@ -14957,6 +15016,7 @@ class SigninServiceException extends ServiceException {
 }
 
 class AccessDeniedException extends SigninServiceException {
+    static shapeId = "com.amazonaws.signin#AccessDeniedException";
     name = "AccessDeniedException";
     $fault = "client";
     error;
@@ -14971,6 +15031,7 @@ class AccessDeniedException extends SigninServiceException {
     }
 }
 class InternalServerException extends SigninServiceException {
+    static shapeId = "com.amazonaws.signin#InternalServerException";
     name = "InternalServerException";
     $fault = "server";
     error;
@@ -14985,6 +15046,7 @@ class InternalServerException extends SigninServiceException {
     }
 }
 class TooManyRequestsError extends SigninServiceException {
+    static shapeId = "com.amazonaws.signin#TooManyRequestsError";
     name = "TooManyRequestsError";
     $fault = "client";
     error;
@@ -14999,6 +15061,7 @@ class TooManyRequestsError extends SigninServiceException {
     }
 }
 class ValidationException extends SigninServiceException {
+    static shapeId = "com.amazonaws.signin#ValidationException";
     name = "ValidationException";
     $fault = "client";
     error;
@@ -15430,7 +15493,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.45";
+var version = "3.997.46";
 var packageInfo = {
 	version: version};
 
@@ -15496,6 +15559,7 @@ const defaultEndpointResolver = (endpointParams, context = {}) => {
 customEndpointFunctions.aws = awsEndpointFunctions;
 
 class SSOOIDCServiceException extends ServiceException {
+    static shapeId = "smithy.ts.sdk.synthetic.com.amazonaws.ssooidc#SSOOIDCServiceException";
     constructor(options) {
         super(options);
         Object.setPrototypeOf(this, SSOOIDCServiceException.prototype);
@@ -15503,6 +15567,7 @@ class SSOOIDCServiceException extends ServiceException {
 }
 
 class AccessDeniedException extends SSOOIDCServiceException {
+    static shapeId = "com.amazonaws.ssooidc#AccessDeniedException";
     name = "AccessDeniedException";
     $fault = "client";
     error;
@@ -15521,6 +15586,7 @@ class AccessDeniedException extends SSOOIDCServiceException {
     }
 }
 class AuthorizationPendingException extends SSOOIDCServiceException {
+    static shapeId = "com.amazonaws.ssooidc#AuthorizationPendingException";
     name = "AuthorizationPendingException";
     $fault = "client";
     error;
@@ -15537,6 +15603,7 @@ class AuthorizationPendingException extends SSOOIDCServiceException {
     }
 }
 class ExpiredTokenException extends SSOOIDCServiceException {
+    static shapeId = "com.amazonaws.ssooidc#ExpiredTokenException";
     name = "ExpiredTokenException";
     $fault = "client";
     error;
@@ -15553,6 +15620,7 @@ class ExpiredTokenException extends SSOOIDCServiceException {
     }
 }
 class InternalServerException extends SSOOIDCServiceException {
+    static shapeId = "com.amazonaws.ssooidc#InternalServerException";
     name = "InternalServerException";
     $fault = "server";
     error;
@@ -15569,6 +15637,7 @@ class InternalServerException extends SSOOIDCServiceException {
     }
 }
 class InvalidClientException extends SSOOIDCServiceException {
+    static shapeId = "com.amazonaws.ssooidc#InvalidClientException";
     name = "InvalidClientException";
     $fault = "client";
     error;
@@ -15585,6 +15654,7 @@ class InvalidClientException extends SSOOIDCServiceException {
     }
 }
 class InvalidGrantException extends SSOOIDCServiceException {
+    static shapeId = "com.amazonaws.ssooidc#InvalidGrantException";
     name = "InvalidGrantException";
     $fault = "client";
     error;
@@ -15601,6 +15671,7 @@ class InvalidGrantException extends SSOOIDCServiceException {
     }
 }
 class InvalidRequestException extends SSOOIDCServiceException {
+    static shapeId = "com.amazonaws.ssooidc#InvalidRequestException";
     name = "InvalidRequestException";
     $fault = "client";
     error;
@@ -15619,6 +15690,7 @@ class InvalidRequestException extends SSOOIDCServiceException {
     }
 }
 class InvalidScopeException extends SSOOIDCServiceException {
+    static shapeId = "com.amazonaws.ssooidc#InvalidScopeException";
     name = "InvalidScopeException";
     $fault = "client";
     error;
@@ -15635,6 +15707,7 @@ class InvalidScopeException extends SSOOIDCServiceException {
     }
 }
 class SlowDownException extends SSOOIDCServiceException {
+    static shapeId = "com.amazonaws.ssooidc#SlowDownException";
     name = "SlowDownException";
     $fault = "client";
     error;
@@ -15651,6 +15724,7 @@ class SlowDownException extends SSOOIDCServiceException {
     }
 }
 class UnauthorizedClientException extends SSOOIDCServiceException {
+    static shapeId = "com.amazonaws.ssooidc#UnauthorizedClientException";
     name = "UnauthorizedClientException";
     $fault = "client";
     error;
@@ -15667,6 +15741,7 @@ class UnauthorizedClientException extends SSOOIDCServiceException {
     }
 }
 class UnsupportedGrantTypeException extends SSOOIDCServiceException {
+    static shapeId = "com.amazonaws.ssooidc#UnsupportedGrantTypeException";
     name = "UnsupportedGrantTypeException";
     $fault = "client";
     error;
@@ -16111,7 +16186,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.45";
+var version = "3.997.46";
 var packageInfo = {
 	version: version};
 
@@ -16177,6 +16252,7 @@ const defaultEndpointResolver = (endpointParams, context = {}) => {
 customEndpointFunctions.aws = awsEndpointFunctions;
 
 class SSOServiceException extends ServiceException {
+    static shapeId = "smithy.ts.sdk.synthetic.com.amazonaws.sso#SSOServiceException";
     constructor(options) {
         super(options);
         Object.setPrototypeOf(this, SSOServiceException.prototype);
@@ -16184,6 +16260,7 @@ class SSOServiceException extends ServiceException {
 }
 
 class InvalidRequestException extends SSOServiceException {
+    static shapeId = "com.amazonaws.sso#InvalidRequestException";
     name = "InvalidRequestException";
     $fault = "client";
     constructor(opts) {
@@ -16196,6 +16273,7 @@ class InvalidRequestException extends SSOServiceException {
     }
 }
 class ResourceNotFoundException extends SSOServiceException {
+    static shapeId = "com.amazonaws.sso#ResourceNotFoundException";
     name = "ResourceNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -16208,6 +16286,7 @@ class ResourceNotFoundException extends SSOServiceException {
     }
 }
 class TooManyRequestsException extends SSOServiceException {
+    static shapeId = "com.amazonaws.sso#TooManyRequestsException";
     name = "TooManyRequestsException";
     $fault = "client";
     constructor(opts) {
@@ -16220,6 +16299,7 @@ class TooManyRequestsException extends SSOServiceException {
     }
 }
 class UnauthorizedException extends SSOServiceException {
+    static shapeId = "com.amazonaws.sso#UnauthorizedException";
     name = "UnauthorizedException";
     $fault = "client";
     constructor(opts) {
@@ -16766,11 +16846,12 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.45";
+var version = "3.997.46";
 var packageInfo = {
 	version: version};
 
 class STSServiceException extends ServiceException {
+    static shapeId = "smithy.ts.sdk.synthetic.com.amazonaws.sts#STSServiceException";
     constructor(options) {
         super(options);
         Object.setPrototypeOf(this, STSServiceException.prototype);
@@ -16778,6 +16859,7 @@ class STSServiceException extends ServiceException {
 }
 
 class ExpiredTokenException extends STSServiceException {
+    static shapeId = "com.amazonaws.sts#ExpiredTokenException";
     name = "ExpiredTokenException";
     $fault = "client";
     constructor(opts) {
@@ -16790,6 +16872,7 @@ class ExpiredTokenException extends STSServiceException {
     }
 }
 class MalformedPolicyDocumentException extends STSServiceException {
+    static shapeId = "com.amazonaws.sts#MalformedPolicyDocumentException";
     name = "MalformedPolicyDocumentException";
     $fault = "client";
     constructor(opts) {
@@ -16802,6 +16885,7 @@ class MalformedPolicyDocumentException extends STSServiceException {
     }
 }
 class PackedPolicyTooLargeException extends STSServiceException {
+    static shapeId = "com.amazonaws.sts#PackedPolicyTooLargeException";
     name = "PackedPolicyTooLargeException";
     $fault = "client";
     constructor(opts) {
@@ -16814,6 +16898,7 @@ class PackedPolicyTooLargeException extends STSServiceException {
     }
 }
 class RegionDisabledException extends STSServiceException {
+    static shapeId = "com.amazonaws.sts#RegionDisabledException";
     name = "RegionDisabledException";
     $fault = "client";
     constructor(opts) {
@@ -16826,6 +16911,7 @@ class RegionDisabledException extends STSServiceException {
     }
 }
 class IDPRejectedClaimException extends STSServiceException {
+    static shapeId = "com.amazonaws.sts#IDPRejectedClaimException";
     name = "IDPRejectedClaimException";
     $fault = "client";
     constructor(opts) {
@@ -16838,6 +16924,7 @@ class IDPRejectedClaimException extends STSServiceException {
     }
 }
 class InvalidIdentityTokenException extends STSServiceException {
+    static shapeId = "com.amazonaws.sts#InvalidIdentityTokenException";
     name = "InvalidIdentityTokenException";
     $fault = "client";
     constructor(opts) {
@@ -16850,6 +16937,7 @@ class InvalidIdentityTokenException extends STSServiceException {
     }
 }
 class IDPCommunicationErrorException extends STSServiceException {
+    static shapeId = "com.amazonaws.sts#IDPCommunicationErrorException";
     name = "IDPCommunicationErrorException";
     $fault = "client";
     $retryable = {};
@@ -23374,6 +23462,7 @@ const createAggregatedClient = (commands, Client, options) => {
 };
 
 class ServiceException extends Error {
+    static shapeId = "smithy.ts.sdk.synthetic.nonamespace.client#ServiceException";
     $fault;
     $response;
     $retryable;
@@ -23405,22 +23494,43 @@ class ServiceException extends Error {
             if (this.prototype.isPrototypeOf(instance)) {
                 return true;
             }
-            const targetName = this.name;
-            if (!targetName || !candidate.name) {
+            const targetId = Object.prototype.hasOwnProperty.call(this, "shapeId")
+                ? this.shapeId
+                : undefined;
+            let candidateHasShapeId = false;
+            if (targetId) {
+                let proto = Object.getPrototypeOf(candidate);
+                while (proto && proto !== Object.prototype) {
+                    const ctor = proto.constructor;
+                    const candidateId = ctor !== ServiceException && Object.prototype.hasOwnProperty.call(ctor, "shapeId")
+                        ? ctor?.shapeId
+                        : undefined;
+                    if (candidateId) {
+                        candidateHasShapeId = true;
+                        if (candidateId === targetId) {
+                            return true;
+                        }
+                    }
+                    proto = Object.getPrototypeOf(proto);
+                }
+            }
+            if (targetId && candidateHasShapeId) {
                 return false;
             }
-            if (candidate.name === targetName) {
-                return true;
-            }
-            let proto = Object.getPrototypeOf(candidate);
-            while (proto && proto !== Object.prototype) {
-                const ctorName = proto.constructor?.name;
-                if (ctorName && ctorName !== "Error" && ctorName === targetName) {
+            const targetName = this.name;
+            if (targetName && targetName.length >= 6) {
+                if (candidate.name === targetName) {
                     return true;
                 }
-                proto = Object.getPrototypeOf(proto);
+                let proto = Object.getPrototypeOf(candidate);
+                while (proto && proto !== Object.prototype) {
+                    const ctorName = proto.constructor?.name;
+                    if (ctorName && ctorName !== "Error" && ctorName === targetName) {
+                        return true;
+                    }
+                    proto = Object.getPrototypeOf(proto);
+                }
             }
-            return false;
         }
         return false;
     }
@@ -24935,7 +25045,8 @@ class EndpointCache {
             return false;
         }
         for (const param of parameters) {
-            const val = String(endpointParams[param] ?? "");
+            const raw = endpointParams[param];
+            const val = raw == null ? "\0" : String(raw);
             if (val.includes("|;")) {
                 return false;
             }
@@ -28987,6 +29098,9 @@ class TypeRegistry {
         const $error = es;
         const ns = $error[1];
         const qualifiedName = ns + "#" + $error[2];
+        if (!ctor.hasOwnProperty?.("shapeId")) {
+            ctor.shapeId = qualifiedName;
+        }
         for (const r of [this, TypeRegistry.for(ns)]) {
             if (!r.schemas.has(qualifiedName) && !r.exceptions.has($error)) {
                 r.schemas.set(qualifiedName, $error);
