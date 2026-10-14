@@ -76,7 +76,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.1145.0";
+var version = "3.1148.0";
 var packageInfo = {
 	version: version};
 
@@ -142,6 +142,7 @@ const defaultEndpointResolver = (endpointParams, context = {}) => {
 customEndpointFunctions.aws = awsEndpointFunctions;
 
 class ECRPUBLICServiceException extends ServiceException {
+    static shapeId = "smithy.ts.sdk.synthetic.com.amazonaws.ecrpublic#ECRPUBLICServiceException";
     constructor(options) {
         super(options);
         Object.setPrototypeOf(this, ECRPUBLICServiceException.prototype);
@@ -149,6 +150,7 @@ class ECRPUBLICServiceException extends ServiceException {
 }
 
 class InvalidParameterException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#InvalidParameterException";
     name = "InvalidParameterException";
     $fault = "client";
     constructor(opts) {
@@ -161,6 +163,7 @@ class InvalidParameterException extends ECRPUBLICServiceException {
     }
 }
 class RegistryNotFoundException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#RegistryNotFoundException";
     name = "RegistryNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -173,6 +176,7 @@ class RegistryNotFoundException extends ECRPUBLICServiceException {
     }
 }
 class RepositoryNotFoundException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#RepositoryNotFoundException";
     name = "RepositoryNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -185,6 +189,7 @@ class RepositoryNotFoundException extends ECRPUBLICServiceException {
     }
 }
 class ServerException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#ServerException";
     name = "ServerException";
     $fault = "server";
     constructor(opts) {
@@ -197,6 +202,7 @@ class ServerException extends ECRPUBLICServiceException {
     }
 }
 class UnsupportedCommandException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#UnsupportedCommandException";
     name = "UnsupportedCommandException";
     $fault = "client";
     constructor(opts) {
@@ -209,6 +215,7 @@ class UnsupportedCommandException extends ECRPUBLICServiceException {
     }
 }
 class EmptyUploadException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#EmptyUploadException";
     name = "EmptyUploadException";
     $fault = "client";
     constructor(opts) {
@@ -221,6 +228,7 @@ class EmptyUploadException extends ECRPUBLICServiceException {
     }
 }
 class InvalidLayerException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#InvalidLayerException";
     name = "InvalidLayerException";
     $fault = "client";
     constructor(opts) {
@@ -233,6 +241,7 @@ class InvalidLayerException extends ECRPUBLICServiceException {
     }
 }
 class LayerAlreadyExistsException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#LayerAlreadyExistsException";
     name = "LayerAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -245,6 +254,7 @@ class LayerAlreadyExistsException extends ECRPUBLICServiceException {
     }
 }
 class LayerPartTooSmallException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#LayerPartTooSmallException";
     name = "LayerPartTooSmallException";
     $fault = "client";
     constructor(opts) {
@@ -257,6 +267,7 @@ class LayerPartTooSmallException extends ECRPUBLICServiceException {
     }
 }
 class UploadNotFoundException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#UploadNotFoundException";
     name = "UploadNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -269,6 +280,7 @@ class UploadNotFoundException extends ECRPUBLICServiceException {
     }
 }
 class InvalidTagParameterException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#InvalidTagParameterException";
     name = "InvalidTagParameterException";
     $fault = "client";
     constructor(opts) {
@@ -281,6 +293,7 @@ class InvalidTagParameterException extends ECRPUBLICServiceException {
     }
 }
 class LimitExceededException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#LimitExceededException";
     name = "LimitExceededException";
     $fault = "client";
     constructor(opts) {
@@ -293,6 +306,7 @@ class LimitExceededException extends ECRPUBLICServiceException {
     }
 }
 class RepositoryAlreadyExistsException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#RepositoryAlreadyExistsException";
     name = "RepositoryAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -305,6 +319,7 @@ class RepositoryAlreadyExistsException extends ECRPUBLICServiceException {
     }
 }
 class TooManyTagsException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#TooManyTagsException";
     name = "TooManyTagsException";
     $fault = "client";
     constructor(opts) {
@@ -317,6 +332,7 @@ class TooManyTagsException extends ECRPUBLICServiceException {
     }
 }
 class RepositoryNotEmptyException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#RepositoryNotEmptyException";
     name = "RepositoryNotEmptyException";
     $fault = "client";
     constructor(opts) {
@@ -329,6 +345,7 @@ class RepositoryNotEmptyException extends ECRPUBLICServiceException {
     }
 }
 class RepositoryPolicyNotFoundException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#RepositoryPolicyNotFoundException";
     name = "RepositoryPolicyNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -341,6 +358,7 @@ class RepositoryPolicyNotFoundException extends ECRPUBLICServiceException {
     }
 }
 class ImageNotFoundException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#ImageNotFoundException";
     name = "ImageNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -353,6 +371,7 @@ class ImageNotFoundException extends ECRPUBLICServiceException {
     }
 }
 class RepositoryCatalogDataNotFoundException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#RepositoryCatalogDataNotFoundException";
     name = "RepositoryCatalogDataNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -365,6 +384,7 @@ class RepositoryCatalogDataNotFoundException extends ECRPUBLICServiceException {
     }
 }
 class ImageAlreadyExistsException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#ImageAlreadyExistsException";
     name = "ImageAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -377,6 +397,7 @@ class ImageAlreadyExistsException extends ECRPUBLICServiceException {
     }
 }
 class ImageDigestDoesNotMatchException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#ImageDigestDoesNotMatchException";
     name = "ImageDigestDoesNotMatchException";
     $fault = "client";
     constructor(opts) {
@@ -389,6 +410,7 @@ class ImageDigestDoesNotMatchException extends ECRPUBLICServiceException {
     }
 }
 class ImageTagAlreadyExistsException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#ImageTagAlreadyExistsException";
     name = "ImageTagAlreadyExistsException";
     $fault = "client";
     constructor(opts) {
@@ -401,6 +423,7 @@ class ImageTagAlreadyExistsException extends ECRPUBLICServiceException {
     }
 }
 class InvalidLayerPartException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#InvalidLayerPartException";
     name = "InvalidLayerPartException";
     $fault = "client";
     registryId;
@@ -421,6 +444,7 @@ class InvalidLayerPartException extends ECRPUBLICServiceException {
     }
 }
 class LayersNotFoundException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#LayersNotFoundException";
     name = "LayersNotFoundException";
     $fault = "client";
     constructor(opts) {
@@ -433,6 +457,7 @@ class LayersNotFoundException extends ECRPUBLICServiceException {
     }
 }
 class ReferencedImagesNotFoundException extends ECRPUBLICServiceException {
+    static shapeId = "com.amazonaws.ecrpublic#ReferencedImagesNotFoundException";
     name = "ReferencedImagesNotFoundException";
     $fault = "client";
     constructor(opts) {
