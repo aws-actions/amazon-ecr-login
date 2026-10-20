@@ -76,7 +76,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.1148.0";
+var version = "3.1151.0";
 var packageInfo = {
 	version: version};
 
@@ -8213,6 +8213,7 @@ const { setCredentialFeature } = __nccwpck_require__(5152);
 const { normalizeProvider, memoizeIdentityProvider, isIdentityExpired, doesIdentityRequireRefresh } = __nccwpck_require__(402);
 const { SignatureV4 } = __nccwpck_require__(5118);
 const { HttpResponse, HttpRequest } = __nccwpck_require__(3422);
+const { SMITHY_CONTEXT_KEY } = __nccwpck_require__(4048);
 
 const getDateHeader = (response) => HttpResponse.isInstance(response) ? (response.headers?.date ?? response.headers?.Date) : undefined;
 const getAgeHeader = (response) => HttpResponse.isInstance(response) ? (response.headers?.age ?? response.headers?.Age) : undefined;
@@ -8239,6 +8240,12 @@ const throwSigningPropertyError = (name, property) => {
         throw new Error(`Property \`${name}\` is not resolved for AWS SDK SigV4Auth`);
     }
     return property;
+};
+const hasEventStreamOutput = (signingProperties) => {
+    const context = signingProperties.context;
+    const eventStream = context?.[SMITHY_CONTEXT_KEY]
+        ?.eventStream;
+    return eventStream?.output === true;
 };
 const validateSigningProperties = async (signingProperties) => {
     const context = throwSigningPropertyError("context", signingProperties.context);
@@ -8275,7 +8282,9 @@ class AwsSdkSigV4Signer {
         }
         const noSkewCorrection = (await config.disableClockSkewCorrection?.()) === true;
         signingProperties._disableClockSkewCorrection = noSkewCorrection;
-        if (!noSkewCorrection) {
+        const skipSkewSampling = noSkewCorrection || hasEventStreamOutput(signingProperties);
+        signingProperties._skipClockSkewSampling = skipSkewSampling;
+        if (!skipSkewSampling) {
             signingProperties._preRequestSystemClockOffset = config.systemClockOffset;
             signingProperties._requestSentAt = Date.now();
         }
@@ -8289,7 +8298,7 @@ class AwsSdkSigV4Signer {
     errorHandler(signingProperties) {
         return (error) => {
             const errorException = error;
-            if (!signingProperties._disableClockSkewCorrection) {
+            if (!signingProperties._skipClockSkewSampling && !signingProperties._disableClockSkewCorrection) {
                 const serverTime = errorException.ServerTime ?? getDateHeader(errorException.$response);
                 if (serverTime) {
                     const config = throwSigningPropertyError("config", signingProperties.config);
@@ -8310,7 +8319,7 @@ class AwsSdkSigV4Signer {
         };
     }
     successHandler(httpResponse, signingProperties) {
-        if (signingProperties._disableClockSkewCorrection) {
+        if (signingProperties._skipClockSkewSampling || signingProperties._disableClockSkewCorrection) {
             return;
         }
         const dateHeader = getDateHeader(httpResponse);
@@ -11517,6 +11526,109 @@ exports.parseXmlErrorBody = parseXmlErrorBody;
 
 /***/ }),
 
+/***/ 4048:
+/***/ ((__unused_webpack_module, exports) => {
+
+var HttpAuthLocation;
+(function (HttpAuthLocation) {
+    HttpAuthLocation["HEADER"] = "header";
+    HttpAuthLocation["QUERY"] = "query";
+})(HttpAuthLocation || (HttpAuthLocation = {}));
+
+var HttpApiKeyAuthLocation;
+(function (HttpApiKeyAuthLocation) {
+    HttpApiKeyAuthLocation["HEADER"] = "header";
+    HttpApiKeyAuthLocation["QUERY"] = "query";
+})(HttpApiKeyAuthLocation || (HttpApiKeyAuthLocation = {}));
+
+var EndpointURLScheme;
+(function (EndpointURLScheme) {
+    EndpointURLScheme["HTTP"] = "http";
+    EndpointURLScheme["HTTPS"] = "https";
+})(EndpointURLScheme || (EndpointURLScheme = {}));
+
+var AlgorithmId;
+(function (AlgorithmId) {
+    AlgorithmId["MD5"] = "md5";
+    AlgorithmId["CRC32"] = "crc32";
+    AlgorithmId["CRC32C"] = "crc32c";
+    AlgorithmId["SHA1"] = "sha1";
+    AlgorithmId["SHA256"] = "sha256";
+})(AlgorithmId || (AlgorithmId = {}));
+const getChecksumConfiguration = (runtimeConfig) => {
+    const checksumAlgorithms = [];
+    if (runtimeConfig.sha256 !== undefined) {
+        checksumAlgorithms.push({
+            algorithmId: () => AlgorithmId.SHA256,
+            checksumConstructor: () => runtimeConfig.sha256,
+        });
+    }
+    if (runtimeConfig.md5 != undefined) {
+        checksumAlgorithms.push({
+            algorithmId: () => AlgorithmId.MD5,
+            checksumConstructor: () => runtimeConfig.md5,
+        });
+    }
+    return {
+        addChecksumAlgorithm(algo) {
+            checksumAlgorithms.push(algo);
+        },
+        checksumAlgorithms() {
+            return checksumAlgorithms;
+        },
+    };
+};
+const resolveChecksumRuntimeConfig = (clientConfig) => {
+    const runtimeConfig = {};
+    clientConfig.checksumAlgorithms().forEach((checksumAlgorithm) => {
+        runtimeConfig[checksumAlgorithm.algorithmId()] = checksumAlgorithm.checksumConstructor();
+    });
+    return runtimeConfig;
+};
+
+const getDefaultClientConfiguration = (runtimeConfig) => {
+    return getChecksumConfiguration(runtimeConfig);
+};
+const resolveDefaultRuntimeConfig = (config) => {
+    return resolveChecksumRuntimeConfig(config);
+};
+
+var FieldPosition;
+(function (FieldPosition) {
+    FieldPosition[FieldPosition["HEADER"] = 0] = "HEADER";
+    FieldPosition[FieldPosition["TRAILER"] = 1] = "TRAILER";
+})(FieldPosition || (FieldPosition = {}));
+
+const SMITHY_CONTEXT_KEY = "__smithy_context";
+
+var IniSectionType;
+(function (IniSectionType) {
+    IniSectionType["PROFILE"] = "profile";
+    IniSectionType["SSO_SESSION"] = "sso-session";
+    IniSectionType["SERVICES"] = "services";
+})(IniSectionType || (IniSectionType = {}));
+
+var RequestHandlerProtocol;
+(function (RequestHandlerProtocol) {
+    RequestHandlerProtocol["HTTP_0_9"] = "http/0.9";
+    RequestHandlerProtocol["HTTP_1_0"] = "http/1.0";
+    RequestHandlerProtocol["TDS_8_0"] = "tds/8.0";
+})(RequestHandlerProtocol || (RequestHandlerProtocol = {}));
+
+exports.AlgorithmId = AlgorithmId;
+exports.EndpointURLScheme = EndpointURLScheme;
+exports.FieldPosition = FieldPosition;
+exports.HttpApiKeyAuthLocation = HttpApiKeyAuthLocation;
+exports.HttpAuthLocation = HttpAuthLocation;
+exports.IniSectionType = IniSectionType;
+exports.RequestHandlerProtocol = RequestHandlerProtocol;
+exports.SMITHY_CONTEXT_KEY = SMITHY_CONTEXT_KEY;
+exports.getDefaultClientConfiguration = getDefaultClientConfiguration;
+exports.resolveDefaultRuntimeConfig = resolveDefaultRuntimeConfig;
+
+
+/***/ }),
+
 /***/ 5081:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -14288,7 +14400,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.46";
+var version = "3.997.47";
 var packageInfo = {
 	version: version};
 
@@ -14916,7 +15028,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.46";
+var version = "3.997.47";
 var packageInfo = {
 	version: version};
 
@@ -15518,7 +15630,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.46";
+var version = "3.997.47";
 var packageInfo = {
 	version: version};
 
@@ -16211,7 +16323,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.46";
+var version = "3.997.47";
 var packageInfo = {
 	version: version};
 
@@ -16871,7 +16983,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.46";
+var version = "3.997.47";
 var packageInfo = {
 	version: version};
 
