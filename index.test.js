@@ -35,7 +35,9 @@ const ECR_DEFAULT_INPUTS = {
   'mask-password': '',
   'registries': '',
   'registry-type': '',
-  'skip-logout': ''
+  'skip-logout': '',
+  'max-attempts': '',
+  'retry-backoff-seconds': ''
 };
 
 const ECR_PUBLIC_DEFAULT_INPUTS = {
@@ -43,7 +45,9 @@ const ECR_PUBLIC_DEFAULT_INPUTS = {
   'mask-password': '',
   'registries': '',
   'registry-type': 'public',
-  'skip-logout': ''
+  'skip-logout': '',
+  'max-attempts': '',
+  'retry-backoff-seconds': ''
 };
 
 const defaultAuthToken = {
@@ -177,6 +181,66 @@ describe('Login to ECR', () => {
     expect(core.setFailed).toHaveBeenCalled();
     expect(core.setOutput).toHaveBeenCalledWith('registry', '123456789012.dkr.ecr.aws-region-1.amazonaws.com');
     expect(core.saveState).toHaveBeenCalledTimes(0);
+  });
+
+  test('retries a transient Docker login failure and succeeds on a later attempt', async () => {
+    const mockInputs = {
+      ...ECR_DEFAULT_INPUTS,
+      'max-attempts': '3',
+      'retry-backoff-seconds': '0'
+    };
+    core.getInput.mockImplementation(mockGetInput(mockInputs));
+    ecrMock.on(GetAuthorizationTokenCommand).resolves(defaultOutputToken);
+    exec.exec.mockImplementationOnce((commandLine, args, options) => {
+      options.listeners.stderr('dial tcp: lookup registry.example: i/o timeout');
+      return 1;
+    }).mockReturnValueOnce(0);
+
+    await run();
+
+    expect(exec.exec).toHaveBeenCalledTimes(2);
+    expect(core.setFailed).not.toHaveBeenCalled();
+    expect(core.info).toHaveBeenCalledWith(expect.stringContaining('Retrying in 0 seconds'));
+  });
+
+  test('stops retrying after max-attempts for transient Docker login failures', async () => {
+    const mockInputs = {
+      ...ECR_DEFAULT_INPUTS,
+      'max-attempts': '2',
+      'retry-backoff-seconds': '0'
+    };
+    core.getInput.mockImplementation(mockGetInput(mockInputs));
+    ecrMock.on(GetAuthorizationTokenCommand).resolves(defaultOutputToken);
+    exec.exec.mockImplementation((commandLine, args, options) => {
+      options.listeners.stderr('dial tcp: i/o timeout');
+      return 1;
+    });
+
+    await run();
+
+    expect(exec.exec).toHaveBeenCalledTimes(2);
+    expect(core.setFailed).toHaveBeenCalledWith(expect.stringContaining('after 2 attempts'));
+  });
+
+  test('does not retry Docker login authentication or permission failures', async () => {
+    const mockInputs = {
+      ...ECR_DEFAULT_INPUTS,
+      'max-attempts': '3',
+      'retry-backoff-seconds': '0'
+    };
+    core.getInput.mockImplementation(mockGetInput(mockInputs));
+    ecrMock.on(GetAuthorizationTokenCommand).resolves(defaultOutputToken);
+    exec.exec.mockImplementation((commandLine, args, options) => {
+      options.listeners.stderr('unauthorized: authentication required');
+      return 1;
+    });
+
+    await run();
+
+    expect(exec.exec).toHaveBeenCalledTimes(1);
+    expect(core.setFailed).toHaveBeenCalledWith(
+      'Could not login to registry 123456789012.dkr.ecr.aws-region-1.amazonaws.com: unauthorized: authentication required'
+    );
   });
 
   test('logged-in registries are saved as state even if the action fails', async () => {
