@@ -48,6 +48,23 @@ For more information on why this change is being made, see [Masking Docker Crede
 
 ## Examples of Usage
 
+### Retrying transient Docker login failures
+
+The action can retry Docker login failures that look transient, such as DNS lookup timeouts, connection resets, or temporary registry/server errors. Authentication, authorization, and permission failures are not retried; they fail immediately so that configuration or credential problems are not hidden.
+
+- `max-attempts`: Maximum login attempts, including the initial attempt. Default: `3`; allowed values: integers from `1` to `10`.
+- `retry-backoff-seconds`: Initial retry delay in seconds. Default: `1`; allowed values: integers from `0` to `60`. The delay doubles after each retry, capped at 60 seconds. Set to `0` to retry without waiting.
+
+Example:
+
+```yaml
+- name: Login to Amazon ECR
+  uses: aws-actions/amazon-ecr-login@v2
+  with:
+    max-attempts: 3
+    retry-backoff-seconds: 1
+```
+
 ### Building and pushing an image
 
 #### Before each of the following examples, make sure to include the following:

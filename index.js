@@ -16,7 +16,9 @@ const INPUTS = {
   maskPassword: 'mask-password',
   registries: 'registries',
   registryType: 'registry-type',
-  skipLogout: 'skip-logout'
+  skipLogout: 'skip-logout',
+  maxAttempts: 'max-attempts',
+  retryBackoffSeconds: 'retry-backoff-seconds'
 };
 
 const OUTPUTS = {
@@ -128,6 +130,71 @@ function replaceSpecialCharacters(registryUri) {
   return registryUri.replace(/[^a-zA-Z0-9_]+/g, '_');
 }
 
+function parseIntegerInput(inputName, rawValue, defaultValue, min, max) {
+  const value = (rawValue || String(defaultValue)).trim();
+  if (!/^\d+$/.test(value)) {
+    throw new Error(`Invalid input for '${inputName}', must be an integer between ${min} and ${max}`);
+  }
+  const parsedValue = Number(value);
+  if (!Number.isSafeInteger(parsedValue) || parsedValue < min || parsedValue > max) {
+    throw new Error(`Invalid input for '${inputName}', must be an integer between ${min} and ${max}`);
+  }
+  return parsedValue;
+}
+
+function isRetryableDockerLoginError(message) {
+  const permanentErrorPattern = /unauthorized|authentication required|invalid (?:username|password|credentials)|access[\s-]?denied|permission denied|forbidden|not authorized|no basic auth credentials|requested access to the resource is denied|\b(?:401|403)\b/i;
+  if (permanentErrorPattern.test(message)) {
+    return false;
+  }
+
+  const transientErrorPattern = /i\/o timeout|timed?\s*out|timeout|temporary failure in name resolution|temporary failure resolving|no such host|server misbehaving|connection (?:reset|refused|aborted|timed out)|network is unreachable|tls handshake timeout|unexpected eof|\beof\b|too many requests|(?:http|status(?: code)?)\s*[:=]?\s*(?:429|5\d\d)\b/i;
+  return transientErrorPattern.test(message);
+}
+
+async function loginToRegistryWithRetry({ creds, proxyEndpoint, registryUri, maxAttempts, retryBackoffSeconds }) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    let doLoginStdout = '';
+    let doLoginStderr = '';
+    let exitCode;
+
+    try {
+      exitCode = await exec.exec('docker', ['login', '-u', creds[0], '-p', creds[1], proxyEndpoint], {
+        silent: true,
+        ignoreReturnCode: true,
+        listeners: {
+          stdout: (data) => {
+            doLoginStdout += data.toString();
+          },
+          stderr: (data) => {
+            doLoginStderr += data.toString();
+          }
+        }
+      });
+    } catch (error) {
+      doLoginStderr = error instanceof Error ? error.message : String(error);
+    }
+
+    if (exitCode === 0) {
+      return;
+    }
+
+    const failureText = `${doLoginStderr}\n${doLoginStdout}`;
+    const isRetryable = isRetryableDockerLoginError(failureText);
+    if (!isRetryable || attempt === maxAttempts) {
+      if (doLoginStdout) {
+        core.debug(doLoginStdout);
+      }
+      const attemptSuffix = attempt > 1 ? ` after ${attempt} attempts` : '';
+      throw new Error(`Could not login to registry ${registryUri}${attemptSuffix}: ${doLoginStderr}`);
+    }
+
+    const delaySeconds = Math.min(retryBackoffSeconds * (2 ** (attempt - 1)), 60);
+    core.info(`Docker login to registry ${registryUri} failed with a transient error (attempt ${attempt}/${maxAttempts}). Retrying in ${delaySeconds} seconds.`);
+    await new Promise(resolve => setTimeout(resolve, delaySeconds * 1000));
+  }
+}
+
 async function run() {
   // Get inputs
   const httpProxy = core.getInput(INPUTS.httpProxy, { required: false });
@@ -135,10 +202,15 @@ async function run() {
   const registries = core.getInput(INPUTS.registries, { required: false });
   const registryType = core.getInput(INPUTS.registryType, { required: false }).toLowerCase() || REGISTRY_TYPES.private;
   const skipLogout = core.getInput(INPUTS.skipLogout, { required: false }).toLowerCase() === 'true';
+  const maxAttemptsInput = core.getInput(INPUTS.maxAttempts, { required: false });
+  const retryBackoffSecondsInput = core.getInput(INPUTS.retryBackoffSeconds, { required: false });
 
   const registryUriState = [];
 
   try {
+    const maxAttempts = parseIntegerInput(INPUTS.maxAttempts, maxAttemptsInput, 3, 1, 10);
+    const retryBackoffSeconds = parseIntegerInput(INPUTS.retryBackoffSeconds, retryBackoffSecondsInput, 1, 0, 60);
+
     if (registryType !== REGISTRY_TYPES.private && registryType !== REGISTRY_TYPES.public) {
       throw new Error(`Invalid input for '${INPUTS.registryType}', possible options are [${REGISTRY_TYPES.private}, ${REGISTRY_TYPES.public}]`);
     }
@@ -180,25 +252,14 @@ async function run() {
         core.setOutput(OUTPUTS.registry, registryUri);
       }
 
-      // Execute the docker login command
-      let doLoginStdout = '';
-      let doLoginStderr = '';
-      const exitCode = await exec.exec('docker', ['login', '-u', creds[0], '-p', creds[1], proxyEndpoint], {
-        silent: true,
-        ignoreReturnCode: true,
-        listeners: {
-          stdout: (data) => {
-            doLoginStdout += data.toString();
-          },
-          stderr: (data) => {
-            doLoginStderr += data.toString();
-          }
-        }
+      // Retry Docker login only for errors that appear transient.
+      await loginToRegistryWithRetry({
+        creds,
+        proxyEndpoint,
+        registryUri,
+        maxAttempts,
+        retryBackoffSeconds
       });
-      if (exitCode !== 0) {
-        core.debug(doLoginStdout);
-        throw new Error(`Could not login to registry ${registryUri}: ${doLoginStderr}`);
-      }
 
       // Output docker username and password
       const secretSuffix = replaceSpecialCharacters(registryUri);
