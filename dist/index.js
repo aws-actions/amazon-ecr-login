@@ -7310,8 +7310,9 @@ function resolveHostHeaderConfig(input) {
     return input;
 }
 const hostHeaderMiddleware = (options) => (next) => async (args) => {
-    if (!HttpRequest.isInstance(args.request))
+    if (!HttpRequest.isInstance(args.request)) {
         return next(args);
+    }
     const { request } = args;
     const { handlerProtocol = "" } = options.requestHandler.metadata || {};
     if (handlerProtocol.indexOf("h2") >= 0 && !request.headers[":authority"]) {
@@ -7320,8 +7321,9 @@ const hostHeaderMiddleware = (options) => (next) => async (args) => {
     }
     else if (!request.headers["host"]) {
         let host = request.hostname;
-        if (request.port != null)
+        if (request.port != null) {
             host += `:${request.port}`;
+        }
         request.headers["host"] = host;
     }
     return next(args);
@@ -8032,27 +8034,36 @@ const createUserAgentStringParsingProvider = ({ serviceId, clientVersion }) => a
 
 const fallback = {
     os(ua) {
-        if (/iPhone|iPad|iPod/.test(ua))
+        if (/iPhone|iPad|iPod/.test(ua)) {
             return "iOS";
-        if (/Macintosh|Mac OS X/.test(ua))
+        }
+        if (/Macintosh|Mac OS X/.test(ua)) {
             return "macOS";
-        if (/Windows NT/.test(ua))
+        }
+        if (/Windows NT/.test(ua)) {
             return "Windows";
-        if (/Android/.test(ua))
+        }
+        if (/Android/.test(ua)) {
             return "Android";
-        if (/Linux/.test(ua))
+        }
+        if (/Linux/.test(ua)) {
             return "Linux";
+        }
         return undefined;
     },
     browser(ua) {
-        if (/EdgiOS|EdgA|Edg\//.test(ua))
+        if (/EdgiOS|EdgA|Edg\//.test(ua)) {
             return "Microsoft Edge";
-        if (/Firefox\//.test(ua))
+        }
+        if (/Firefox\//.test(ua)) {
             return "Firefox";
-        if (/Chrome\//.test(ua))
+        }
+        if (/Chrome\//.test(ua)) {
             return "Chrome";
-        if (/Safari\//.test(ua))
+        }
+        if (/Safari\//.test(ua)) {
             return "Safari";
+        }
         return undefined;
     },
 };
@@ -8085,11 +8096,13 @@ const ARN_DELIMITER = ":";
 const RESOURCE_DELIMITER = "/";
 const parseArn = (value) => {
     const segments = value.split(ARN_DELIMITER);
-    if (segments.length < 6)
+    if (segments.length < 6) {
         return null;
+    }
     const [arn, partition, service, region, accountId, ...resourcePath] = segments;
-    if (arn !== "arn" || partition === "" || service === "" || resourcePath.join(ARN_DELIMITER) === "")
+    if (arn !== "arn" || partition === "" || service === "" || resourcePath.join(ARN_DELIMITER) === "") {
         return null;
+    }
     const resourceId = resourcePath.map((resource) => resource.split(RESOURCE_DELIMITER)).flat();
     return {
         partition,
@@ -8229,10 +8242,7 @@ const getUpdatedSystemClockOffset = (clockTime, currentSystemClockOffset, timeRe
     if (timeRequestSent !== undefined && timeResponseReceived - timeRequestSent > 900_000) {
         return currentSystemClockOffset;
     }
-    const candidateSkew = timeRequestSent !== undefined
-        ? serverTime - (timeRequestSent + timeResponseReceived) / 2
-        : serverTime - timeResponseReceived;
-    return candidateSkew;
+    return serverTime - timeResponseReceived;
 };
 
 const throwSigningPropertyError = (name, property) => {
@@ -8367,16 +8377,19 @@ const NODE_AUTH_SCHEME_PREFERENCE_OPTIONS = {
     environmentVariableSelector: (env, options) => {
         if (options?.signingName) {
             const bearerTokenKey = getBearerTokenEnvKey(options.signingName);
-            if (bearerTokenKey in env)
+            if (bearerTokenKey in env) {
                 return ["httpBearerAuth"];
+            }
         }
-        if (!(NODE_AUTH_SCHEME_PREFERENCE_ENV_KEY in env))
+        if (!(NODE_AUTH_SCHEME_PREFERENCE_ENV_KEY in env)) {
             return undefined;
+        }
         return getArrayForCommaSeparatedString(env[NODE_AUTH_SCHEME_PREFERENCE_ENV_KEY]);
     },
     configFileSelector: (profile) => {
-        if (!(NODE_AUTH_SCHEME_PREFERENCE_CONFIG_KEY in profile))
+        if (!(NODE_AUTH_SCHEME_PREFERENCE_CONFIG_KEY in profile)) {
             return undefined;
+        }
         return getArrayForCommaSeparatedString(profile[NODE_AUTH_SCHEME_PREFERENCE_CONFIG_KEY]);
     },
     default: [],
@@ -8576,7 +8589,7 @@ exports.validateSigningProperties = validateSigningProperties;
 const { SmithyRpcV2CborProtocol, loadSmithyRpcV2CborErrorCode } = __nccwpck_require__(4645);
 const { TypeRegistry, NormalizedSchema, deref } = __nccwpck_require__(6890);
 const { decorateServiceException, getValueFromTextNode } = __nccwpck_require__(2658);
-const { RpcProtocol, JsonCodec2, loadJsonRpcErrorCode, HttpBindingProtocol, HttpInterceptingShapeSerializer, HttpInterceptingShapeDeserializer, loadRestJsonErrorCode, FromStringShapeDeserializer, determineTimestampFormat, extendedEncodeURIComponent, collectBody } = __nccwpck_require__(3422);
+const { RpcProtocol, JsonCodec2, loadJsonRpcErrorCode, HttpBindingProtocol, HttpInterceptingShapeSerializer, HttpInterceptingShapeDeserializer, loadRestJsonErrorCode, SmithyRpcV2JsonProtocol, loadSmithyRpcV2JsonErrorCode, FromStringShapeDeserializer, determineTimestampFormat, extendedEncodeURIComponent, collectBody } = __nccwpck_require__(3422);
 const { JsonCodec, JsonShapeDeserializer, JsonShapeDeserializer2, JsonShapeSerializer, JsonShapeSerializer2, parseJsonBody, parseJsonErrorBody } = __nccwpck_require__(3422);
 exports.JsonCodec = JsonCodec;
 exports.JsonCodec2 = JsonCodec2;
@@ -8973,6 +8986,55 @@ class AwsRestJsonProtocol extends HttpBindingProtocol {
     }
     getDefaultContentType() {
         return "application/json";
+    }
+}
+
+class AwsSmithyRpcV2JsonProtocol extends SmithyRpcV2JsonProtocol {
+    awsQueryCompatible;
+    mixin;
+    constructor({ defaultNamespace, errorTypeRegistries, awsQueryCompatible, }) {
+        super({ defaultNamespace, errorTypeRegistries });
+        this.awsQueryCompatible = !!awsQueryCompatible;
+        this.mixin = new ProtocolLib(this.awsQueryCompatible);
+    }
+    async serializeRequest(operationSchema, input, context) {
+        const request = await super.serializeRequest(operationSchema, input, context);
+        if (this.awsQueryCompatible) {
+            request.headers["x-amzn-query-mode"] = "true";
+        }
+        return request;
+    }
+    async handleError(operationSchema, context, response, dataObject, metadata) {
+        if (this.awsQueryCompatible) {
+            this.mixin.setQueryCompatError(dataObject, response);
+        }
+        const errorName = (() => {
+            const compatHeader = response.headers["x-amzn-query-error"];
+            if (compatHeader && this.awsQueryCompatible) {
+                return compatHeader.split(";")[0];
+            }
+            return loadSmithyRpcV2JsonErrorCode(response, dataObject) ?? "Unknown";
+        })();
+        this.mixin.compose(this.compositeErrorRegistry, errorName, this.options.defaultNamespace);
+        const { errorSchema, errorMetadata } = await this.mixin.getErrorSchemaOrThrowBaseException(errorName, this.options.defaultNamespace, response, dataObject, metadata, this.awsQueryCompatible ? this.mixin.findQueryCompatibleError : undefined);
+        const ns = NormalizedSchema.of(errorSchema);
+        const message = dataObject.message ?? dataObject.Message ?? "UnknownError";
+        const ErrorCtor = this.compositeErrorRegistry.getErrorCtor(errorSchema) ?? Error;
+        const exception = new ErrorCtor({});
+        const output = {};
+        const errorDeserializer = this.getPayloadCodec().createDeserializer();
+        for (const [name, member] of ns.structIterator()) {
+            if (dataObject[name] != null) {
+                output[name] = errorDeserializer.readObject(member, dataObject[name]);
+            }
+        }
+        if (this.awsQueryCompatible) {
+            this.mixin.queryCompatOutput(dataObject, output);
+        }
+        throw this.mixin.decorateServiceException(Object.assign(exception, errorMetadata, {
+            $fault: ns.getMergedTraits().error,
+            message,
+        }, output), dataObject);
     }
 }
 
@@ -10016,6 +10078,7 @@ exports.AwsQueryProtocol = AwsQueryProtocol;
 exports.AwsRestJsonProtocol = AwsRestJsonProtocol;
 exports.AwsRestXmlProtocol = AwsRestXmlProtocol;
 exports.AwsSmithyRpcV2CborProtocol = AwsSmithyRpcV2CborProtocol;
+exports.AwsSmithyRpcV2JsonProtocol = AwsSmithyRpcV2JsonProtocol;
 exports.QueryShapeSerializer = QueryShapeSerializer;
 exports.XmlCodec = XmlCodec;
 exports.XmlShapeDeserializer = XmlShapeDeserializer;
@@ -10622,8 +10685,9 @@ const NODEJS_TIMEOUT_ERROR_CODES = ["ECONNRESET", "EPIPE", "ETIMEDOUT"];
 const getTransformedHeaders = (headers) => {
     const transformedHeaders = {};
     for (const name in headers) {
-        if (!hasOwn(headers, name))
+        if (!hasOwn(headers, name)) {
             continue;
+        }
         const headerValues = headers[name];
         transformedHeaders[name] = Array.isArray(headerValues) ? headerValues.join(",") : headerValues;
     }
@@ -10714,13 +10778,26 @@ const setSocketKeepAlive = (request, { keepAlive, keepAliveMsecs }, deferTimeMs 
     return timing.setTimeout(registerListener, deferTimeMs);
 };
 
+const resolveDefaultSocketTimeout = (config) => {
+    const value = config?.defaultSocketTimeout;
+    return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
+};
+
 const DEFER_EVENT_LISTENER_TIME = 3000;
-const setSocketTimeout = (request, reject, timeoutInMs = 0) => {
+const setSocketTimeout = (request, reject, timeoutInMs = 0, destroyResponseBodyOnTimeout = false) => {
+    let response;
+    if (destroyResponseBodyOnTimeout) {
+        request.once("response", (res) => (response = res));
+    }
     const registerTimeout = (offset) => {
         const timeout = timeoutInMs - offset;
         const onTimeout = () => {
+            const error = Object.assign(new Error(`@smithy/node-http-handler - the request socket timed out after ${timeoutInMs} ms of inactivity (${destroyResponseBodyOnTimeout ? "service default socket timeout" : "configured by client requestHandler"}).`), { name: "TimeoutError" });
+            if (destroyResponseBodyOnTimeout) {
+                response?.destroy(error);
+            }
             request.destroy();
-            reject(Object.assign(new Error(`@smithy/node-http-handler - the request socket timed out after ${timeoutInMs} ms of inactivity (configured by client requestHandler).`), { name: "TimeoutError" }));
+            reject(error);
         };
         if (request.socket) {
             request.socket.setTimeout(timeout, onTimeout);
@@ -10734,7 +10811,12 @@ const setSocketTimeout = (request, reject, timeoutInMs = 0) => {
         registerTimeout(0);
         return 0;
     }
-    return timing.setTimeout(registerTimeout.bind(null, timeoutInMs === 0 ? 0 : DEFER_EVENT_LISTENER_TIME), DEFER_EVENT_LISTENER_TIME);
+    const deferralId = timing.setTimeout(registerTimeout.bind(null, timeoutInMs === 0 ? 0 : DEFER_EVENT_LISTENER_TIME), DEFER_EVENT_LISTENER_TIME);
+    if (destroyResponseBodyOnTimeout) {
+        request.once("close", () => timing.clearTimeout(deferralId));
+        return 0;
+    }
+    return deferralId;
 };
 
 const MIN_WAIT_TIME = 6_000;
@@ -10825,8 +10907,9 @@ class NodeHttpHandler {
         }
         if (sockets && requests) {
             for (const origin in sockets) {
-                if (!hasOwn(sockets, origin))
+                if (!hasOwn(sockets, origin)) {
                     continue;
+                }
                 const socketsInUse = sockets[origin]?.length ?? 0;
                 const requestsEnqueued = requests[origin]?.length ?? 0;
                 if (socketsInUse >= maxSockets && requestsEnqueued >= 2 * maxSockets) {
@@ -10974,7 +11057,13 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             const effectiveRequestTimeout = requestTimeout ?? config.requestTimeout;
             connectionTimeoutId = setConnectionTimeout(req, reject, config.connectionTimeout);
             requestTimeoutId = setRequestTimeout(req, reject, effectiveRequestTimeout, config.throwOnRequestTimeout, logger ?? console);
-            socketTimeoutId = setSocketTimeout(req, reject, config.socketTimeout);
+            const defaultSocketTimeout = config.socketTimeout === undefined ? resolveDefaultSocketTimeout(config) : undefined;
+            if (defaultSocketTimeout) {
+                socketTimeoutId = setSocketTimeout(req, reject, defaultSocketTimeout, true);
+            }
+            else {
+                socketTimeoutId = setSocketTimeout(req, reject, config.socketTimeout);
+            }
             const httpAgent = nodeHttpsOptions.agent;
             if (typeof httpAgent === "object" && "keepAlive" in httpAgent) {
                 keepAliveTimeoutId = setSocketKeepAlive(req, {
@@ -10991,11 +11080,15 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
     updateHttpClientConfig(key, value) {
         this.config = undefined;
         this.configProvider = this.configProvider.then((config) => {
-            if (key === Symbol.for("logger")) {
-                return {
-                    ...config,
-                    logger: config.logger ?? value,
-                };
+            switch (key) {
+                case Symbol.for("logger"):
+                    key = "logger";
+                    value = config.logger ?? value;
+                    break;
+                case Symbol.for("@smithy/defaultSocketTimeout"):
+                    key = "defaultSocketTimeout";
+                    value = resolveDefaultSocketTimeout(config) ?? value;
+                    break;
             }
             return {
                 ...config,
@@ -11010,13 +11103,15 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
         const { requestTimeout, connectionTimeout, socketTimeout, socketAcquisitionWarningTimeout, httpAgent, httpsAgent, throwOnRequestTimeout, logger, } = options || {};
         const keepAlive = true;
         const maxSockets = 50;
+        let httpAgentPromise;
         return {
             connectionTimeout,
             requestTimeout,
             socketTimeout,
+            defaultSocketTimeout: resolveDefaultSocketTimeout(options),
             socketAcquisitionWarningTimeout,
             throwOnRequestTimeout,
-            httpAgentProvider: async () => {
+            httpAgentProvider: () => (httpAgentPromise ??= (async () => {
                 const node_http = __nccwpck_require__(7067);
                 const { Agent, request } = node_http.default ?? node_http;
                 hRequest = request;
@@ -11026,7 +11121,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
                     return httpAgent;
                 }
                 return new hAgent({ keepAlive, maxSockets, ...httpAgent });
-            },
+            })()),
             httpsAgent: (() => {
                 if (httpsAgent instanceof node_https.Agent || typeof httpsAgent?.destroy === "function") {
                     this.externalAgent = true;
@@ -11301,7 +11396,8 @@ class NodeHttp2Handler {
     }
     async handle(request, { abortSignal, requestTimeout, isEventStream } = {}) {
         if (!this.config) {
-            this.config = await this.configProvider;
+            const config = await this.configProvider;
+            this.config = { ...config, defaultSocketTimeout: resolveDefaultSocketTimeout(config) };
             const { disableConcurrentStreams, maxConcurrentStreams, nodeHttp2ConnectOptions } = this.config;
             this.connectionManager.setDisableConcurrentStreams(disableConcurrentStreams ?? false);
             if (maxConcurrentStreams) {
@@ -11311,9 +11407,12 @@ class NodeHttp2Handler {
                 this.connectionManager.setNodeHttp2ConnectOptions(nodeHttp2ConnectOptions);
             }
         }
-        const { requestTimeout: configRequestTimeout, disableConcurrentStreams } = this.config;
+        const { requestTimeout: configRequestTimeout, disableConcurrentStreams, sessionTimeout } = this.config;
         const useIsolatedSession = disableConcurrentStreams || isEventStream;
         const effectiveRequestTimeout = requestTimeout ?? configRequestTimeout;
+        const defaultSocketTimeout = effectiveRequestTimeout === undefined && sessionTimeout === undefined
+            ? this.config.defaultSocketTimeout
+            : undefined;
         return new Promise((_resolve, _reject) => {
             let fulfilled = false;
             let writeRequestBodyPromise = undefined;
@@ -11376,6 +11475,19 @@ class NodeHttp2Handler {
                     rejectWithDestroy(timeoutError);
                 });
             }
+            else if (defaultSocketTimeout) {
+                clientHttp2Stream.setTimeout(defaultSocketTimeout, () => {
+                    const timeoutError = new Error(`Stream timed out because of no activity for ${defaultSocketTimeout} ms`);
+                    timeoutError.name = "TimeoutError";
+                    fulfilled = true;
+                    reject(timeoutError);
+                    clientHttp2Stream.destroy(timeoutError);
+                    if (useIsolatedSession) {
+                        ref.destroy();
+                    }
+                });
+                clientHttp2Stream.once("response", () => clientHttp2Stream.setTimeout(defaultSocketTimeout));
+            }
             if (abortSignal) {
                 const onAbort = () => {
                     clientHttp2Stream.close();
@@ -11434,6 +11546,12 @@ class NodeHttp2Handler {
     updateHttpClientConfig(key, value) {
         this.config = undefined;
         this.configProvider = this.configProvider.then((config) => {
+            switch (key) {
+                case Symbol.for("@smithy/defaultSocketTimeout"):
+                    key = "defaultSocketTimeout";
+                    value = resolveDefaultSocketTimeout(config) ?? value;
+                    break;
+            }
             return {
                 ...config,
                 [key]: value,
@@ -12905,7 +13023,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.49";
+var version = "3.997.53";
 var packageInfo = {
 	version: version};
 
@@ -13533,7 +13651,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.49";
+var version = "3.997.53";
 var packageInfo = {
 	version: version};
 
@@ -14016,6 +14134,13 @@ const OAuth2ErrorCode = {
     CONFLICT: "CONFLICT",
     INSUFFICIENT_PERMISSIONS: "INSUFFICIENT_PERMISSIONS",
     INVALID_REQUEST: "INVALID_REQUEST",
+    OAUTH_INVALID_GRANT: "invalid_grant",
+    OAUTH_INVALID_REQUEST: "invalid_request",
+    OAUTH_INVALID_SCOPE: "invalid_scope",
+    OAUTH_INVALID_TARGET: "invalid_target",
+    OAUTH_RATE_EXCEEDED: "rate_exceeded",
+    OAUTH_SERVICE_UNAVAILABLE: "service_unavailable",
+    OAUTH_UNSUPPORTED_GRANT_TYPE: "unsupported_grant_type",
     RESOURCE_NOT_FOUND: "RESOURCE_NOT_FOUND",
     SERVER_ERROR: "server_error",
     SERVICE_QUOTA_EXCEEDED: "SERVICE_QUOTA_EXCEEDED",
@@ -14135,7 +14260,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.49";
+var version = "3.997.53";
 var packageInfo = {
 	version: version};
 
@@ -14828,7 +14953,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.49";
+var version = "3.997.53";
 var packageInfo = {
 	version: version};
 
@@ -15488,7 +15613,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.997.49";
+var version = "3.997.53";
 var packageInfo = {
 	version: version};
 
@@ -16157,8 +16282,9 @@ const NODEJS_TIMEOUT_ERROR_CODES = ["ECONNRESET", "EPIPE", "ETIMEDOUT"];
 const getTransformedHeaders = (headers) => {
     const transformedHeaders = {};
     for (const name in headers) {
-        if (!hasOwn(headers, name))
+        if (!hasOwn(headers, name)) {
             continue;
+        }
         const headerValues = headers[name];
         transformedHeaders[name] = Array.isArray(headerValues) ? headerValues.join(",") : headerValues;
     }
@@ -16249,13 +16375,26 @@ const setSocketKeepAlive = (request, { keepAlive, keepAliveMsecs }, deferTimeMs 
     return timing.setTimeout(registerListener, deferTimeMs);
 };
 
+const resolveDefaultSocketTimeout = (config) => {
+    const value = config?.defaultSocketTimeout;
+    return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
+};
+
 const DEFER_EVENT_LISTENER_TIME = 3000;
-const setSocketTimeout = (request, reject, timeoutInMs = 0) => {
+const setSocketTimeout = (request, reject, timeoutInMs = 0, destroyResponseBodyOnTimeout = false) => {
+    let response;
+    if (destroyResponseBodyOnTimeout) {
+        request.once("response", (res) => (response = res));
+    }
     const registerTimeout = (offset) => {
         const timeout = timeoutInMs - offset;
         const onTimeout = () => {
+            const error = Object.assign(new Error(`@smithy/node-http-handler - the request socket timed out after ${timeoutInMs} ms of inactivity (${destroyResponseBodyOnTimeout ? "service default socket timeout" : "configured by client requestHandler"}).`), { name: "TimeoutError" });
+            if (destroyResponseBodyOnTimeout) {
+                response?.destroy(error);
+            }
             request.destroy();
-            reject(Object.assign(new Error(`@smithy/node-http-handler - the request socket timed out after ${timeoutInMs} ms of inactivity (configured by client requestHandler).`), { name: "TimeoutError" }));
+            reject(error);
         };
         if (request.socket) {
             request.socket.setTimeout(timeout, onTimeout);
@@ -16269,7 +16408,12 @@ const setSocketTimeout = (request, reject, timeoutInMs = 0) => {
         registerTimeout(0);
         return 0;
     }
-    return timing.setTimeout(registerTimeout.bind(null, timeoutInMs === 0 ? 0 : DEFER_EVENT_LISTENER_TIME), DEFER_EVENT_LISTENER_TIME);
+    const deferralId = timing.setTimeout(registerTimeout.bind(null, timeoutInMs === 0 ? 0 : DEFER_EVENT_LISTENER_TIME), DEFER_EVENT_LISTENER_TIME);
+    if (destroyResponseBodyOnTimeout) {
+        request.once("close", () => timing.clearTimeout(deferralId));
+        return 0;
+    }
+    return deferralId;
 };
 
 const MIN_WAIT_TIME = 6_000;
@@ -16360,8 +16504,9 @@ class NodeHttpHandler {
         }
         if (sockets && requests) {
             for (const origin in sockets) {
-                if (!hasOwn(sockets, origin))
+                if (!hasOwn(sockets, origin)) {
                     continue;
+                }
                 const socketsInUse = sockets[origin]?.length ?? 0;
                 const requestsEnqueued = requests[origin]?.length ?? 0;
                 if (socketsInUse >= maxSockets && requestsEnqueued >= 2 * maxSockets) {
@@ -16509,7 +16654,13 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             const effectiveRequestTimeout = requestTimeout ?? config.requestTimeout;
             connectionTimeoutId = setConnectionTimeout(req, reject, config.connectionTimeout);
             requestTimeoutId = setRequestTimeout(req, reject, effectiveRequestTimeout, config.throwOnRequestTimeout, logger ?? console);
-            socketTimeoutId = setSocketTimeout(req, reject, config.socketTimeout);
+            const defaultSocketTimeout = config.socketTimeout === undefined ? resolveDefaultSocketTimeout(config) : undefined;
+            if (defaultSocketTimeout) {
+                socketTimeoutId = setSocketTimeout(req, reject, defaultSocketTimeout, true);
+            }
+            else {
+                socketTimeoutId = setSocketTimeout(req, reject, config.socketTimeout);
+            }
             const httpAgent = nodeHttpsOptions.agent;
             if (typeof httpAgent === "object" && "keepAlive" in httpAgent) {
                 keepAliveTimeoutId = setSocketKeepAlive(req, {
@@ -16526,11 +16677,15 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
     updateHttpClientConfig(key, value) {
         this.config = undefined;
         this.configProvider = this.configProvider.then((config) => {
-            if (key === Symbol.for("logger")) {
-                return {
-                    ...config,
-                    logger: config.logger ?? value,
-                };
+            switch (key) {
+                case Symbol.for("logger"):
+                    key = "logger";
+                    value = config.logger ?? value;
+                    break;
+                case Symbol.for("@smithy/defaultSocketTimeout"):
+                    key = "defaultSocketTimeout";
+                    value = resolveDefaultSocketTimeout(config) ?? value;
+                    break;
             }
             return {
                 ...config,
@@ -16545,13 +16700,15 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
         const { requestTimeout, connectionTimeout, socketTimeout, socketAcquisitionWarningTimeout, httpAgent, httpsAgent, throwOnRequestTimeout, logger, } = options || {};
         const keepAlive = true;
         const maxSockets = 50;
+        let httpAgentPromise;
         return {
             connectionTimeout,
             requestTimeout,
             socketTimeout,
+            defaultSocketTimeout: resolveDefaultSocketTimeout(options),
             socketAcquisitionWarningTimeout,
             throwOnRequestTimeout,
-            httpAgentProvider: async () => {
+            httpAgentProvider: () => (httpAgentPromise ??= (async () => {
                 const node_http = __nccwpck_require__(7067);
                 const { Agent, request } = node_http.default ?? node_http;
                 hRequest = request;
@@ -16561,7 +16718,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
                     return httpAgent;
                 }
                 return new hAgent({ keepAlive, maxSockets, ...httpAgent });
-            },
+            })()),
             httpsAgent: (() => {
                 if (httpsAgent instanceof node_https.Agent || typeof httpsAgent?.destroy === "function") {
                     this.externalAgent = true;
@@ -16836,7 +16993,8 @@ class NodeHttp2Handler {
     }
     async handle(request, { abortSignal, requestTimeout, isEventStream } = {}) {
         if (!this.config) {
-            this.config = await this.configProvider;
+            const config = await this.configProvider;
+            this.config = { ...config, defaultSocketTimeout: resolveDefaultSocketTimeout(config) };
             const { disableConcurrentStreams, maxConcurrentStreams, nodeHttp2ConnectOptions } = this.config;
             this.connectionManager.setDisableConcurrentStreams(disableConcurrentStreams ?? false);
             if (maxConcurrentStreams) {
@@ -16846,9 +17004,12 @@ class NodeHttp2Handler {
                 this.connectionManager.setNodeHttp2ConnectOptions(nodeHttp2ConnectOptions);
             }
         }
-        const { requestTimeout: configRequestTimeout, disableConcurrentStreams } = this.config;
+        const { requestTimeout: configRequestTimeout, disableConcurrentStreams, sessionTimeout } = this.config;
         const useIsolatedSession = disableConcurrentStreams || isEventStream;
         const effectiveRequestTimeout = requestTimeout ?? configRequestTimeout;
+        const defaultSocketTimeout = effectiveRequestTimeout === undefined && sessionTimeout === undefined
+            ? this.config.defaultSocketTimeout
+            : undefined;
         return new Promise((_resolve, _reject) => {
             let fulfilled = false;
             let writeRequestBodyPromise = undefined;
@@ -16911,6 +17072,19 @@ class NodeHttp2Handler {
                     rejectWithDestroy(timeoutError);
                 });
             }
+            else if (defaultSocketTimeout) {
+                clientHttp2Stream.setTimeout(defaultSocketTimeout, () => {
+                    const timeoutError = new Error(`Stream timed out because of no activity for ${defaultSocketTimeout} ms`);
+                    timeoutError.name = "TimeoutError";
+                    fulfilled = true;
+                    reject(timeoutError);
+                    clientHttp2Stream.destroy(timeoutError);
+                    if (useIsolatedSession) {
+                        ref.destroy();
+                    }
+                });
+                clientHttp2Stream.once("response", () => clientHttp2Stream.setTimeout(defaultSocketTimeout));
+            }
             if (abortSignal) {
                 const onAbort = () => {
                     clientHttp2Stream.close();
@@ -16969,6 +17143,12 @@ class NodeHttp2Handler {
     updateHttpClientConfig(key, value) {
         this.config = undefined;
         this.configProvider = this.configProvider.then((config) => {
+            switch (key) {
+                case Symbol.for("@smithy/defaultSocketTimeout"):
+                    key = "defaultSocketTimeout";
+                    value = resolveDefaultSocketTimeout(config) ?? value;
+                    break;
+            }
             return {
                 ...config,
                 [key]: value,
@@ -18004,8 +18184,9 @@ const getHttpSigningPlugin = (config) => ({
 });
 
 const normalizeProvider = (input) => {
-    if (typeof input === "function")
+    if (typeof input === "function") {
         return input;
+    }
     const promisified = Promise.resolve(input);
     return () => promisified;
 };
@@ -18068,8 +18249,9 @@ class DefaultIdentityProviderConfig {
     authSchemes = new Map();
     constructor(config) {
         for (const key in config) {
-            if (!hasOwn(config, key))
+            if (!hasOwn(config, key)) {
                 continue;
+            }
             const value = config[key];
             if (value !== undefined) {
                 this.authSchemes.set(key, value);
@@ -18215,9 +18397,9 @@ exports.setFeature = setFeature;
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 const { nv, NumericValue, calculateBodyLength, generateIdempotencyToken, fromBase64, _parseEpochTimestamp } = __nccwpck_require__(2430);
-const { hasOwn, getSmithyContext } = __nccwpck_require__(4534);
-const { HttpRequest, collectBody, SerdeContext, RpcProtocol } = __nccwpck_require__(3422);
-const { NormalizedSchema, deref, TypeRegistry } = __nccwpck_require__(6890);
+const { hasOwn } = __nccwpck_require__(4534);
+const { HttpRequest, collectBody, SerdeContext, AbstractRpcV2Protocol } = __nccwpck_require__(3422);
+const { NormalizedSchema, TypeRegistry } = __nccwpck_require__(6890);
 
 const majorUint64 = 0;
 const majorNegativeInt64 = 1;
@@ -19147,8 +19329,9 @@ const buildHttpRpcRequest = async (context, headers, path, resolvedHostname, bod
     }
     if (endpoint.headers) {
         for (const name in endpoint.headers) {
-            if (!hasOwn(endpoint.headers, name))
+            if (!hasOwn(endpoint.headers, name)) {
                 continue;
+            }
             contents.headers[name] = endpoint.headers[name];
         }
     }
@@ -19409,8 +19592,9 @@ function writeStruct(ns, value, serdeContext) {
     }
     if (typeof value.__type === "string") {
         for (const k in value) {
-            if (!hasOwn(value, k))
+            if (!hasOwn(value, k)) {
                 continue;
+            }
             if (!memberNames.includes(k)) {
                 writeString(k);
                 writeUntypedValue(value[k]);
@@ -19476,8 +19660,9 @@ function writeMap(ns, value, isDocument, serdeContext) {
     const valueSchema = ns.getValueSchema();
     const keys = [];
     for (const k in value) {
-        if (!hasOwn(value, k))
+        if (!hasOwn(value, k)) {
             continue;
+        }
         const v = value[k];
         if (isDocument ? v !== undefined : v != null || sparse) {
             keys.push(k);
@@ -19891,8 +20076,9 @@ function readStruct(ns, count, startPos) {
     if (isUnion) {
         let resultEmpty = true;
         for (const _ in result) {
-            if (!hasOwn(result, _))
+            if (!hasOwn(result, _)) {
                 continue;
+            }
             resultEmpty = false;
             break;
         }
@@ -20061,8 +20247,9 @@ function readMapIndefinite(ns) {
                 if (isUnion) {
                     let resultEmpty = true;
                     for (const _ in result) {
-                        if (!hasOwn(result, _))
+                        if (!hasOwn(result, _)) {
                             continue;
+                        }
                         resultEmpty = false;
                         break;
                     }
@@ -20367,8 +20554,9 @@ function transformObject(ns, value) {
     if (ns.isMapSchema()) {
         const targetSchema = ns.getValueSchema();
         for (const key in value) {
-            if (!hasOwn(value, key))
+            if (!hasOwn(value, key)) {
                 continue;
+            }
             newObject[key] = transformObject(targetSchema, value[key]);
         }
     }
@@ -20378,8 +20566,9 @@ function transformObject(ns, value) {
         if (isUnion) {
             keys = new Set();
             for (const k in value) {
-                if (!hasOwn(value, k))
+                if (!hasOwn(value, k)) {
                     continue;
+                }
                 if (k !== "__type") {
                     keys.add(k);
                 }
@@ -20396,8 +20585,9 @@ function transformObject(ns, value) {
         if (isUnion && keys?.size === 1) {
             let newObjectEmpty = true;
             for (const _ in newObject) {
-                if (!hasOwn(newObject, _))
+                if (!hasOwn(newObject, _)) {
                     continue;
+                }
                 newObjectEmpty = false;
                 break;
             }
@@ -20408,8 +20598,9 @@ function transformObject(ns, value) {
         }
         else if (typeof value.__type === "string") {
             for (const k in value) {
-                if (!hasOwn(value, k))
+                if (!hasOwn(value, k)) {
                     continue;
+                }
                 if (!(k in newObject)) {
                     newObject[k] = value[k];
                 }
@@ -20432,51 +20623,27 @@ class CborCodec extends SerdeContext {
     }
 }
 
-class SmithyRpcV2CborProtocol extends RpcProtocol {
+class SmithyRpcV2CborProtocol extends AbstractRpcV2Protocol {
     codec = new CborCodec();
     serializer = this.codec.createSerializer();
     deserializer = this.codec.createDeserializer();
-    constructor({ defaultNamespace, errorTypeRegistries, }) {
-        super({ defaultNamespace, errorTypeRegistries });
-    }
     getShapeId() {
         return "smithy.protocols#rpcv2Cbor";
     }
     getPayloadCodec() {
         return this.codec;
     }
-    async serializeRequest(operationSchema, input, context) {
-        const request = await super.serializeRequest(operationSchema, input, context);
-        Object.assign(request.headers, {
-            "content-type": this.getDefaultContentType(),
-            "smithy-protocol": "rpc-v2-cbor",
-            accept: this.getDefaultContentType(),
-        });
-        if (deref(operationSchema.input) === "unit") {
-            delete request.body;
-            delete request.headers["content-type"];
-        }
-        else {
-            if (!request.body) {
-                this.serializer.write(15, {});
-                request.body = this.serializer.flush();
-            }
-            if (request.body instanceof Uint8Array) {
-                request.headers["content-length"] = String(request.body.byteLength);
-            }
-        }
-        const { service, operation } = getSmithyContext(context);
-        const path = `/service/${service}/operation/${operation}`;
-        if (request.path.endsWith("/")) {
-            request.path += path.slice(1);
-        }
-        else {
-            request.path += path;
-        }
-        return request;
+    getSmithyProtocolHeaderValue() {
+        return "rpc-v2-cbor";
     }
-    async deserializeResponse(operationSchema, context, response) {
-        return super.deserializeResponse(operationSchema, context, response);
+    applyEmptyBody(request) {
+        if (!request.body) {
+            this.serializer.write(15, {});
+            request.body = this.serializer.flush();
+        }
+        if (request.body instanceof Uint8Array) {
+            request.headers["content-length"] = String(request.body.byteLength);
+        }
     }
     async handleError(operationSchema, context, response, dataObject, metadata) {
         const errorIdentifier = loadSmithyRpcV2CborErrorCode(response, dataObject) ?? "Unknown";
@@ -20572,8 +20739,9 @@ class CborShapeSerializer extends SerdeContext {
             if (ns.isMapSchema()) {
                 const sparse = !!ns.getMergedTraits().sparse;
                 for (const key in sourceObject) {
-                    if (!hasOwn(sourceObject, key))
+                    if (!hasOwn(sourceObject, key)) {
                         continue;
+                    }
                     const value = this.serialize(ns.getValueSchema(), sourceObject[key]);
                     if (value != null || sparse) {
                         newObject[key] = value;
@@ -20594,8 +20762,9 @@ class CborShapeSerializer extends SerdeContext {
                 }
                 else if (typeof sourceObject.__type === "string") {
                     for (const k in sourceObject) {
-                        if (!hasOwn(sourceObject, k))
+                        if (!hasOwn(sourceObject, k)) {
                             continue;
+                        }
                         if (!(k in newObject)) {
                             newObject[k] = this.serialize(15, sourceObject[k]);
                         }
@@ -20612,8 +20781,9 @@ class CborShapeSerializer extends SerdeContext {
                     return newArray;
                 }
                 for (const key in sourceObject) {
-                    if (!hasOwn(sourceObject, key))
+                    if (!hasOwn(sourceObject, key)) {
                         continue;
+                    }
                     newObject[key] = this.serialize(ns.getValueSchema(), sourceObject[key]);
                 }
             }
@@ -20688,8 +20858,9 @@ class CborShapeDeserializer extends SerdeContext {
             if (ns.isMapSchema()) {
                 const targetSchema = ns.getValueSchema();
                 for (const key in value) {
-                    if (!hasOwn(value, key))
+                    if (!hasOwn(value, key)) {
                         continue;
+                    }
                     const itemValue = this.readValue(targetSchema, value[key]);
                     newObject[key] = itemValue;
                 }
@@ -20700,8 +20871,9 @@ class CborShapeDeserializer extends SerdeContext {
                 if (isUnion) {
                     keys = new Set();
                     for (const k in value) {
-                        if (!hasOwn(value, k))
+                        if (!hasOwn(value, k)) {
                             continue;
+                        }
                         if (k !== "__type") {
                             keys.add(k);
                         }
@@ -20718,8 +20890,9 @@ class CborShapeDeserializer extends SerdeContext {
                 if (isUnion && keys?.size === 1) {
                     let newObjectEmpty = true;
                     for (const _ in newObject) {
-                        if (!hasOwn(newObject, _))
+                        if (!hasOwn(newObject, _)) {
                             continue;
+                        }
                         newObjectEmpty = false;
                         break;
                     }
@@ -20730,8 +20903,9 @@ class CborShapeDeserializer extends SerdeContext {
                 }
                 else if (typeof value.__type === "string") {
                     for (const k in value) {
-                        if (!hasOwn(value, k))
+                        if (!hasOwn(value, k)) {
                             continue;
+                        }
                         if (!(k in newObject)) {
                             newObject[k] = value[k];
                         }
@@ -21514,8 +21688,9 @@ const constructStack = () => {
             const aliases = getAllAliases(name, _aliases);
             if (aliases.length > 0) {
                 if (aliases.some((alias) => entriesNameSet.has(alias))) {
-                    if (!override)
+                    if (!override) {
                         throw new Error(`Duplicate middleware name '${getMiddlewareNameWithAliases(name, _aliases)}'`);
+                    }
                     for (const alias of aliases) {
                         const toOverrideIndex = absoluteEntries.findIndex((entry) => entry.name === alias || entry.aliases?.some((a) => a === alias));
                         if (toOverrideIndex === -1) {
@@ -21546,8 +21721,9 @@ const constructStack = () => {
             const aliases = getAllAliases(name, _aliases);
             if (aliases.length > 0) {
                 if (aliases.some((alias) => entriesNameSet.has(alias))) {
-                    if (!override)
+                    if (!override) {
                         throw new Error(`Duplicate middleware name '${getMiddlewareNameWithAliases(name, _aliases)}'`);
+                    }
                     for (const alias of aliases) {
                         const toOverrideIndex = relativeEntries.findIndex((entry) => entry.name === alias || entry.aliases?.some((a) => a === alias));
                         if (toOverrideIndex === -1) {
@@ -21574,10 +21750,12 @@ const constructStack = () => {
             plugin.applyToStack(stack);
         },
         remove: (toRemove) => {
-            if (typeof toRemove === "string")
+            if (typeof toRemove === "string") {
                 return removeByName(toRemove);
-            else
+            }
+            else {
                 return removeByReference(toRemove);
+            }
         },
         removeByTag: (toRemove) => {
             let isRemoved = false;
@@ -21614,8 +21792,9 @@ const constructStack = () => {
             });
         },
         identifyOnResolve(toggle) {
-            if (typeof toggle === "boolean")
+            if (typeof toggle === "boolean") {
                 identifyOnResolve = toggle;
+            }
             return identifyOnResolve;
         },
         resolve: (handler, context) => {
@@ -21911,15 +22090,21 @@ function schemaLogFilter(schema, data) {
         return SENSITIVE_STRING$1;
     }
     if (ns.isListSchema()) {
-        const isSensitive = !!ns.getValueSchema().getMergedTraits().sensitive;
-        if (isSensitive) {
+        const valueSchema = ns.getValueSchema();
+        if (valueSchema.getMergedTraits().sensitive) {
             return SENSITIVE_STRING$1;
+        }
+        if (Array.isArray(data)) {
+            return data.map((value) => schemaLogFilter(valueSchema, value));
         }
     }
     else if (ns.isMapSchema()) {
-        const isSensitive = !!ns.getKeySchema().getMergedTraits().sensitive || !!ns.getValueSchema().getMergedTraits().sensitive;
-        if (isSensitive) {
+        const valueSchema = ns.getValueSchema();
+        if (ns.getKeySchema().getMergedTraits().sensitive || valueSchema.getMergedTraits().sensitive) {
             return SENSITIVE_STRING$1;
+        }
+        if (typeof data === "object") {
+            return Object.fromEntries(Object.entries(data).map(([key, value]) => [key, schemaLogFilter(valueSchema, value)]));
         }
     }
     else if (ns.isStructSchema() && typeof data === "object") {
@@ -22094,8 +22279,9 @@ const createAggregatedClient = (commands, Client, options) => {
                 this.send(command, optionsOrCb);
             }
             else if (typeof cb === "function") {
-                if (typeof optionsOrCb !== "object")
+                if (typeof optionsOrCb !== "object") {
                     throw new Error(`Expected http options but got ${typeof optionsOrCb}`);
+                }
                 this.send(command, optionsOrCb || {}, cb);
             }
             else {
@@ -22148,8 +22334,9 @@ class ServiceException extends Error {
         this.$metadata = options.$metadata;
     }
     static isInstance(value) {
-        if (!value)
+        if (!value) {
             return false;
+        }
         const candidate = value;
         return (ServiceException.prototype.isPrototypeOf(candidate) ||
             (Boolean(candidate.$fault) &&
@@ -22157,8 +22344,9 @@ class ServiceException extends Error {
                 (candidate.$fault === "client" || candidate.$fault === "server")));
     }
     static [Symbol.hasInstance](instance) {
-        if (!instance)
+        if (!instance) {
             return false;
+        }
         const candidate = instance;
         if (this === ServiceException) {
             return ServiceException.isInstance(instance);
@@ -22282,8 +22470,9 @@ const knownAlgorithms = Object.values(AlgorithmId);
 const getChecksumConfiguration = (runtimeConfig) => {
     const checksumAlgorithms = [];
     for (const id in AlgorithmId) {
-        if (!hasOwn(AlgorithmId, id))
+        if (!hasOwn(AlgorithmId, id)) {
             continue;
+        }
         const algorithmId = AlgorithmId[id];
         if (runtimeConfig[algorithmId] === undefined) {
             continue;
@@ -22357,8 +22546,9 @@ const getArrayIfSingleItem = (mayBeArray) => Array.isArray(mayBeArray) ? mayBeAr
 const getValueFromTextNode = (obj) => {
     const textNodeName = "#text";
     for (const key in obj) {
-        if (!hasOwn(obj, key))
+        if (!hasOwn(obj, key)) {
             continue;
+        }
         if (obj[key][textNodeName] !== undefined) {
             obj[key] = obj[key][textNodeName];
         }
@@ -22401,8 +22591,9 @@ function map(arg0, arg1, arg2) {
         }
     }
     for (const key in instructions) {
-        if (!hasOwn(instructions, key))
+        if (!hasOwn(instructions, key)) {
             continue;
+        }
         if (!Array.isArray(instructions[key])) {
             target[key] = instructions[key];
             continue;
@@ -22421,8 +22612,9 @@ const convertMap = (target) => {
 const take = (source, instructions) => {
     const out = {};
     for (const key in instructions) {
-        if (!hasOwn(instructions, key))
+        if (!hasOwn(instructions, key)) {
             continue;
+        }
         applyInstruction(out, source, instructions, key);
     }
     return out;
@@ -22503,8 +22695,9 @@ const _json = (obj) => {
     if (typeof obj === "object") {
         const target = {};
         for (const key in obj) {
-            if (!hasOwn(obj, key))
+            if (!hasOwn(obj, key)) {
                 continue;
+            }
             if (obj[key] == null) {
                 continue;
             }
@@ -22693,18 +22886,22 @@ const memoize = (provider, isExpired, requiresRefresh) => {
 };
 
 const booleanSelector = (obj, key, type) => {
-    if (!(key in obj))
+    if (!(key in obj)) {
         return undefined;
-    if (obj[key] === "true")
+    }
+    if (obj[key] === "true") {
         return true;
-    if (obj[key] === "false")
+    }
+    if (obj[key] === "false") {
         return false;
+    }
     throw new Error(`Cannot load ${type} "${key}". Expected "true" or "false", got ${obj[key]}.`);
 };
 
 const numberSelector = (obj, key, type) => {
-    if (!(key in obj))
+    if (!(key in obj)) {
         return undefined;
+    }
     const numberValue = parseInt(obj[key], 10);
     if (Number.isNaN(numberValue)) {
         throw new TypeError(`Cannot load ${type} '${key}'. Expected number, got '${obj[key]}'.`);
@@ -22727,15 +22924,19 @@ const getHomeDirCacheKey = () => {
 };
 const getHomeDir = () => {
     const { HOME, USERPROFILE, HOMEPATH, HOMEDRIVE = `C:${sep}` } = process.env;
-    if (HOME)
+    if (HOME) {
         return HOME;
-    if (USERPROFILE)
+    }
+    if (USERPROFILE) {
         return USERPROFILE;
-    if (HOMEPATH)
+    }
+    if (HOMEPATH) {
         return `${HOMEDRIVE}${HOMEPATH}`;
+    }
     const homeDirCacheKey = getHomeDirCacheKey();
-    if (!homeDirCache[homeDirCacheKey])
+    if (!homeDirCache[homeDirCacheKey]) {
         homeDirCache[homeDirCacheKey] = homedir();
+    }
     return homeDirCache[homeDirCacheKey];
 };
 
@@ -23374,11 +23575,13 @@ const getEndpointUrlConfig = (serviceId) => ({
     environmentVariableSelector: (env) => {
         const serviceSuffixParts = serviceId.split(" ").map((w) => w.toUpperCase());
         const serviceEndpointUrl = env[[ENV_ENDPOINT_URL, ...serviceSuffixParts].join("_")];
-        if (serviceEndpointUrl)
+        if (serviceEndpointUrl) {
             return serviceEndpointUrl;
+        }
         const endpointUrl = env[ENV_ENDPOINT_URL];
-        if (endpointUrl)
+        if (endpointUrl) {
             return endpointUrl;
+        }
         return undefined;
     },
     configFileSelector: (profile, config) => {
@@ -23390,12 +23593,14 @@ const getEndpointUrlConfig = (serviceId) => ({
             const servicesSection = config[servicesSectionKey];
             const servicePrefixParts = serviceId.split(" ").map((w) => w.toLowerCase());
             const endpointUrl = servicesSection[[servicePrefixParts.join("_"), CONFIG_ENDPOINT_URL].join(CONFIG_PREFIX_SEPARATOR)];
-            if (endpointUrl)
+            if (endpointUrl) {
                 return endpointUrl;
+            }
         }
         const endpointUrl = profile[CONFIG_ENDPOINT_URL];
-        if (endpointUrl)
+        if (endpointUrl) {
             return endpointUrl;
+        }
         return undefined;
     },
     default: undefined,
@@ -24194,8 +24399,9 @@ const resolveEndpoint = (ruleSetObject, options) => {
     const { parameters, rules } = ruleSetObject;
     options.logger?.debug?.(`${debugId} Initial EndpointParams: ${toDebugString(endpointParams)}`);
     for (const paramKey in parameters) {
-        if (!hasOwn(parameters, paramKey))
+        if (!hasOwn(parameters, paramKey)) {
             continue;
+        }
         const parameter = parameters[paramKey];
         const endpointParam = endpointParams[paramKey];
         if (endpointParam == null && parameter.default != null) {
@@ -24292,8 +24498,9 @@ function negate(bytes) {
     }
     for (let i = 7; i > -1; i--) {
         bytes[i]++;
-        if (bytes[i] !== 0)
+        if (bytes[i] !== 0) {
             break;
+        }
     }
 }
 
@@ -24307,8 +24514,9 @@ class HeaderMarshaller {
     format(headers) {
         const chunks = [];
         for (const headerName in headers) {
-            if (!hasOwn(headers, headerName))
+            if (!hasOwn(headers, headerName)) {
                 continue;
+            }
             const bytes = this.fromUtf8(headerName);
             if (bytes.byteLength > 255) {
                 throw new Error(`@smithy/core/event-streams - header name exceeds 255 bytes: ${bytes.byteLength}`);
@@ -24634,8 +24842,9 @@ class SmithyMessageDecoderStream {
     async *asyncIterator() {
         for await (const message of this.options.messageStream) {
             const deserialized = await this.options.deserializer(message);
-            if (deserialized === undefined)
+            if (deserialized === undefined) {
                 continue;
+            }
             yield deserialized;
         }
     }
@@ -24731,8 +24940,9 @@ function getUnmarshalledStream(source, options) {
             for await (const chunk of source) {
                 const message = options.eventStreamCodec.decode(chunk);
                 const type = await messageUnmarshaller(message);
-                if (type === undefined)
+                if (type === undefined) {
                     continue;
+                }
                 yield type;
             }
         },
@@ -24762,8 +24972,9 @@ function getMessageUnmarshaller(deserializer, toUtf8) {
                 [message.headers[":event-type"].value]: message,
             };
             const deserialized = await deserializer(event);
-            if (deserialized.$unknown)
+            if (deserialized.$unknown) {
                 return;
+            }
             return deserialized;
         }
         else {
@@ -24846,8 +25057,9 @@ const readableStreamToIterable = (readableStream) => ({
         try {
             while (true) {
                 const { done, value } = await reader.read();
-                if (done)
+                if (done) {
                     return;
+                }
                 yield value;
             }
         }
@@ -24925,8 +25137,9 @@ class EventStreamSerde {
             }
             let unionMember = "";
             for (const key in event) {
-                if (!hasOwn(event, key))
+                if (!hasOwn(event, key)) {
                     continue;
+                }
                 if (key !== "__type") {
                     unionMember = key;
                     break;
@@ -24954,8 +25167,9 @@ class EventStreamSerde {
         const asyncIterable = marshaller.deserialize(response.body, async (event) => {
             let unionMember = "";
             for (const key in event) {
-                if (!hasOwn(event, key))
+                if (!hasOwn(event, key)) {
                     continue;
+                }
                 if (key !== "__type") {
                     unionMember = key;
                     break;
@@ -25030,8 +25244,9 @@ class EventStreamSerde {
                 throw new Error("@smithy::core/protocols - initial-response event encountered in event stream but no response schema given.");
             }
             for (const key in firstEvent.value) {
-                if (!hasOwn(firstEvent.value, key))
+                if (!hasOwn(firstEvent.value, key)) {
                     continue;
+                }
                 initialResponseContainer[key] = firstEvent.value[key];
             }
         }
@@ -25188,7 +25403,7 @@ exports.universalEventStreamSerdeProvider = eventStreamSerdeProvider$1;
 /***/ 3422:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-const { Uint8ArrayBlobAdapter, sdkStreamMixin, splitEvery, splitHeader, fromBase64, _parseEpochTimestamp, _parseRfc7231DateTime, _parseRfc3339DateTimeWithOffset, LazyJsonString, NumericValue, toUtf8, fromUtf8, generateIdempotencyToken, toBase64, dateToUtcString, quoteHeader, parseEpochTimestamp, parseRfc7231DateTime, parseRfc3339DateTimeWithOffset } = __nccwpck_require__(2430);
+const { Uint8ArrayBlobAdapter, sdkStreamMixin, splitEvery, splitHeader, fromBase64, _parseEpochTimestamp, _parseRfc7231DateTime, _parseRfc3339DateTimeWithOffset, LazyJsonString, NumericValue, toUtf8, fromUtf8, generateIdempotencyToken, toBase64, dateToUtcString, quoteHeader, writeKey, parseEpochTimestamp, parseRfc7231DateTime, parseRfc3339DateTimeWithOffset } = __nccwpck_require__(2430);
 const { HttpRequest, HttpResponse, hasOwn, isValidHostname, getSmithyContext } = __nccwpck_require__(4534);
 const { parseQueryString, parseUrl } = __nccwpck_require__(4534);
 exports.HttpRequest = HttpRequest;
@@ -25265,8 +25480,9 @@ class HttpProtocol extends SerdeContext {
             }
             if (endpoint.headers) {
                 for (const name in endpoint.headers) {
-                    if (!hasOwn(endpoint.headers, name))
+                    if (!hasOwn(endpoint.headers, name)) {
                         continue;
+                    }
                     request.headers[name] = endpoint.headers[name].join(", ");
                 }
             }
@@ -25282,8 +25498,9 @@ class HttpProtocol extends SerdeContext {
             };
             if (endpoint.headers) {
                 for (const name in endpoint.headers) {
-                    if (!hasOwn(endpoint.headers, name))
+                    if (!hasOwn(endpoint.headers, name)) {
                         continue;
+                    }
                     request.headers[name] = endpoint.headers[name];
                 }
             }
@@ -25504,8 +25721,9 @@ class HttpBindingProtocol extends HttpProtocol {
             }
             else if (typeof memberTraits.httpPrefixHeaders === "string") {
                 for (const key in inputMemberValue) {
-                    if (!hasOwn(inputMemberValue, key))
+                    if (!hasOwn(inputMemberValue, key)) {
                         continue;
+                    }
                     const val = inputMemberValue[key];
                     const amalgam = memberTraits.httpPrefixHeaders + key;
                     serializer.write([memberNs.getValueSchema(), { httpHeader: amalgam }], val);
@@ -25552,8 +25770,9 @@ class HttpBindingProtocol extends HttpProtocol {
         const traits = ns.getMergedTraits();
         if (traits.httpQueryParams) {
             for (const key in data) {
-                if (!hasOwn(data, key))
+                if (!hasOwn(data, key)) {
                     continue;
+                }
                 if (!(key in query)) {
                     const val = data[key];
                     const valueSchema = ns.getValueSchema();
@@ -25597,8 +25816,9 @@ class HttpBindingProtocol extends HttpProtocol {
             throw new Error("@smithy/core/protocols - HTTP Protocol error handler failed to throw.");
         }
         for (const header in response.headers) {
-            if (!hasOwn(response.headers, header))
+            if (!hasOwn(response.headers, header)) {
                 continue;
+            }
             const value = response.headers[header];
             delete response.headers[header];
             response.headers[header.toLowerCase()] = value;
@@ -25686,8 +25906,9 @@ class HttpBindingProtocol extends HttpProtocol {
             else if (memberTraits.httpPrefixHeaders !== undefined) {
                 dataObject[memberName] = {};
                 for (const header in response.headers) {
-                    if (!hasOwn(response.headers, header))
+                    if (!hasOwn(response.headers, header)) {
                         continue;
+                    }
                     if (header.startsWith(memberTraits.httpPrefixHeaders)) {
                         const value = response.headers[header];
                         const valueSchema = memberSchema.getValueSchema();
@@ -25764,7 +25985,7 @@ class RpcProtocol extends HttpProtocol {
         const deserializer = this.deserializer;
         const ns = NormalizedSchema.of(operationSchema.output);
         const dataObject = {};
-        if (response.statusCode >= 300) {
+        if (this.isErrorResponse(response.statusCode)) {
             const bytes = await collectBody(response.body, context);
             if (bytes.byteLength > 0) {
                 Object.assign(dataObject, await deserializer.read(15, bytes));
@@ -25773,8 +25994,9 @@ class RpcProtocol extends HttpProtocol {
             throw new Error("@smithy/core/protocols - RPC Protocol error handler failed to throw.");
         }
         for (const header in response.headers) {
-            if (!hasOwn(response.headers, header))
+            if (!hasOwn(response.headers, header)) {
                 continue;
+            }
             const value = response.headers[header];
             delete response.headers[header];
             response.headers[header.toLowerCase()] = value;
@@ -25795,6 +26017,42 @@ class RpcProtocol extends HttpProtocol {
         }
         dataObject.$metadata = this.deserializeMetadata(response);
         return dataObject;
+    }
+    isErrorResponse(statusCode) {
+        return statusCode >= 300;
+    }
+}
+
+class AbstractRpcV2Protocol extends RpcProtocol {
+    constructor({ defaultNamespace, errorTypeRegistries, }) {
+        super({ defaultNamespace, errorTypeRegistries });
+    }
+    async serializeRequest(operationSchema, input, context) {
+        const request = await super.serializeRequest(operationSchema, input, context);
+        Object.assign(request.headers, {
+            "content-type": this.getDefaultContentType(),
+            "smithy-protocol": this.getSmithyProtocolHeaderValue(),
+            accept: this.getDefaultContentType(),
+        });
+        if (deref(operationSchema.input) === "unit") {
+            delete request.body;
+            delete request.headers["content-type"];
+        }
+        else {
+            this.applyEmptyBody(request);
+        }
+        const { service, operation } = getSmithyContext(context);
+        const path = `/service/${service}/operation/${operation}`;
+        if (request.path.endsWith("/")) {
+            request.path += path.slice(1);
+        }
+        else {
+            request.path += path;
+        }
+        return request;
+    }
+    isErrorResponse(statusCode) {
+        return statusCode !== 200;
     }
 }
 
@@ -26174,6 +26432,9 @@ class Fields {
 const getHttpHandlerExtensionConfiguration = (runtimeConfig) => {
     if (runtimeConfig.logger && runtimeConfig.logger.constructor?.name !== "NoOpLogger") {
         runtimeConfig.requestHandler?.updateHttpClientConfig?.(Symbol.for("logger"), runtimeConfig.logger);
+    }
+    if (runtimeConfig.defaultSocketTimeout) {
+        runtimeConfig.requestHandler?.updateHttpClientConfig?.(Symbol.for("@smithy/defaultSocketTimeout"), runtimeConfig.defaultSocketTimeout);
     }
     return {
         setHttpHandler(handler) {
@@ -26580,10 +26841,6 @@ const loadErrorCode = ({ headers }, data, order) => {
     }
 };
 
-function writeKey(obj) {
-    Object.defineProperty(obj, "__proto__", { value: undefined, writable: true, enumerable: true, configurable: true });
-}
-
 class JsonShapeDeserializer2 extends SerdeContextConfig {
     settings;
     constructor(settings) {
@@ -26635,8 +26892,9 @@ class JsonShapeDeserializer2 extends SerdeContextConfig {
                 const map = value;
                 if (this.needsTransform(mapMember)) {
                     for (const k in map) {
-                        if (!hasOwn(map, k))
+                        if (!hasOwn(map, k)) {
                             continue;
+                        }
                         if (k === "__proto__") {
                             writeKey(map);
                         }
@@ -26708,8 +26966,9 @@ class JsonShapeDeserializer2 extends SerdeContextConfig {
                 else {
                     const doc = value;
                     for (const k in doc) {
-                        if (!hasOwn(doc, k))
+                        if (!hasOwn(doc, k)) {
                             continue;
+                        }
                         if (k === "__proto__") {
                             writeKey(doc);
                         }
@@ -26756,8 +27015,9 @@ class JsonShapeDeserializer2 extends SerdeContextConfig {
         }
         else if (hasType) {
             for (const k in record) {
-                if (!hasOwn(record, k))
+                if (!hasOwn(record, k)) {
                     continue;
+                }
                 const v = record[k];
                 const t = jsonName ? (nameMap[k] ?? k) : k;
                 if (!(t in out)) {
@@ -27301,8 +27561,9 @@ class JsonShapeSerializer2 extends SerdeContextConfig {
                     const out = [];
                     for (let i = 0; i < value.length; ++i) {
                         const v = value[i];
-                        if (v == null && !sparse)
+                        if (v == null && !sparse) {
                             continue;
+                        }
                         if (Number.isNaN(v) || v === Infinity || v === -Infinity) {
                             out.push(String(v));
                         }
@@ -27342,8 +27603,9 @@ class JsonShapeSerializer2 extends SerdeContextConfig {
             if (valueSchema.isStringSchema() || valueSchema.isNumericSchema() || valueSchema.isBooleanSchema()) {
                 let modifications;
                 for (const k in value) {
-                    if (!hasOwn(value, k))
+                    if (!hasOwn(value, k)) {
                         continue;
+                    }
                     const v = value[k];
                     if (Number.isNaN(v) || v === Infinity || v === -Infinity) {
                         (modifications ??= {})[k] = v;
@@ -27367,8 +27629,9 @@ class JsonShapeSerializer2 extends SerdeContextConfig {
         this.json[this.i++] = OPEN_BRACE;
         let first = true;
         for (const k in value) {
-            if (!hasOwn(value, k))
+            if (!hasOwn(value, k)) {
                 continue;
+            }
             const v = value[k];
             if (isDocument ? v === undefined : v == null && !sparse) {
                 continue;
@@ -27430,7 +27693,7 @@ class JsonCodec2 extends SerdeContextConfig {
     }
 }
 
-class SmithyRpcV2JsonProtocol extends RpcProtocol {
+class SmithyRpcV2JsonProtocol extends AbstractRpcV2Protocol {
     codec = new JsonCodec2({
         timestampFormat: {
             useTrait: false,
@@ -27441,41 +27704,19 @@ class SmithyRpcV2JsonProtocol extends RpcProtocol {
     });
     serializer = this.codec.createSerializer();
     deserializer = this.codec.createDeserializer();
-    constructor({ defaultNamespace, errorTypeRegistries, }) {
-        super({ defaultNamespace, errorTypeRegistries });
-    }
     getShapeId() {
         return "smithy.protocols#rpcv2Json";
     }
     getPayloadCodec() {
         return this.codec;
     }
-    async serializeRequest(operationSchema, input, context) {
-        const request = await super.serializeRequest(operationSchema, input, context);
-        Object.assign(request.headers, {
-            "content-type": this.getDefaultContentType(),
-            "smithy-protocol": "rpc-v2-json",
-            accept: this.getDefaultContentType(),
-        });
-        if (deref(operationSchema.input) === "unit") {
-            delete request.body;
-            delete request.headers["content-type"];
-        }
-        else if (!request.body) {
+    getSmithyProtocolHeaderValue() {
+        return "rpc-v2-json";
+    }
+    applyEmptyBody(request) {
+        if (!request.body) {
             request.body = "{}";
         }
-        const { service, operation } = getSmithyContext(context);
-        const path = `/service/${service}/operation/${operation}`;
-        if (request.path.endsWith("/")) {
-            request.path += path.slice(1);
-        }
-        else {
-            request.path += path;
-        }
-        return request;
-    }
-    async deserializeResponse(operationSchema, context, response) {
-        return super.deserializeResponse(operationSchema, context, response);
     }
     async handleError(operationSchema, context, response, dataObject, metadata) {
         const errorName = loadSmithyRpcV2JsonErrorCode(response, dataObject) ?? "Unknown";
@@ -27576,8 +27817,9 @@ class JsonShapeDeserializer extends SerdeContextConfig {
                 }
                 else if (typeof record.__type === "string") {
                     for (const k in record) {
-                        if (!hasOwn(record, k))
+                        if (!hasOwn(record, k)) {
                             continue;
+                        }
                         const v = record[k];
                         const t = jsonName ? (nameMap[k] ?? k) : k;
                         if (!(t in out)) {
@@ -27599,8 +27841,9 @@ class JsonShapeDeserializer extends SerdeContextConfig {
                 const mapMember = ns.getValueSchema();
                 const out = {};
                 for (const _k in value) {
-                    if (!hasOwn(value, _k))
+                    if (!hasOwn(value, _k)) {
                         continue;
+                    }
                     if (_k === "__proto__") {
                         writeKey(out);
                     }
@@ -27662,8 +27905,9 @@ class JsonShapeDeserializer extends SerdeContextConfig {
             if (isObject) {
                 const out = Array.isArray(value) ? [] : {};
                 for (const k in value) {
-                    if (!hasOwn(value, k))
+                    if (!hasOwn(value, k)) {
                         continue;
+                    }
                     if (k === "__proto__") {
                         writeKey(out);
                     }
@@ -27800,8 +28044,9 @@ class JsonShapeSerializer extends SerdeContextConfig {
                 }
                 else if (typeof record.__type === "string") {
                     for (const k in record) {
-                        if (!hasOwn(record, k))
+                        if (!hasOwn(record, k)) {
                             continue;
+                        }
                         const v = record[k];
                         const targetKey = jsonName ? (nameMap[k] ?? k) : k;
                         if (!(targetKey in out)) {
@@ -27827,8 +28072,9 @@ class JsonShapeSerializer extends SerdeContextConfig {
                 const out = {};
                 const sparse = !!ns.getMergedTraits().sparse;
                 for (const _k in value) {
-                    if (!hasOwn(value, _k))
+                    if (!hasOwn(value, _k)) {
                         continue;
+                    }
                     const _v = value[_k];
                     if (sparse || _v != null) {
                         if (_k === "__proto__") {
@@ -27901,8 +28147,9 @@ class JsonShapeSerializer extends SerdeContextConfig {
                 }
                 const out = Array.isArray(value) ? [] : {};
                 for (const k in value) {
-                    if (!hasOwn(value, k))
+                    if (!hasOwn(value, k)) {
                         continue;
+                    }
                     const v = value[k];
                     if (k === "__proto__") {
                         writeKey(out);
@@ -27943,6 +28190,7 @@ class JsonCodec extends SerdeContextConfig {
     }
 }
 
+exports.AbstractRpcV2Protocol = AbstractRpcV2Protocol;
 exports.Field = Field;
 exports.Fields = Fields;
 exports.FromStringShapeDeserializer = FromStringShapeDeserializer;
@@ -28085,8 +28333,9 @@ function parseRetryAfterHeader(response, logger) {
         return;
     }
     for (const header in response.headers) {
-        if (!hasOwn(response.headers, header))
+        if (!hasOwn(response.headers, header)) {
             continue;
+        }
         const h = header.toLowerCase();
         if (h === "retry-after") {
             const retryAfter = response.headers[header];
@@ -28131,12 +28380,15 @@ function getRetryAfterHint(response, logger) {
 }
 
 const asSdkError = (error) => {
-    if (error instanceof Error)
+    if (error instanceof Error) {
         return error;
-    if (error instanceof Object)
+    }
+    if (error instanceof Object) {
         return Object.assign(new Error(), error);
-    if (typeof error === "string")
+    }
+    if (typeof error === "string") {
         return new Error(error);
+    }
     return new Error(`AWS SDK error wrapper for ${error}`);
 };
 
@@ -28218,12 +28470,15 @@ const getRetryErrorInfo = (error, logger) => {
     return errorInfo;
 };
 const getRetryErrorType = (error) => {
-    if (isThrottlingError(error))
+    if (isThrottlingError(error)) {
         return "THROTTLING";
-    if (isTransientError(error))
+    }
+    if (isTransientError(error)) {
         return "TRANSIENT";
-    if (isServerError(error))
+    }
+    if (isServerError(error)) {
         return "SERVER_ERROR";
+    }
     return "CLIENT_ERROR";
 };
 const retryMiddlewareOptions = {
@@ -28675,15 +28930,18 @@ class StandardRetryStrategy {
     }
 }
 const getDelayFromRetryAfterHeader = (response) => {
-    if (!HttpResponse.isInstance(response))
+    if (!HttpResponse.isInstance(response)) {
         return;
+    }
     const retryAfterHeaderName = Object.keys(response.headers).find((key) => key.toLowerCase() === "retry-after");
-    if (!retryAfterHeaderName)
+    if (!retryAfterHeaderName) {
         return;
+    }
     const retryAfter = response.headers[retryAfterHeaderName];
     const retryAfterSeconds = Number(retryAfter);
-    if (!Number.isNaN(retryAfterSeconds))
+    if (!Number.isNaN(retryAfterSeconds)) {
         return Math.min(retryAfterSeconds * 1000, 20_000);
+    }
     const retryAfterDate = new Date(retryAfter);
     return Math.min(retryAfterDate.getTime() - Date.now(), 20_000);
 };
@@ -28713,8 +28971,9 @@ const CONFIG_MAX_ATTEMPTS = "max_attempts";
 const NODE_MAX_ATTEMPT_CONFIG_OPTIONS = {
     environmentVariableSelector: (env) => {
         const value = env[ENV_MAX_ATTEMPTS];
-        if (!value)
+        if (!value) {
             return undefined;
+        }
         const maxAttempt = parseInt(value);
         if (Number.isNaN(maxAttempt)) {
             throw new Error(`Environment variable ${ENV_MAX_ATTEMPTS} mast be a number, got "${value}"`);
@@ -28723,8 +28982,9 @@ const NODE_MAX_ATTEMPT_CONFIG_OPTIONS = {
     },
     configFileSelector: (profile) => {
         const value = profile[CONFIG_MAX_ATTEMPTS];
-        if (!value)
+        if (!value) {
             return undefined;
+        }
         const maxAttempt = parseInt(value);
         if (Number.isNaN(maxAttempt)) {
             throw new Error(`Shared config file entry ${CONFIG_MAX_ATTEMPTS} mast be a number, got "${value}"`);
@@ -29819,8 +30079,9 @@ const expectUnion = (value) => {
     const asObject = expectObject(value);
     const setKeys = [];
     for (const k in asObject) {
-        if (!hasOwn(asObject, k))
+        if (!hasOwn(asObject, k)) {
             continue;
+        }
         if (asObject[k] != null) {
             setKeys.push(k);
         }
@@ -31244,6 +31505,10 @@ async function splitStream(stream) {
     return [stream1, stream2];
 }
 
+function writeKey(obj) {
+    Object.defineProperty(obj, "__proto__", { value: undefined, writable: true, enumerable: true, configurable: true });
+}
+
 class Uint8ArrayBlobAdapter extends bindUint8ArrayBlobAdapter(toUtf8$1, fromUtf8$1, toBase64$1, fromBase64) {
 }
 const _getRandomValues = getRandomValues;
@@ -31322,6 +31587,7 @@ exports.toHex = toHex;
 exports.toUint8Array = toUint8Array;
 exports.toUtf8 = toUtf8$1;
 exports.v4 = v4;
+exports.writeKey = writeKey;
 
 
 /***/ }),
@@ -31414,8 +31680,9 @@ class HttpResponse {
         this.body = options.body;
     }
     static isInstance(response) {
-        if (!response)
+        if (!response) {
             return false;
+        }
         const resp = response;
         return typeof resp.statusCode === "number" && typeof resp.headers === "object";
     }
@@ -31441,8 +31708,9 @@ function isValidHostname(hostname) {
 }
 
 const normalizeProvider = (input) => {
-    if (typeof input === "function")
+    if (typeof input === "function") {
         return input;
+    }
     const promisified = Promise.resolve(input);
     return () => promisified;
 };
@@ -31496,8 +31764,9 @@ const toEndpointV1 = (endpoint) => {
             if (endpoint.headers) {
                 v1Endpoint.headers = {};
                 for (const name in endpoint.headers) {
-                    if (!hasOwn(endpoint.headers, name))
+                    if (!hasOwn(endpoint.headers, name)) {
                         continue;
+                    }
                     v1Endpoint.headers[name.toLowerCase()] = endpoint.headers[name].join(", ");
                 }
             }
@@ -32881,7 +33150,7 @@ exports.buildQueryString = buildQueryString;
 /***/ 5118:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-const { hasOwn, fromUtf8, fromHex, toHex, toUint8Array, isArrayBuffer } = __nccwpck_require__(2430);
+const { hasOwn, fromUtf8, fromHex, toHex, toUint8Array, writeKey, isArrayBuffer } = __nccwpck_require__(2430);
 const { normalizeProvider } = __nccwpck_require__(2658);
 const { escapeUri, HttpRequest } = __nccwpck_require__(3422);
 
@@ -32889,8 +33158,9 @@ class HeaderFormatter {
     format(headers) {
         const chunks = [];
         for (const headerName in headers) {
-            if (!hasOwn(headers, headerName))
+            if (!hasOwn(headers, headerName)) {
                 continue;
+            }
             const bytes = fromUtf8(headerName);
             chunks.push(Uint8Array.from([bytes.byteLength]), bytes, this.formatHeaderValue(headers[headerName]));
         }
@@ -33007,8 +33277,9 @@ function negate(bytes) {
     }
     for (let i = 7; i > -1; i--) {
         bytes[i]++;
-        if (bytes[i] !== 0)
+        if (bytes[i] !== 0) {
             break;
+        }
     }
 }
 
@@ -33060,8 +33331,9 @@ const getCanonicalQuery = ({ query = {} }) => {
     const keys = [];
     const serialized = {};
     for (const key in query) {
-        if (!hasOwn(query, key))
+        if (!hasOwn(query, key)) {
             continue;
+        }
         if (key.toLowerCase() === SIGNATURE_HEADER) {
             continue;
         }
@@ -33140,10 +33412,12 @@ ${toHex(hashedRequest)}`;
         if (this.uriEscapePath) {
             const normalizedPathSegments = [];
             for (const pathSegment of path.split("/")) {
-                if (pathSegment?.length === 0)
+                if (pathSegment?.length === 0) {
                     continue;
-                if (pathSegment === ".")
+                }
+                if (pathSegment === ".") {
                     continue;
+                }
                 if (pathSegment === "..") {
                     normalizedPathSegments.pop();
                 }
@@ -33214,13 +33488,16 @@ const getCanonicalHeaders = ({ headers }, unsignableHeaders, signableHeaders) =>
             continue;
         }
         const canonicalHeaderName = headerName.toLowerCase();
-        if (canonicalHeaderName in ALWAYS_UNSIGNABLE_HEADERS ||
+        if (hasOwn(ALWAYS_UNSIGNABLE_HEADERS, canonicalHeaderName) ||
             unsignableHeaders?.has(canonicalHeaderName) ||
             PROXY_HEADER_PATTERN.test(canonicalHeaderName) ||
             SEC_HEADER_PATTERN.test(canonicalHeaderName)) {
             if (!signableHeaders || (signableHeaders && !signableHeaders.has(canonicalHeaderName))) {
                 continue;
             }
+        }
+        if (canonicalHeaderName === "__proto__") {
+            writeKey(canonical);
         }
         canonical[canonicalHeaderName] = headers[headerName]
             .replace(/[\r\n]/g, " ")
@@ -33232,8 +33509,9 @@ const getCanonicalHeaders = ({ headers }, unsignableHeaders, signableHeaders) =>
 
 const getPayloadHash = async ({ headers, body }, hashConstructor) => {
     for (const headerName in headers) {
-        if (!hasOwn(headers, headerName))
+        if (!hasOwn(headers, headerName)) {
             continue;
+        }
         if (headerName.toLowerCase() === SHA256_HEADER) {
             return headers[headerName];
         }
@@ -33252,8 +33530,9 @@ const getPayloadHash = async ({ headers, body }, hashConstructor) => {
 const hasHeader = (soughtHeader, headers) => {
     soughtHeader = soughtHeader.toLowerCase();
     for (const headerName in headers) {
-        if (!hasOwn(headers, headerName))
+        if (!hasOwn(headers, headerName)) {
             continue;
+        }
         if (soughtHeader === headerName.toLowerCase()) {
             return true;
         }
@@ -33264,8 +33543,9 @@ const hasHeader = (soughtHeader, headers) => {
 const moveHeadersToQuery = (request, options = {}) => {
     const { headers, query = {} } = HttpRequest.clone(request);
     for (const name in headers) {
-        if (!hasOwn(headers, name))
+        if (!hasOwn(headers, name)) {
             continue;
+        }
         const lname = name.toLowerCase();
         if ((lname.slice(0, 6) === "x-amz-" && !options.unhoistableHeaders?.has(lname)) ||
             options.hoistableHeaders?.has(lname)) {
@@ -33283,8 +33563,9 @@ const moveHeadersToQuery = (request, options = {}) => {
 const prepareRequest = (request) => {
     request = HttpRequest.clone(request);
     for (const headerName in request.headers) {
-        if (!hasOwn(request.headers, headerName))
+        if (!hasOwn(request.headers, headerName)) {
             continue;
+        }
         if (GENERATED_HEADERS.indexOf(headerName.toLowerCase()) > -1) {
             delete request.headers[headerName];
         }
