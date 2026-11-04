@@ -76,7 +76,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.1155.0";
+var version = "3.1160.0";
 var packageInfo = {
 	version: version};
 
@@ -1722,8 +1722,9 @@ const NODEJS_TIMEOUT_ERROR_CODES = ["ECONNRESET", "EPIPE", "ETIMEDOUT"];
 const getTransformedHeaders = (headers) => {
     const transformedHeaders = {};
     for (const name in headers) {
-        if (!hasOwn(headers, name))
+        if (!hasOwn(headers, name)) {
             continue;
+        }
         const headerValues = headers[name];
         transformedHeaders[name] = Array.isArray(headerValues) ? headerValues.join(",") : headerValues;
     }
@@ -1814,13 +1815,26 @@ const setSocketKeepAlive = (request, { keepAlive, keepAliveMsecs }, deferTimeMs 
     return timing.setTimeout(registerListener, deferTimeMs);
 };
 
+const resolveDefaultSocketTimeout = (config) => {
+    const value = config?.defaultSocketTimeout;
+    return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
+};
+
 const DEFER_EVENT_LISTENER_TIME = 3000;
-const setSocketTimeout = (request, reject, timeoutInMs = 0) => {
+const setSocketTimeout = (request, reject, timeoutInMs = 0, destroyResponseBodyOnTimeout = false) => {
+    let response;
+    if (destroyResponseBodyOnTimeout) {
+        request.once("response", (res) => (response = res));
+    }
     const registerTimeout = (offset) => {
         const timeout = timeoutInMs - offset;
         const onTimeout = () => {
+            const error = Object.assign(new Error(`@smithy/node-http-handler - the request socket timed out after ${timeoutInMs} ms of inactivity (${destroyResponseBodyOnTimeout ? "service default socket timeout" : "configured by client requestHandler"}).`), { name: "TimeoutError" });
+            if (destroyResponseBodyOnTimeout) {
+                response?.destroy(error);
+            }
             request.destroy();
-            reject(Object.assign(new Error(`@smithy/node-http-handler - the request socket timed out after ${timeoutInMs} ms of inactivity (configured by client requestHandler).`), { name: "TimeoutError" }));
+            reject(error);
         };
         if (request.socket) {
             request.socket.setTimeout(timeout, onTimeout);
@@ -1834,7 +1848,12 @@ const setSocketTimeout = (request, reject, timeoutInMs = 0) => {
         registerTimeout(0);
         return 0;
     }
-    return timing.setTimeout(registerTimeout.bind(null, timeoutInMs === 0 ? 0 : DEFER_EVENT_LISTENER_TIME), DEFER_EVENT_LISTENER_TIME);
+    const deferralId = timing.setTimeout(registerTimeout.bind(null, timeoutInMs === 0 ? 0 : DEFER_EVENT_LISTENER_TIME), DEFER_EVENT_LISTENER_TIME);
+    if (destroyResponseBodyOnTimeout) {
+        request.once("close", () => timing.clearTimeout(deferralId));
+        return 0;
+    }
+    return deferralId;
 };
 
 const MIN_WAIT_TIME = 6_000;
@@ -1925,8 +1944,9 @@ class NodeHttpHandler {
         }
         if (sockets && requests) {
             for (const origin in sockets) {
-                if (!hasOwn(sockets, origin))
+                if (!hasOwn(sockets, origin)) {
                     continue;
+                }
                 const socketsInUse = sockets[origin]?.length ?? 0;
                 const requestsEnqueued = requests[origin]?.length ?? 0;
                 if (socketsInUse >= maxSockets && requestsEnqueued >= 2 * maxSockets) {
@@ -2074,7 +2094,13 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             const effectiveRequestTimeout = requestTimeout ?? config.requestTimeout;
             connectionTimeoutId = setConnectionTimeout(req, reject, config.connectionTimeout);
             requestTimeoutId = setRequestTimeout(req, reject, effectiveRequestTimeout, config.throwOnRequestTimeout, logger ?? console);
-            socketTimeoutId = setSocketTimeout(req, reject, config.socketTimeout);
+            const defaultSocketTimeout = config.socketTimeout === undefined ? resolveDefaultSocketTimeout(config) : undefined;
+            if (defaultSocketTimeout) {
+                socketTimeoutId = setSocketTimeout(req, reject, defaultSocketTimeout, true);
+            }
+            else {
+                socketTimeoutId = setSocketTimeout(req, reject, config.socketTimeout);
+            }
             const httpAgent = nodeHttpsOptions.agent;
             if (typeof httpAgent === "object" && "keepAlive" in httpAgent) {
                 keepAliveTimeoutId = setSocketKeepAlive(req, {
@@ -2091,11 +2117,15 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
     updateHttpClientConfig(key, value) {
         this.config = undefined;
         this.configProvider = this.configProvider.then((config) => {
-            if (key === Symbol.for("logger")) {
-                return {
-                    ...config,
-                    logger: config.logger ?? value,
-                };
+            switch (key) {
+                case Symbol.for("logger"):
+                    key = "logger";
+                    value = config.logger ?? value;
+                    break;
+                case Symbol.for("@smithy/defaultSocketTimeout"):
+                    key = "defaultSocketTimeout";
+                    value = resolveDefaultSocketTimeout(config) ?? value;
+                    break;
             }
             return {
                 ...config,
@@ -2110,13 +2140,15 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
         const { requestTimeout, connectionTimeout, socketTimeout, socketAcquisitionWarningTimeout, httpAgent, httpsAgent, throwOnRequestTimeout, logger, } = options || {};
         const keepAlive = true;
         const maxSockets = 50;
+        let httpAgentPromise;
         return {
             connectionTimeout,
             requestTimeout,
             socketTimeout,
+            defaultSocketTimeout: resolveDefaultSocketTimeout(options),
             socketAcquisitionWarningTimeout,
             throwOnRequestTimeout,
-            httpAgentProvider: async () => {
+            httpAgentProvider: () => (httpAgentPromise ??= (async () => {
                 const node_http = __nccwpck_require__(7067);
                 const { Agent, request } = node_http.default ?? node_http;
                 hRequest = request;
@@ -2126,7 +2158,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
                     return httpAgent;
                 }
                 return new hAgent({ keepAlive, maxSockets, ...httpAgent });
-            },
+            })()),
             httpsAgent: (() => {
                 if (httpsAgent instanceof node_https.Agent || typeof httpsAgent?.destroy === "function") {
                     this.externalAgent = true;
@@ -2401,7 +2433,8 @@ class NodeHttp2Handler {
     }
     async handle(request, { abortSignal, requestTimeout, isEventStream } = {}) {
         if (!this.config) {
-            this.config = await this.configProvider;
+            const config = await this.configProvider;
+            this.config = { ...config, defaultSocketTimeout: resolveDefaultSocketTimeout(config) };
             const { disableConcurrentStreams, maxConcurrentStreams, nodeHttp2ConnectOptions } = this.config;
             this.connectionManager.setDisableConcurrentStreams(disableConcurrentStreams ?? false);
             if (maxConcurrentStreams) {
@@ -2411,9 +2444,12 @@ class NodeHttp2Handler {
                 this.connectionManager.setNodeHttp2ConnectOptions(nodeHttp2ConnectOptions);
             }
         }
-        const { requestTimeout: configRequestTimeout, disableConcurrentStreams } = this.config;
+        const { requestTimeout: configRequestTimeout, disableConcurrentStreams, sessionTimeout } = this.config;
         const useIsolatedSession = disableConcurrentStreams || isEventStream;
         const effectiveRequestTimeout = requestTimeout ?? configRequestTimeout;
+        const defaultSocketTimeout = effectiveRequestTimeout === undefined && sessionTimeout === undefined
+            ? this.config.defaultSocketTimeout
+            : undefined;
         return new Promise((_resolve, _reject) => {
             let fulfilled = false;
             let writeRequestBodyPromise = undefined;
@@ -2476,6 +2512,19 @@ class NodeHttp2Handler {
                     rejectWithDestroy(timeoutError);
                 });
             }
+            else if (defaultSocketTimeout) {
+                clientHttp2Stream.setTimeout(defaultSocketTimeout, () => {
+                    const timeoutError = new Error(`Stream timed out because of no activity for ${defaultSocketTimeout} ms`);
+                    timeoutError.name = "TimeoutError";
+                    fulfilled = true;
+                    reject(timeoutError);
+                    clientHttp2Stream.destroy(timeoutError);
+                    if (useIsolatedSession) {
+                        ref.destroy();
+                    }
+                });
+                clientHttp2Stream.once("response", () => clientHttp2Stream.setTimeout(defaultSocketTimeout));
+            }
             if (abortSignal) {
                 const onAbort = () => {
                     clientHttp2Stream.close();
@@ -2534,6 +2583,12 @@ class NodeHttp2Handler {
     updateHttpClientConfig(key, value) {
         this.config = undefined;
         this.configProvider = this.configProvider.then((config) => {
+            switch (key) {
+                case Symbol.for("@smithy/defaultSocketTimeout"):
+                    key = "defaultSocketTimeout";
+                    value = resolveDefaultSocketTimeout(config) ?? value;
+                    break;
+            }
             return {
                 ...config,
                 [key]: value,
