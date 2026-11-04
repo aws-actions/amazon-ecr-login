@@ -2682,7 +2682,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.1155.0";
+var version = "3.1160.0";
 var packageInfo = {
 	version: version};
 
@@ -3178,6 +3178,19 @@ class ScanNotFoundException extends ECRServiceException {
         Object.setPrototypeOf(this, ScanNotFoundException.prototype);
     }
 }
+class ReplicationBackfillNotFoundException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#ReplicationBackfillNotFoundException";
+    name = "ReplicationBackfillNotFoundException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "ReplicationBackfillNotFoundException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, ReplicationBackfillNotFoundException.prototype);
+    }
+}
 class LayerInaccessibleException extends ECRServiceException {
     static shapeId = "com.amazonaws.ecr#LayerInaccessibleException";
     name = "LayerInaccessibleException";
@@ -3360,6 +3373,32 @@ class LifecyclePolicyPreviewInProgressException extends ECRServiceException {
         Object.setPrototypeOf(this, LifecyclePolicyPreviewInProgressException.prototype);
     }
 }
+class ReplicationBackfillInProgressException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#ReplicationBackfillInProgressException";
+    name = "ReplicationBackfillInProgressException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "ReplicationBackfillInProgressException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, ReplicationBackfillInProgressException.prototype);
+    }
+}
+class ReplicationBackfillInvalidStatusException extends ECRServiceException {
+    static shapeId = "com.amazonaws.ecr#ReplicationBackfillInvalidStatusException";
+    name = "ReplicationBackfillInvalidStatusException";
+    $fault = "client";
+    constructor(opts) {
+        super({
+            name: "ReplicationBackfillInvalidStatusException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, ReplicationBackfillInvalidStatusException.prototype);
+    }
+}
 class ImageStorageClassUpdateNotSupportedException extends ECRServiceException {
     static shapeId = "com.amazonaws.ecr#ImageStorageClassUpdateNotSupportedException";
     name = "ImageStorageClassUpdateNotSupportedException";
@@ -3456,6 +3495,9 @@ const _DPTUE = "DeregisterPullTimeUpdateExclusion";
 const _DPTUER = "DeregisterPullTimeUpdateExclusionRequest";
 const _DPTUERe = "DeregisterPullTimeUpdateExclusionResponse";
 const _DR = "DeleteRepository";
+const _DRBR = "DescribeReplicationBackfillResults";
+const _DRBRR = "DescribeReplicationBackfillResultsRequest";
+const _DRBRRe = "DescribeReplicationBackfillResultsResponse";
 const _DRCT = "DeleteRepositoryCreationTemplate";
 const _DRCTR = "DeleteRepositoryCreationTemplateRequest";
 const _DRCTRe = "DeleteRepositoryCreationTemplateResponse";
@@ -3578,6 +3620,9 @@ const _LPTSE = "LayerPartTooSmallException";
 const _LPTUE = "ListPullTimeUpdateExclusions";
 const _LPTUER = "ListPullTimeUpdateExclusionsRequest";
 const _LPTUERi = "ListPullTimeUpdateExclusionsResponse";
+const _LRB = "ListReplicationBackfills";
+const _LRBR = "ListReplicationBackfillsRequest";
+const _LRBRi = "ListReplicationBackfillsResponse";
 const _LTFR = "ListTagsForResource";
 const _LTFRR = "ListTagsForResourceRequest";
 const _LTFRRi = "ListTagsForResourceResponse";
@@ -3615,6 +3660,14 @@ const _PTCRNFE = "PullThroughCacheRuleNotFoundException";
 const _PVD = "PackageVulnerabilityDetails";
 const _R = "Recommendation";
 const _RAEE = "RepositoryAlreadyExistsException";
+const _RBIPE = "ReplicationBackfillInProgressException";
+const _RBISE = "ReplicationBackfillInvalidStatusException";
+const _RBNFE = "ReplicationBackfillNotFoundException";
+const _RBP = "ReplicationBackfillProgress";
+const _RBR = "ReplicationBackfillResult";
+const _RBRL = "ReplicationBackfillResultList";
+const _RBS = "ReplicationBackfillSummary";
+const _RBSL = "ReplicationBackfillSummaryList";
 const _RC = "ReplicationConfiguration";
 const _RCT = "RepositoryCreationTemplate";
 const _RCTL = "RepositoryCreationTemplateList";
@@ -3659,6 +3712,12 @@ const _SLPPRt = "StartLifecyclePolicyPreviewResponse";
 const _SNFE = "ScanNotFoundException";
 const _SNFEe = "SecretNotFoundException";
 const _SR = "SigningRule";
+const _SRB = "StartReplicationBackfill";
+const _SRBR = "StartReplicationBackfillRequest";
+const _SRBRt = "StartReplicationBackfillResponse";
+const _SRBRto = "StopReplicationBackfillRequest";
+const _SRBRtop = "StopReplicationBackfillResponse";
+const _SRBt = "StopReplicationBackfill";
 const _SRF = "ScanningRepositoryFilter";
 const _SRFL = "ScanningRepositoryFilterList";
 const _SRFLi = "SigningRepositoryFilterList";
@@ -3726,19 +3785,23 @@ const _an = "annotations";
 const _ar = "arch";
 const _at = "attributes";
 const _au = "author";
+const _b = "backfills";
 const _bS = "baseScore";
 const _c = "client";
 const _cA = "credentialArn";
 const _cAr = "createdAt";
 const _cRA = "customRoleArn";
+const _cRC = "completedReplicationCount";
 const _cv = "cvss";
 const _d = "description";
 const _dU = "downloadUrl";
-const _de = "destinations";
+const _de = "destination";
+const _des = "destinations";
 const _det = "details";
 const _di = "digest";
 const _e = "error";
 const _eA = "expiresAt";
+const _eAn = "endedAt";
 const _eAx = "exploitAvailable";
 const _eC = "encryptionConfiguration";
 const _eF = "enhancedFindings";
@@ -3751,10 +3814,12 @@ const _f = "failures";
 const _fA = "findingArn";
 const _fAi = "fixAvailable";
 const _fC = "failureCode";
+const _fCa = "failureCodes";
 const _fIV = "fixedInVersion";
 const _fOA = "firstObservedAt";
 const _fP = "filePath";
 const _fR = "failureReason";
+const _fRC = "failedReplicationCount";
 const _fSC = "findingSeverityCounts";
 const _fT = "filterType";
 const _fa = "failure";
@@ -3827,9 +3892,11 @@ const _pTUE = "pullTimeUpdateExclusions";
 const _pVD = "packageVulnerabilityDetails";
 const _pr = "prefix";
 const _pre = "prefixes";
+const _pro = "progress";
 const _r = "registry";
 const _rA = "resourceArn";
 const _rAe = "repositoryArn";
+const _rBI = "replicationBackfillId";
 const _rC = "replicationConfiguration";
 const _rCT = "repositoryCreationTemplate";
 const _rCTe = "repositoryCreationTemplates";
@@ -3841,6 +3908,7 @@ const _rNe = "repositoryNames";
 const _rP = "repositoryPolicy";
 const _rS = "replicationStatuses";
 const _rSC = "registryScanningConfiguration";
+const _rSF = "resultStatusFilter";
 const _rT = "resourceTags";
 const _rU = "referenceUrls";
 const _rUe = "repositoryUri";
@@ -3853,9 +3921,11 @@ const _reg = "region";
 const _rel = "release";
 const _rem = "remediation";
 const _rep = "repositories";
-const _res = "resources";
+const _res = "results";
+const _reso = "resources";
 const _ru = "rules";
 const _s = "smithy.ts.sdk.synthetic.com.amazonaws.ecr";
+const _sA = "startedAt";
 const _sC = "scanningConfigurations";
 const _sCc = "scanningConfiguration";
 const _sCi = "signingConfiguration";
@@ -3863,6 +3933,7 @@ const _sCt = "storageClass";
 const _sD = "scoreDetails";
 const _sF = "scanFrequency";
 const _sI = "subjectId";
+const _sIFC = "subImageFailureCodes";
 const _sLH = "sourceLayerHash";
 const _sMD = "subjectManifestDigest";
 const _sOP = "scanOnPush";
@@ -3882,6 +3953,7 @@ const _su = "summary";
 const _t = "tags";
 const _tITC = "transitioningImageTotalCounts";
 const _tK = "tagKeys";
+const _tRC = "totalReplicationCount";
 const _tS = "tagStatus";
 const _tSC = "targetStorageClass";
 const _te = "text";
@@ -4069,6 +4141,24 @@ var RegistryPolicyNotFoundException$ = [-3, n0, _RPNFE,
     [0]
 ];
 n0_registry.registerError(RegistryPolicyNotFoundException$, RegistryPolicyNotFoundException);
+var ReplicationBackfillInProgressException$ = [-3, n0, _RBIPE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(ReplicationBackfillInProgressException$, ReplicationBackfillInProgressException);
+var ReplicationBackfillInvalidStatusException$ = [-3, n0, _RBISE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(ReplicationBackfillInvalidStatusException$, ReplicationBackfillInvalidStatusException);
+var ReplicationBackfillNotFoundException$ = [-3, n0, _RBNFE,
+    { [_e]: _c },
+    [_m],
+    [0]
+];
+n0_registry.registerError(ReplicationBackfillNotFoundException$, ReplicationBackfillNotFoundException);
 var RepositoryAlreadyExistsException$ = [-3, n0, _RAEE,
     { [_e]: _c },
     [_m],
@@ -4448,6 +4538,16 @@ var DescribeRegistryResponse$ = [3, n0, _DRResc,
     [_rI, _rC],
     [0, () => ReplicationConfiguration$]
 ];
+var DescribeReplicationBackfillResultsRequest$ = [3, n0, _DRBRR,
+    0,
+    [_rBI, _rI, _rSF, _mR, _nT],
+    [0, 0, 0, 1, 0], 1
+];
+var DescribeReplicationBackfillResultsResponse$ = [3, n0, _DRBRRe,
+    0,
+    [_rI, _rBI, _de, _st, _fC, _pro, _res, _sA, _eAn, _nT],
+    [0, 0, () => ReplicationDestination$, 0, 0, () => ReplicationBackfillProgress$, () => ReplicationBackfillResultList, 4, 4, 0]
+];
 var DescribeRepositoriesRequest$ = [3, n0, _DRRescr,
     0,
     [_rI, _rNe, _nT, _mR],
@@ -4480,7 +4580,7 @@ var EncryptionConfigurationForRepositoryCreationTemplate$ = [3, n0, _ECFRCT,
 ];
 var EnhancedImageScanFinding$ = [3, n0, _EISF,
     0,
-    [_aAI, _d, _fA, _fOA, _lOA, _pVD, _rem, _res, _sc, _sD, _sev, _st, _ti, _ty, _uA, _fAi, _eAx],
+    [_aAI, _d, _fA, _fOA, _lOA, _pVD, _rem, _reso, _sc, _sD, _sev, _st, _ti, _ty, _uA, _fAi, _eAx],
     [0, 0, 0, 4, 4, () => PackageVulnerabilityDetails$, () => Remediation$, () => ResourceList, 1, () => ScoreDetails$, 0, 0, 0, 0, 4, 0, 0]
 ];
 var GetAccountSettingRequest$ = [3, n0, _GASR,
@@ -4718,6 +4818,16 @@ var ListPullTimeUpdateExclusionsResponse$ = [3, n0, _LPTUERi,
     [_pTUE, _nT],
     [64 | 0, 0]
 ];
+var ListReplicationBackfillsRequest$ = [3, n0, _LRBR,
+    0,
+    [_rI, _mR, _nT],
+    [0, 1, 0]
+];
+var ListReplicationBackfillsResponse$ = [3, n0, _LRBRi,
+    0,
+    [_rI, _b, _nT],
+    [0, () => ReplicationBackfillSummaryList, 0]
+];
 var ListTagsForResourceRequest$ = [3, n0, _LTFRR,
     0,
     [_rA],
@@ -4858,6 +4968,21 @@ var Remediation$ = [3, n0, _Re,
     [_rec],
     [() => Recommendation$]
 ];
+var ReplicationBackfillProgress$ = [3, n0, _RBP,
+    0,
+    [_tRC, _cRC, _fRC, _fCa],
+    [1, 1, 1, 64 | 0], 4
+];
+var ReplicationBackfillResult$ = [3, n0, _RBR,
+    0,
+    [_rN, _iIm, _st, _fC, _sIFC],
+    [0, () => ImageIdentifier$, 0, 0, 64 | 0], 3
+];
+var ReplicationBackfillSummary$ = [3, n0, _RBS,
+    0,
+    [_rBI, _de, _st, _sA, _fC, _pro, _eAn],
+    [0, () => ReplicationDestination$, 0, 4, 0, () => ReplicationBackfillProgress$, 4], 4
+];
 var ReplicationConfiguration$ = [3, n0, _RC,
     0,
     [_ru],
@@ -4870,7 +4995,7 @@ var ReplicationDestination$ = [3, n0, _RD,
 ];
 var ReplicationRule$ = [3, n0, _RR,
     0,
-    [_de, _rF],
+    [_des, _rF],
     [() => ReplicationDestinationList, () => RepositoryFilterList], 1
 ];
 var Repository$ = [3, n0, _Rep,
@@ -4962,6 +5087,26 @@ var StartLifecyclePolicyPreviewResponse$ = [3, n0, _SLPPRt,
     0,
     [_rI, _rN, _lPT, _st],
     [0, 0, 0, 0]
+];
+var StartReplicationBackfillRequest$ = [3, n0, _SRBR,
+    0,
+    [_de, _rI],
+    [() => ReplicationDestination$, 0], 1
+];
+var StartReplicationBackfillResponse$ = [3, n0, _SRBRt,
+    0,
+    [_rBI, _rI, _de, _st, _sA],
+    [0, 0, () => ReplicationDestination$, 0, 4]
+];
+var StopReplicationBackfillRequest$ = [3, n0, _SRBRto,
+    0,
+    [_rBI, _rI],
+    [0, 0], 1
+];
+var StopReplicationBackfillResponse$ = [3, n0, _SRBRtop,
+    0,
+    [_rI, _rBI, _de, _st, _sA],
+    [0, 0, () => ReplicationDestination$, 0, 4]
 ];
 var SubjectIdentifier$ = [3, n0, _SI,
     0,
@@ -5110,6 +5255,12 @@ var PullThroughCacheRuleList = [1, n0, _PTCRL,
 var RegistryScanningRuleList = [1, n0, _RSRL,
     0, () => RegistryScanningRule$
 ];
+var ReplicationBackfillResultList = [1, n0, _RBRL,
+    0, () => ReplicationBackfillResult$
+];
+var ReplicationBackfillSummaryList = [1, n0, _RBSL,
+    0, () => ReplicationBackfillSummary$
+];
 var ReplicationDestinationList = [1, n0, _RDL,
     0, () => ReplicationDestination$
 ];
@@ -5218,6 +5369,9 @@ var DescribePullThroughCacheRules$ = [9, n0, _DPTCRe,
 var DescribeRegistry$ = [9, n0, _DRe,
     0, () => DescribeRegistryRequest$, () => DescribeRegistryResponse$
 ];
+var DescribeReplicationBackfillResults$ = [9, n0, _DRBR,
+    0, () => DescribeReplicationBackfillResultsRequest$, () => DescribeReplicationBackfillResultsResponse$
+];
 var DescribeRepositories$ = [9, n0, _DRes,
     0, () => DescribeRepositoriesRequest$, () => DescribeRepositoriesResponse$
 ];
@@ -5263,6 +5417,9 @@ var ListImages$ = [9, n0, _LI,
 var ListPullTimeUpdateExclusions$ = [9, n0, _LPTUE,
     0, () => ListPullTimeUpdateExclusionsRequest$, () => ListPullTimeUpdateExclusionsResponse$
 ];
+var ListReplicationBackfills$ = [9, n0, _LRB,
+    0, () => ListReplicationBackfillsRequest$, () => ListReplicationBackfillsResponse$
+];
 var ListTagsForResource$ = [9, n0, _LTFR,
     0, () => ListTagsForResourceRequest$, () => ListTagsForResourceResponse$
 ];
@@ -5304,6 +5461,12 @@ var StartImageScan$ = [9, n0, _SIS,
 ];
 var StartLifecyclePolicyPreview$ = [9, n0, _SLPP,
     0, () => StartLifecyclePolicyPreviewRequest$, () => StartLifecyclePolicyPreviewResponse$
+];
+var StartReplicationBackfill$ = [9, n0, _SRB,
+    0, () => StartReplicationBackfillRequest$, () => StartReplicationBackfillResponse$
+];
+var StopReplicationBackfill$ = [9, n0, _SRBt,
+    0, () => StopReplicationBackfillRequest$, () => StopReplicationBackfillResponse$
 ];
 var TagResource$ = [9, n0, _TR,
     0, () => TagResourceRequest$, () => TagResourceResponse$
@@ -5544,6 +5707,9 @@ class DescribePullThroughCacheRulesCommand extends command(_ep0, _mw0, "Describe
 class DescribeRegistryCommand extends command(_ep0, _mw0, "DescribeRegistry", DescribeRegistry$) {
 }
 
+class DescribeReplicationBackfillResultsCommand extends command(_ep0, _mw0, "DescribeReplicationBackfillResults", DescribeReplicationBackfillResults$) {
+}
+
 class DescribeRepositoriesCommand extends command(_ep0, _mw0, "DescribeRepositories", DescribeRepositories$) {
 }
 
@@ -5589,6 +5755,9 @@ class ListImagesCommand extends command(_ep0, _mw0, "ListImages", ListImages$) {
 class ListPullTimeUpdateExclusionsCommand extends command(_ep0, _mw0, "ListPullTimeUpdateExclusions", ListPullTimeUpdateExclusions$) {
 }
 
+class ListReplicationBackfillsCommand extends command(_ep0, _mw0, "ListReplicationBackfills", ListReplicationBackfills$) {
+}
+
 class ListTagsForResourceCommand extends command(_ep0, _mw0, "ListTagsForResource", ListTagsForResource$) {
 }
 
@@ -5631,6 +5800,12 @@ class StartImageScanCommand extends command(_ep0, _mw0, "StartImageScan", StartI
 class StartLifecyclePolicyPreviewCommand extends command(_ep0, _mw0, "StartLifecyclePolicyPreview", StartLifecyclePolicyPreview$) {
 }
 
+class StartReplicationBackfillCommand extends command(_ep0, _mw0, "StartReplicationBackfill", StartReplicationBackfill$) {
+}
+
+class StopReplicationBackfillCommand extends command(_ep0, _mw0, "StopReplicationBackfill", StopReplicationBackfill$) {
+}
+
 class TagResourceCommand extends command(_ep0, _mw0, "TagResource", TagResource$) {
 }
 
@@ -5658,6 +5833,8 @@ const paginateDescribeImages = createPaginator(ECRClient, DescribeImagesCommand,
 
 const paginateDescribePullThroughCacheRules = createPaginator(ECRClient, DescribePullThroughCacheRulesCommand, "nextToken", "nextToken", "maxResults");
 
+const paginateDescribeReplicationBackfillResults = createPaginator(ECRClient, DescribeReplicationBackfillResultsCommand, "nextToken", "nextToken", "maxResults");
+
 const paginateDescribeRepositories = createPaginator(ECRClient, DescribeRepositoriesCommand, "nextToken", "nextToken", "maxResults");
 
 const paginateDescribeRepositoryCreationTemplates = createPaginator(ECRClient, DescribeRepositoryCreationTemplatesCommand, "nextToken", "nextToken", "maxResults");
@@ -5665,6 +5842,8 @@ const paginateDescribeRepositoryCreationTemplates = createPaginator(ECRClient, D
 const paginateGetLifecyclePolicyPreview = createPaginator(ECRClient, GetLifecyclePolicyPreviewCommand, "nextToken", "nextToken", "maxResults");
 
 const paginateListImages = createPaginator(ECRClient, ListImagesCommand, "nextToken", "nextToken", "maxResults");
+
+const paginateListReplicationBackfills = createPaginator(ECRClient, ListReplicationBackfillsCommand, "nextToken", "nextToken", "maxResults");
 
 const checkState$1 = async (client, input) => {
     let reason;
@@ -5767,6 +5946,7 @@ const commands = {
     DescribeImageSigningStatusCommand,
     DescribePullThroughCacheRulesCommand,
     DescribeRegistryCommand,
+    DescribeReplicationBackfillResultsCommand,
     DescribeRepositoriesCommand,
     DescribeRepositoryCreationTemplatesCommand,
     GetAccountSettingCommand,
@@ -5782,6 +5962,7 @@ const commands = {
     ListImageReferrersCommand,
     ListImagesCommand,
     ListPullTimeUpdateExclusionsCommand,
+    ListReplicationBackfillsCommand,
     ListTagsForResourceCommand,
     PutAccountSettingCommand,
     PutImageCommand,
@@ -5796,6 +5977,8 @@ const commands = {
     SetRepositoryPolicyCommand,
     StartImageScanCommand,
     StartLifecyclePolicyPreviewCommand,
+    StartReplicationBackfillCommand,
+    StopReplicationBackfillCommand,
     TagResourceCommand,
     UntagResourceCommand,
     UpdateImageStorageClassCommand,
@@ -5808,10 +5991,12 @@ const paginators = {
     paginateDescribeImages,
     paginateDescribeImageScanFindings,
     paginateDescribePullThroughCacheRules,
+    paginateDescribeReplicationBackfillResults,
     paginateDescribeRepositories,
     paginateDescribeRepositoryCreationTemplates,
     paginateGetLifecyclePolicyPreview,
     paginateListImages,
+    paginateListReplicationBackfills,
 };
 const waiters = {
     waitUntilImageScanComplete,
@@ -5935,6 +6120,18 @@ const SigningStatus = {
 };
 const RepositoryFilterType = {
     PREFIX_MATCH: "PREFIX_MATCH",
+};
+const ReplicationBackfillResultStatus = {
+    COMPLETE: "COMPLETE",
+    FAILED: "FAILED",
+};
+const ReplicationBackfillStatus = {
+    COMPLETE: "COMPLETE",
+    FAILED: "FAILED",
+    IN_PROGRESS: "IN_PROGRESS",
+    PREPARING: "PREPARING",
+    STOPPED: "STOPPED",
+    STOPPING: "STOPPING",
 };
 const LifecyclePolicyTargetStorageClass = {
     ARCHIVE: "ARCHIVE",
@@ -6072,6 +6269,10 @@ __webpack_unused_export__ = DescribeRegistry$;
 __webpack_unused_export__ = DescribeRegistryCommand;
 __webpack_unused_export__ = DescribeRegistryRequest$;
 __webpack_unused_export__ = DescribeRegistryResponse$;
+__webpack_unused_export__ = DescribeReplicationBackfillResults$;
+__webpack_unused_export__ = DescribeReplicationBackfillResultsCommand;
+__webpack_unused_export__ = DescribeReplicationBackfillResultsRequest$;
+__webpack_unused_export__ = DescribeReplicationBackfillResultsResponse$;
 __webpack_unused_export__ = DescribeRepositories$;
 __webpack_unused_export__ = DescribeRepositoriesCommand;
 __webpack_unused_export__ = DescribeRepositoriesRequest$;
@@ -6217,6 +6418,10 @@ __webpack_unused_export__ = ListPullTimeUpdateExclusions$;
 __webpack_unused_export__ = ListPullTimeUpdateExclusionsCommand;
 __webpack_unused_export__ = ListPullTimeUpdateExclusionsRequest$;
 __webpack_unused_export__ = ListPullTimeUpdateExclusionsResponse$;
+__webpack_unused_export__ = ListReplicationBackfills$;
+__webpack_unused_export__ = ListReplicationBackfillsCommand;
+__webpack_unused_export__ = ListReplicationBackfillsRequest$;
+__webpack_unused_export__ = ListReplicationBackfillsResponse$;
 __webpack_unused_export__ = ListTagsForResource$;
 __webpack_unused_export__ = ListTagsForResourceCommand;
 __webpack_unused_export__ = ListTagsForResourceRequest$;
@@ -6276,6 +6481,17 @@ __webpack_unused_export__ = RegistryPolicyNotFoundException$;
 __webpack_unused_export__ = RegistryScanningConfiguration$;
 __webpack_unused_export__ = RegistryScanningRule$;
 __webpack_unused_export__ = Remediation$;
+__webpack_unused_export__ = ReplicationBackfillInProgressException;
+__webpack_unused_export__ = ReplicationBackfillInProgressException$;
+__webpack_unused_export__ = ReplicationBackfillInvalidStatusException;
+__webpack_unused_export__ = ReplicationBackfillInvalidStatusException$;
+__webpack_unused_export__ = ReplicationBackfillNotFoundException;
+__webpack_unused_export__ = ReplicationBackfillNotFoundException$;
+__webpack_unused_export__ = ReplicationBackfillProgress$;
+__webpack_unused_export__ = ReplicationBackfillResult$;
+__webpack_unused_export__ = ReplicationBackfillResultStatus;
+__webpack_unused_export__ = ReplicationBackfillStatus;
+__webpack_unused_export__ = ReplicationBackfillSummary$;
 __webpack_unused_export__ = ReplicationConfiguration$;
 __webpack_unused_export__ = ReplicationDestination$;
 __webpack_unused_export__ = ReplicationRule$;
@@ -6328,6 +6544,14 @@ __webpack_unused_export__ = StartLifecyclePolicyPreview$;
 __webpack_unused_export__ = StartLifecyclePolicyPreviewCommand;
 __webpack_unused_export__ = StartLifecyclePolicyPreviewRequest$;
 __webpack_unused_export__ = StartLifecyclePolicyPreviewResponse$;
+__webpack_unused_export__ = StartReplicationBackfill$;
+__webpack_unused_export__ = StartReplicationBackfillCommand;
+__webpack_unused_export__ = StartReplicationBackfillRequest$;
+__webpack_unused_export__ = StartReplicationBackfillResponse$;
+__webpack_unused_export__ = StopReplicationBackfill$;
+__webpack_unused_export__ = StopReplicationBackfillCommand;
+__webpack_unused_export__ = StopReplicationBackfillRequest$;
+__webpack_unused_export__ = StopReplicationBackfillResponse$;
 __webpack_unused_export__ = SubjectIdentifier$;
 __webpack_unused_export__ = Tag$;
 __webpack_unused_export__ = TagResource$;
@@ -6391,10 +6615,12 @@ __webpack_unused_export__ = errorTypeRegistries;
 __webpack_unused_export__ = paginateDescribeImageScanFindings;
 __webpack_unused_export__ = paginateDescribeImages;
 __webpack_unused_export__ = paginateDescribePullThroughCacheRules;
+__webpack_unused_export__ = paginateDescribeReplicationBackfillResults;
 __webpack_unused_export__ = paginateDescribeRepositories;
 __webpack_unused_export__ = paginateDescribeRepositoryCreationTemplates;
 __webpack_unused_export__ = paginateGetLifecyclePolicyPreview;
 __webpack_unused_export__ = paginateListImages;
+__webpack_unused_export__ = paginateListReplicationBackfills;
 __webpack_unused_export__ = waitForImageScanComplete;
 __webpack_unused_export__ = waitForLifecyclePolicyPreviewComplete;
 __webpack_unused_export__ = waitUntilImageScanComplete;
@@ -6439,8 +6665,9 @@ const NODEJS_TIMEOUT_ERROR_CODES = ["ECONNRESET", "EPIPE", "ETIMEDOUT"];
 const getTransformedHeaders = (headers) => {
     const transformedHeaders = {};
     for (const name in headers) {
-        if (!hasOwn(headers, name))
+        if (!hasOwn(headers, name)) {
             continue;
+        }
         const headerValues = headers[name];
         transformedHeaders[name] = Array.isArray(headerValues) ? headerValues.join(",") : headerValues;
     }
@@ -6531,13 +6758,26 @@ const setSocketKeepAlive = (request, { keepAlive, keepAliveMsecs }, deferTimeMs 
     return timing.setTimeout(registerListener, deferTimeMs);
 };
 
+const resolveDefaultSocketTimeout = (config) => {
+    const value = config?.defaultSocketTimeout;
+    return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
+};
+
 const DEFER_EVENT_LISTENER_TIME = 3000;
-const setSocketTimeout = (request, reject, timeoutInMs = 0) => {
+const setSocketTimeout = (request, reject, timeoutInMs = 0, destroyResponseBodyOnTimeout = false) => {
+    let response;
+    if (destroyResponseBodyOnTimeout) {
+        request.once("response", (res) => (response = res));
+    }
     const registerTimeout = (offset) => {
         const timeout = timeoutInMs - offset;
         const onTimeout = () => {
+            const error = Object.assign(new Error(`@smithy/node-http-handler - the request socket timed out after ${timeoutInMs} ms of inactivity (${destroyResponseBodyOnTimeout ? "service default socket timeout" : "configured by client requestHandler"}).`), { name: "TimeoutError" });
+            if (destroyResponseBodyOnTimeout) {
+                response?.destroy(error);
+            }
             request.destroy();
-            reject(Object.assign(new Error(`@smithy/node-http-handler - the request socket timed out after ${timeoutInMs} ms of inactivity (configured by client requestHandler).`), { name: "TimeoutError" }));
+            reject(error);
         };
         if (request.socket) {
             request.socket.setTimeout(timeout, onTimeout);
@@ -6551,7 +6791,12 @@ const setSocketTimeout = (request, reject, timeoutInMs = 0) => {
         registerTimeout(0);
         return 0;
     }
-    return timing.setTimeout(registerTimeout.bind(null, timeoutInMs === 0 ? 0 : DEFER_EVENT_LISTENER_TIME), DEFER_EVENT_LISTENER_TIME);
+    const deferralId = timing.setTimeout(registerTimeout.bind(null, timeoutInMs === 0 ? 0 : DEFER_EVENT_LISTENER_TIME), DEFER_EVENT_LISTENER_TIME);
+    if (destroyResponseBodyOnTimeout) {
+        request.once("close", () => timing.clearTimeout(deferralId));
+        return 0;
+    }
+    return deferralId;
 };
 
 const MIN_WAIT_TIME = 6_000;
@@ -6642,8 +6887,9 @@ class NodeHttpHandler {
         }
         if (sockets && requests) {
             for (const origin in sockets) {
-                if (!hasOwn(sockets, origin))
+                if (!hasOwn(sockets, origin)) {
                     continue;
+                }
                 const socketsInUse = sockets[origin]?.length ?? 0;
                 const requestsEnqueued = requests[origin]?.length ?? 0;
                 if (socketsInUse >= maxSockets && requestsEnqueued >= 2 * maxSockets) {
@@ -6791,7 +7037,13 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             const effectiveRequestTimeout = requestTimeout ?? config.requestTimeout;
             connectionTimeoutId = setConnectionTimeout(req, reject, config.connectionTimeout);
             requestTimeoutId = setRequestTimeout(req, reject, effectiveRequestTimeout, config.throwOnRequestTimeout, logger ?? console);
-            socketTimeoutId = setSocketTimeout(req, reject, config.socketTimeout);
+            const defaultSocketTimeout = config.socketTimeout === undefined ? resolveDefaultSocketTimeout(config) : undefined;
+            if (defaultSocketTimeout) {
+                socketTimeoutId = setSocketTimeout(req, reject, defaultSocketTimeout, true);
+            }
+            else {
+                socketTimeoutId = setSocketTimeout(req, reject, config.socketTimeout);
+            }
             const httpAgent = nodeHttpsOptions.agent;
             if (typeof httpAgent === "object" && "keepAlive" in httpAgent) {
                 keepAliveTimeoutId = setSocketKeepAlive(req, {
@@ -6808,11 +7060,15 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
     updateHttpClientConfig(key, value) {
         this.config = undefined;
         this.configProvider = this.configProvider.then((config) => {
-            if (key === Symbol.for("logger")) {
-                return {
-                    ...config,
-                    logger: config.logger ?? value,
-                };
+            switch (key) {
+                case Symbol.for("logger"):
+                    key = "logger";
+                    value = config.logger ?? value;
+                    break;
+                case Symbol.for("@smithy/defaultSocketTimeout"):
+                    key = "defaultSocketTimeout";
+                    value = resolveDefaultSocketTimeout(config) ?? value;
+                    break;
             }
             return {
                 ...config,
@@ -6827,13 +7083,15 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
         const { requestTimeout, connectionTimeout, socketTimeout, socketAcquisitionWarningTimeout, httpAgent, httpsAgent, throwOnRequestTimeout, logger, } = options || {};
         const keepAlive = true;
         const maxSockets = 50;
+        let httpAgentPromise;
         return {
             connectionTimeout,
             requestTimeout,
             socketTimeout,
+            defaultSocketTimeout: resolveDefaultSocketTimeout(options),
             socketAcquisitionWarningTimeout,
             throwOnRequestTimeout,
-            httpAgentProvider: async () => {
+            httpAgentProvider: () => (httpAgentPromise ??= (async () => {
                 const node_http = __nccwpck_require__(7067);
                 const { Agent, request } = node_http.default ?? node_http;
                 hRequest = request;
@@ -6843,7 +7101,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
                     return httpAgent;
                 }
                 return new hAgent({ keepAlive, maxSockets, ...httpAgent });
-            },
+            })()),
             httpsAgent: (() => {
                 if (httpsAgent instanceof node_https.Agent || typeof httpsAgent?.destroy === "function") {
                     this.externalAgent = true;
@@ -7118,7 +7376,8 @@ class NodeHttp2Handler {
     }
     async handle(request, { abortSignal, requestTimeout, isEventStream } = {}) {
         if (!this.config) {
-            this.config = await this.configProvider;
+            const config = await this.configProvider;
+            this.config = { ...config, defaultSocketTimeout: resolveDefaultSocketTimeout(config) };
             const { disableConcurrentStreams, maxConcurrentStreams, nodeHttp2ConnectOptions } = this.config;
             this.connectionManager.setDisableConcurrentStreams(disableConcurrentStreams ?? false);
             if (maxConcurrentStreams) {
@@ -7128,9 +7387,12 @@ class NodeHttp2Handler {
                 this.connectionManager.setNodeHttp2ConnectOptions(nodeHttp2ConnectOptions);
             }
         }
-        const { requestTimeout: configRequestTimeout, disableConcurrentStreams } = this.config;
+        const { requestTimeout: configRequestTimeout, disableConcurrentStreams, sessionTimeout } = this.config;
         const useIsolatedSession = disableConcurrentStreams || isEventStream;
         const effectiveRequestTimeout = requestTimeout ?? configRequestTimeout;
+        const defaultSocketTimeout = effectiveRequestTimeout === undefined && sessionTimeout === undefined
+            ? this.config.defaultSocketTimeout
+            : undefined;
         return new Promise((_resolve, _reject) => {
             let fulfilled = false;
             let writeRequestBodyPromise = undefined;
@@ -7193,6 +7455,19 @@ class NodeHttp2Handler {
                     rejectWithDestroy(timeoutError);
                 });
             }
+            else if (defaultSocketTimeout) {
+                clientHttp2Stream.setTimeout(defaultSocketTimeout, () => {
+                    const timeoutError = new Error(`Stream timed out because of no activity for ${defaultSocketTimeout} ms`);
+                    timeoutError.name = "TimeoutError";
+                    fulfilled = true;
+                    reject(timeoutError);
+                    clientHttp2Stream.destroy(timeoutError);
+                    if (useIsolatedSession) {
+                        ref.destroy();
+                    }
+                });
+                clientHttp2Stream.once("response", () => clientHttp2Stream.setTimeout(defaultSocketTimeout));
+            }
             if (abortSignal) {
                 const onAbort = () => {
                     clientHttp2Stream.close();
@@ -7251,6 +7526,12 @@ class NodeHttp2Handler {
     updateHttpClientConfig(key, value) {
         this.config = undefined;
         this.configProvider = this.configProvider.then((config) => {
+            switch (key) {
+                case Symbol.for("@smithy/defaultSocketTimeout"):
+                    key = "defaultSocketTimeout";
+                    value = resolveDefaultSocketTimeout(config) ?? value;
+                    break;
+            }
             return {
                 ...config,
                 [key]: value,
