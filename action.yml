@@ -35,6 +35,19 @@ inputs:
       Options: ['true', 'false']
     required: false
     default: 'false'
+  max-attempts:
+    description: >-
+      Maximum number of Docker login attempts, including the initial attempt.
+      Only transient Docker login errors are retried. Must be an integer from 1 to 10.
+    required: false
+    default: '3'
+  retry-backoff-seconds:
+    description: >-
+      Initial delay in seconds before retrying a transient Docker login failure.
+      The delay doubles after each retry and is capped at 60 seconds. Use 0 to disable waiting.
+      Must be an integer from 0 to 60.
+    required: false
+    default: '1'
 outputs:
   registry:
     description: >-
