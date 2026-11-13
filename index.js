@@ -5,17 +5,23 @@ import { NodeHttpHandler } from '@aws-sdk/node-http-handler';
 import { fromHttp } from '@aws-sdk/credential-providers';
 import { ECRClient, GetAuthorizationTokenCommand } from '@aws-sdk/client-ecr';
 import { ECRPUBLICClient, GetAuthorizationTokenCommand as GetAuthorizationTokenCommandPublic } from '@aws-sdk/client-ecr-public';
+import { SigninClient, CreateBearerTokenCommand } from '@aws-sdk/client-signin';
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const ECR_LOGIN_GITHUB_ACTION_USER_AGENT = 'amazon-ecr-login-for-github-actions';
 const ECR_PUBLIC_REGISTRY_URI = 'public.ecr.aws';
+const ECR_REGISTRY_ID_PATTERN = /^\d{12}$/;
+const CALLER_PRINCIPAL_ARN_PATTERN = /^arn:[a-z0-9-]+:(?:iam|sts)::(\d{12}):/;
+const SIGNIN_GRANT_TYPE = 'client_credentials';
+const SIGNIN_RESOURCE = 'ecr.amazonaws.com';
 
 const INPUTS = {
   httpProxy: 'http-proxy',
   maskPassword: 'mask-password',
   registries: 'registries',
   registryType: 'registry-type',
+  tokenType: 'ecr-private-token-type',
   skipLogout: 'skip-logout'
 };
 
@@ -32,6 +38,11 @@ const STATES = {
 const REGISTRY_TYPES = {
   private: 'private',
   public: 'public'
+};
+
+const TOKEN_TYPES = {
+  regional: 'regional-token',
+  global: 'global-token'
 };
 
 function configureProxy(httpProxy) {
@@ -71,8 +82,8 @@ function getCredentials() {
   return undefined;
 }
 
-async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
-  const ecrClient = new ECRClient({
+function getEcrClient(httpsProxyAgent) {
+  return new ECRClient({
     customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
     credentials: getCredentials(), // Added credentials setting
     requestHandler: new NodeHttpHandler({
@@ -80,6 +91,10 @@ async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
       httpsAgent: httpsProxyAgent
     }),
   });
+}
+
+async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
+  const ecrClient = getEcrClient(httpsProxyAgent);
   const command = new GetAuthorizationTokenCommand(authTokenRequest);
   const authTokenResponse = await ecrClient.send(command);
   if (!authTokenResponse) {
@@ -91,6 +106,91 @@ async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
   }
 
   return authTokenResponse;
+}
+
+function getEcrRegistryEndpoint(registryId, ecrApiHostname) {
+  // Global mode constructs the Docker target locally, so validate before retrieving a token.
+  if (!ECR_REGISTRY_ID_PATTERN.test(registryId)) {
+    throw new Error(`Invalid ECR registry account ID: '${registryId}'`);
+  }
+
+  // Map the ECR API hostname to the ECR registry hostname.
+  const registryHostname = ecrApiHostname.startsWith('api.')
+    ? `dkr.${ecrApiHostname.slice('api.'.length)}`
+    : `dkr-${ecrApiHostname.replace('.api.', '.on.')}`;
+  return `https://${registryId}.${registryHostname}`;
+}
+
+function getCallerAccountId(accessToken) {
+  let subject;
+  try {
+    subject = JSON.parse(Buffer.from(accessToken.split('.')[1], 'base64url').toString('utf-8')).sub;
+  } catch {
+    // Not a readable token; reported below.
+  }
+  const match = typeof subject === 'string' && CALLER_PRINCIPAL_ARN_PATTERN.exec(subject);
+  if (!match) {
+    throw new Error(`Could not read the caller account ID from the ECR global token; set '${INPUTS.registries}'`);
+  }
+  return match[1];
+}
+
+async function getEcrGlobalAuthTokenWrapper(registryIds, httpsProxyAgent) {
+  // Match the regional-token interface: registries selects accounts, defaulting
+  // to the caller's account, and the configured SDK region selects the regional
+  // registry endpoints.
+  const ecrClient = getEcrClient(httpsProxyAgent);
+  const region = await ecrClient.config.region();
+
+  // Resolve the ECR API endpoint for the configured region.
+  const ecrApiEndpoint = await ecrClient.config.endpointProvider({
+    Region: region,
+    UseFIPS: await ecrClient.config.useFipsEndpoint(),
+    UseDualStack: await ecrClient.config.useDualstackEndpoint()
+  });
+  const ecrApiHostname = ecrApiEndpoint.url.hostname;
+  let proxyEndpoints = registryIds.map(
+    (accountId) => getEcrRegistryEndpoint(accountId, ecrApiHostname));
+
+  const signinClient = new SigninClient({
+    customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
+    credentials: getCredentials(),
+    ignoreConfiguredEndpointUrls: true,
+    requestHandler: new NodeHttpHandler({
+      httpAgent: httpsProxyAgent,
+      httpsAgent: httpsProxyAgent
+    }),
+  });
+  const command = new CreateBearerTokenCommand({
+    grantType: SIGNIN_GRANT_TYPE,
+    resource: SIGNIN_RESOURCE
+  });
+  let bearerTokenResponse;
+  try {
+    bearerTokenResponse = await signinClient.send(command);
+  } catch (error) {
+    const registryUris = proxyEndpoints.map((proxyEndpoint) => proxyEndpoint.replace(/^https?:\/\//, ''));
+    throw new Error(
+      `Could not get an ECR global token for ${registryUris.join(', ') || 'the default registry'} ` +
+      `in region ${region}: ${error.message}`,
+      { cause: error });
+  }
+  if (!bearerTokenResponse) {
+    throw new Error('Amazon SignIn bearer token returned no data');
+  } else if (!bearerTokenResponse.accessToken) {
+    throw new Error('Amazon SignIn bearer token is invalid');
+  }
+  if (!proxyEndpoints.length) {
+    proxyEndpoints = [getEcrRegistryEndpoint(getCallerAccountId(bearerTokenResponse.accessToken), ecrApiHostname)];
+  }
+
+  return {
+    authorizationData: proxyEndpoints.map((proxyEndpoint) => ({
+      username: 'AWS',
+      password: bearerTokenResponse.accessToken,
+      proxyEndpoint
+    }))
+  };
 }
 
 async function getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
@@ -134,6 +234,7 @@ async function run() {
   const maskPassword = (core.getInput(INPUTS.maskPassword, { required: false }).toLowerCase() || 'true') !== 'false';
   const registries = core.getInput(INPUTS.registries, { required: false });
   const registryType = core.getInput(INPUTS.registryType, { required: false }).toLowerCase() || REGISTRY_TYPES.private;
+  const tokenType = (core.getInput(INPUTS.tokenType, { required: false }) || TOKEN_TYPES.regional).toLowerCase();
   const skipLogout = core.getInput(INPUTS.skipLogout, { required: false }).toLowerCase() === 'true';
 
   const registryUriState = [];
@@ -142,6 +243,13 @@ async function run() {
     if (registryType !== REGISTRY_TYPES.private && registryType !== REGISTRY_TYPES.public) {
       throw new Error(`Invalid input for '${INPUTS.registryType}', possible options are [${REGISTRY_TYPES.private}, ${REGISTRY_TYPES.public}]`);
     }
+    if (registryType === REGISTRY_TYPES.private &&
+        tokenType !== TOKEN_TYPES.regional &&
+        tokenType !== TOKEN_TYPES.global) {
+      throw new Error(`Invalid input for '${INPUTS.tokenType}', possible options are [${TOKEN_TYPES.regional}, ${TOKEN_TYPES.global}]`);
+    }
+    const useGlobalToken = registryType === REGISTRY_TYPES.private &&
+      tokenType === TOKEN_TYPES.global;
 
     // Notify customer if they don't have their password masked
     if (!maskPassword) {
@@ -154,22 +262,29 @@ async function run() {
 
     // Get the ECR/ECR Public authorization token(s)
     const authTokenRequest = {};
+    let registryIds = [];
     if (registryType === REGISTRY_TYPES.private && registries) {
-      const registryIds = registries.split(',');
-      core.debug(`Requesting auth token for ${registryIds.length} registries:`);
+      registryIds = registries.split(',');
+      core.debug(`${useGlobalToken ? 'Preparing login for' : 'Requesting auth token for'} ${registryIds.length} registries:`);
       for (const id of registryIds) {
         core.debug(`  '${id}'`);
       }
       authTokenRequest.registryIds = registryIds;
     }
-    const authTokenResponse = registryType === REGISTRY_TYPES.private ?
-      await getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) :
-      await getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent);
+    let authTokenResponse;
+    if (registryType === REGISTRY_TYPES.public) {
+      authTokenResponse = await getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent);
+    } else if (useGlobalToken) {
+      authTokenResponse = await getEcrGlobalAuthTokenWrapper(registryIds, httpsProxyAgent);
+    } else {
+      authTokenResponse = await getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent);
+    }
 
     // Login to each registry
     for (const authData of authTokenResponse.authorizationData) {
-      const authToken = Buffer.from(authData.authorizationToken, 'base64').toString('utf-8');
-      const creds = authToken.split(':', 2);
+      const creds = useGlobalToken
+        ? [authData.username, authData.password]
+        : Buffer.from(authData.authorizationToken, 'base64').toString('utf-8').split(':', 2);
       const proxyEndpoint = authData.proxyEndpoint;
       const registryUri = proxyEndpoint.replace(/^https?:\/\//, '');
 
