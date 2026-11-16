@@ -7552,13 +7552,2063 @@ exports.NodeHttpHandler = NodeHttpHandler;
 
 /***/ }),
 
+/***/ 1703:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+var __webpack_unused_export__;
+const { awsEndpointFunctions, emitWarningIfUnsupportedVersion: emitWarningIfUnsupportedVersion$1, createDefaultUserAgentProvider, getDefaultSocketTimeout, NODE_APP_ID_CONFIG_OPTIONS, getAwsRegionExtensionConfiguration, resolveAwsRegionExtensionConfiguration, resolveUserAgentConfig, resolveHostHeaderConfig, getUserAgentPlugin, getHostHeaderPlugin, getLoggerPlugin, getRecursionDetectionPlugin } = __nccwpck_require__(5152);
+const { NoAuthSigner, getHttpAuthSchemeEndpointRuleSetPlugin, DefaultIdentityProviderConfig, getHttpSigningPlugin, createPaginator } = __nccwpck_require__(402);
+const { normalizeProvider, getSmithyContext, ServiceException, NoOpLogger, emitWarningIfUnsupportedVersion, loadConfigsForDefaultMode, getDefaultExtensionConfiguration, resolveDefaultRuntimeConfig, Client, makeBuilder, createAggregatedClient } = __nccwpck_require__(2658);
+const { Command: $Command } = __nccwpck_require__(2658);
+__webpack_unused_export__ = $Command;
+__webpack_unused_export__ = Client;
+const { resolveDefaultsModeConfig, loadConfig, NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, NODE_REGION_CONFIG_OPTIONS, NODE_REGION_CONFIG_FILE_OPTIONS, resolveRegionConfig } = __nccwpck_require__(7291);
+const { BinaryDecisionDiagram, EndpointCache, decideEndpoint, customEndpointFunctions, resolveEndpointConfig, getEndpointPlugin } = __nccwpck_require__(2085);
+const { parseUrl, getHttpHandlerExtensionConfiguration, resolveHttpHandlerRuntimeConfig, getContentLengthPlugin } = __nccwpck_require__(3422);
+const { DEFAULT_RETRY_MODE, NODE_RETRY_MODE_CONFIG_OPTIONS, NODE_MAX_ATTEMPT_CONFIG_OPTIONS, resolveRetryConfig, getRetryPlugin } = __nccwpck_require__(3609);
+const { TypeRegistry, getSchemaSerdePlugin } = __nccwpck_require__(6890);
+const { resolveAwsSdkSigV4Config, AwsSdkSigV4Signer, NODE_AUTH_SCHEME_PREFERENCE_OPTIONS } = __nccwpck_require__(7523);
+const { defaultProvider } = __nccwpck_require__(5861);
+const { toUtf8, fromUtf8, toBase64, fromBase64, calculateBodyLength } = __nccwpck_require__(2430);
+const { streamCollector, NodeHttpHandler } = __nccwpck_require__(6148);
+const { AwsRestJsonProtocol } = __nccwpck_require__(7288);
+const { Sha256 } = __nccwpck_require__(9542);
+
+const defaultSigninHttpAuthSchemeParametersProvider = async (config, context, input) => {
+    return {
+        operation: getSmithyContext(context).operation,
+        region: await normalizeProvider(config.region)() || (() => {
+            throw new Error("expected `region` to be configured for `aws.auth#sigv4`");
+        })(),
+    };
+};
+function createAwsAuthSigv4HttpAuthOption(authParameters) {
+    return {
+        schemeId: "aws.auth#sigv4",
+        signingProperties: {
+            name: "signin",
+            region: authParameters.region,
+        },
+        propertiesExtractor: (config, context) => ({
+            signingProperties: {
+                config,
+                context,
+            },
+        }),
+    };
+}
+function createSmithyApiNoAuthHttpAuthOption(authParameters) {
+    return {
+        schemeId: "smithy.api#noAuth",
+    };
+}
+const defaultSigninHttpAuthSchemeProvider = (authParameters) => {
+    const options = [];
+    switch (authParameters.operation) {
+        case "CreateOAuth2Token":
+            {
+                options.push(createSmithyApiNoAuthHttpAuthOption());
+                break;
+            }
+        case "CreateOAuth2TokenWithTokenExchange":
+            {
+                options.push(createSmithyApiNoAuthHttpAuthOption());
+                break;
+            }
+        default: {
+            options.push(createAwsAuthSigv4HttpAuthOption(authParameters));
+        }
+    }
+    return options;
+};
+const resolveHttpAuthSchemeConfig = (config) => {
+    const config_0 = resolveAwsSdkSigV4Config(config);
+    return Object.assign(config_0, {
+        authSchemePreference: normalizeProvider(config.authSchemePreference ?? []),
+    });
+};
+
+const resolveClientEndpointParameters = (options) => {
+    return Object.assign(options, {
+        useDualstackEndpoint: options.useDualstackEndpoint ?? false,
+        useFipsEndpoint: options.useFipsEndpoint ?? false,
+        defaultSigningName: "signin",
+    });
+};
+const commonParams = {
+    UseFIPS: { type: "builtInParams", name: "useFipsEndpoint" },
+    Endpoint: { type: "builtInParams", name: "endpoint" },
+    Region: { type: "builtInParams", name: "region" },
+    UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
+};
+
+var version = "3.1164.0";
+var packageInfo = {
+	version: version};
+
+const s = "ref";
+const a = -1, b = false, c = true, d = "isSet", e = "booleanEquals", f = "coalesce", g = "PartitionResult", h = "stringEquals", i = "getAttr", j = "https://signin.{Region}.{PartitionResult#dualStackDnsSuffix}", k = { [s]: "Endpoint" }, l = { "fn": i, "argv": [{ [s]: g }, "name"] }, m = { [s]: "Region" }, n = { [s]: g }, o = { "authSchemes": [{ "name": "sigv4", "signingName": "signin", "signingRegion": "{Region}" }] }, p = {}, q = [m];
+const _data = {
+    conditions: [
+        [d, q],
+        [e, [{ fn: f, argv: [{ [s]: "IsControlPlane" }, b] }, c]],
+        [d, [k]],
+        ["aws.partition", q, g],
+        [e, [{ [s]: "UseFIPS" }, c]],
+        [h, [l, "aws"]],
+        [e, [{ fn: f, argv: [{ [s]: "IsOAuthEndpoint" }, b] }, c]],
+        [e, [{ [s]: "UseDualStack" }, c]],
+        [h, [l, "aws-cn"]],
+        [h, [m, "us-gov-west-1"]],
+        [h, [l, "aws-us-gov"]],
+        [e, [{ fn: i, argv: [n, "supportsFIPS"] }, c]],
+        [h, [l, "aws-iso"]],
+        [h, [l, "aws-iso-b"]],
+        [h, [l, "aws-iso-f"]],
+        [h, [l, "aws-iso-e"]],
+        [h, [l, "aws-eusc"]],
+        [e, [{ fn: i, argv: [n, "supportsDualStack"] }, c]]
+    ],
+    results: [
+        [a],
+        ["https://signin.{Region}.api.aws", o],
+        ["https://signin.{Region}.api.amazonwebservices.com.cn", o],
+        [j, o],
+        [a, "FIPS endpoints are not supported for OAuth operations. Disable FIPS or use a non-OAuth operation."],
+        ["https://{Region}.oauth.signin.aws", o],
+        ["https://{Region}.signin.aws.amazon.com", p],
+        ["https://{Region}.signin.amazonaws.cn", p],
+        ["https://{Region}.signin.amazonaws-us-gov.com", p],
+        ["https://{Region}.signin.c2shome.ic.gov", p],
+        ["https://{Region}.signin.sc2shome.sgov.gov", p],
+        ["https://{Region}.signin.csphome.hci.ic.gov", p],
+        ["https://{Region}.signin.csphome.adc-e.uk", p],
+        ["https://{Region}.signin.amazonaws-eusc.eu", p],
+        ["https://signin-fips.amazonaws-us-gov.com", p],
+        ["https://{Region}.signin-fips.amazonaws-us-gov.com", p],
+        ["https://{Region}.signin.{PartitionResult#dnsSuffix}", p],
+        [a, "Invalid Configuration: FIPS and custom endpoint are not supported"],
+        [a, "Invalid Configuration: Dualstack and custom endpoint are not supported"],
+        [k, p],
+        ["https://signin-fips.{Region}.{PartitionResult#dualStackDnsSuffix}", p],
+        [a, "FIPS and DualStack are enabled, but this partition does not support one or both"],
+        ["https://signin-fips.{Region}.{PartitionResult#dnsSuffix}", p],
+        [a, "FIPS is enabled but this partition does not support FIPS"],
+        [j, p],
+        [a, "DualStack is enabled but this partition does not support DualStack"],
+        ["https://signin.{Region}.{PartitionResult#dnsSuffix}", p],
+        [a, "Invalid Configuration: Missing Region"]
+    ]
+};
+const root = 2;
+const r = 100_000_000;
+const nodes = new Int32Array([
+    -1, 1, -1,
+    0, 6, 3,
+    2, 36, 4,
+    4, 5, r + 27,
+    6, r + 4, r + 27,
+    1, 29, 7,
+    2, 36, 8,
+    3, 9, 31,
+    4, 22, 10,
+    5, 19, 11,
+    7, 21, 12,
+    8, r + 7, 13,
+    10, r + 8, 14,
+    12, r + 9, 15,
+    13, r + 10, 16,
+    14, r + 11, 17,
+    15, r + 12, 18,
+    16, r + 13, r + 16,
+    6, r + 5, 20,
+    7, 21, r + 6,
+    17, r + 24, r + 25,
+    6, r + 4, 23,
+    7, 27, 24,
+    9, r + 14, 25,
+    10, r + 15, 26,
+    11, r + 22, r + 23,
+    11, 28, r + 21,
+    17, r + 20, r + 21,
+    2, 35, 30,
+    3, 39, 31,
+    4, 32, r + 27,
+    6, r + 4, 33,
+    7, r + 27, 34,
+    9, r + 14, r + 27,
+    3, 39, 36,
+    4, 38, 37,
+    7, r + 18, r + 19,
+    6, r + 4, r + 17,
+    5, r + 1, 40,
+    8, r + 2, r + 3,
+]);
+const bdd = BinaryDecisionDiagram.from(nodes, root, _data.conditions, _data.results);
+
+const cache = new EndpointCache({
+    size: 50,
+    params: ["Endpoint", "IsControlPlane", "IsOAuthEndpoint", "Region", "UseDualStack", "UseFIPS"],
+});
+const defaultEndpointResolver = (endpointParams, context = {}) => {
+    return cache.get(endpointParams, () => decideEndpoint(bdd, {
+        endpointParams: endpointParams,
+        logger: context.logger,
+    }));
+};
+customEndpointFunctions.aws = awsEndpointFunctions;
+
+class SigninServiceException extends ServiceException {
+    static shapeId = "smithy.ts.sdk.synthetic.com.amazonaws.signin#SigninServiceException";
+    constructor(options) {
+        super(options);
+        Object.setPrototypeOf(this, SigninServiceException.prototype);
+    }
+}
+
+class AccessDeniedException extends SigninServiceException {
+    static shapeId = "com.amazonaws.signin#AccessDeniedException";
+    name = "AccessDeniedException";
+    $fault = "client";
+    error;
+    constructor(opts) {
+        super({
+            name: "AccessDeniedException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, AccessDeniedException.prototype);
+        this.error = opts.error;
+    }
+}
+class ConflictException extends SigninServiceException {
+    static shapeId = "com.amazonaws.signin#ConflictException";
+    name = "ConflictException";
+    $fault = "client";
+    error;
+    constructor(opts) {
+        super({
+            name: "ConflictException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, ConflictException.prototype);
+        this.error = opts.error;
+    }
+}
+class InternalServerException extends SigninServiceException {
+    static shapeId = "com.amazonaws.signin#InternalServerException";
+    name = "InternalServerException";
+    $fault = "server";
+    error;
+    constructor(opts) {
+        super({
+            name: "InternalServerException",
+            $fault: "server",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, InternalServerException.prototype);
+        this.error = opts.error;
+    }
+}
+class TooManyRequestsError extends SigninServiceException {
+    static shapeId = "com.amazonaws.signin#TooManyRequestsError";
+    name = "TooManyRequestsError";
+    $fault = "client";
+    error;
+    constructor(opts) {
+        super({
+            name: "TooManyRequestsError",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, TooManyRequestsError.prototype);
+        this.error = opts.error;
+    }
+}
+class ValidationException extends SigninServiceException {
+    static shapeId = "com.amazonaws.signin#ValidationException";
+    name = "ValidationException";
+    $fault = "client";
+    error;
+    constructor(opts) {
+        super({
+            name: "ValidationException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, ValidationException.prototype);
+        this.error = opts.error;
+    }
+}
+class InvalidGrantException extends SigninServiceException {
+    static shapeId = "com.amazonaws.signin#InvalidGrantException";
+    name = "InvalidGrantException";
+    $fault = "client";
+    error;
+    constructor(opts) {
+        super({
+            name: "InvalidGrantException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, InvalidGrantException.prototype);
+        this.error = opts.error;
+    }
+}
+class InvalidScopeException extends SigninServiceException {
+    static shapeId = "com.amazonaws.signin#InvalidScopeException";
+    name = "InvalidScopeException";
+    $fault = "client";
+    error;
+    constructor(opts) {
+        super({
+            name: "InvalidScopeException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, InvalidScopeException.prototype);
+        this.error = opts.error;
+    }
+}
+class ServiceUnavailableException extends SigninServiceException {
+    static shapeId = "com.amazonaws.signin#ServiceUnavailableException";
+    name = "ServiceUnavailableException";
+    $fault = "server";
+    $retryable = {};
+    error;
+    constructor(opts) {
+        super({
+            name: "ServiceUnavailableException",
+            $fault: "server",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, ServiceUnavailableException.prototype);
+        this.error = opts.error;
+    }
+}
+class ResourceNotFoundException extends SigninServiceException {
+    static shapeId = "com.amazonaws.signin#ResourceNotFoundException";
+    name = "ResourceNotFoundException";
+    $fault = "client";
+    error;
+    constructor(opts) {
+        super({
+            name: "ResourceNotFoundException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, ResourceNotFoundException.prototype);
+        this.error = opts.error;
+    }
+}
+class ServiceQuotaExceededException extends SigninServiceException {
+    static shapeId = "com.amazonaws.signin#ServiceQuotaExceededException";
+    name = "ServiceQuotaExceededException";
+    $fault = "client";
+    error;
+    constructor(opts) {
+        super({
+            name: "ServiceQuotaExceededException",
+            $fault: "client",
+            ...opts,
+        });
+        Object.setPrototypeOf(this, ServiceQuotaExceededException.prototype);
+        this.error = opts.error;
+    }
+}
+
+const _A = "Action";
+const _ADE = "AccessDeniedException";
+const _AT = "AccessToken";
+const _C = "Condition";
+const _CB = "ConditionBlock";
+const _CBT = "CreateBearerToken";
+const _CBTR = "CreateBearerTokenRequest";
+const _CBTRr = "CreateBearerTokenResponse";
+const _CE = "ConflictException";
+const _COAT = "CreateOAuth2Token";
+const _COATR = "CreateOAuth2TokenRequest";
+const _COATRB = "CreateOAuth2TokenRequestBody";
+const _COATRBr = "CreateOAuth2TokenResponseBody";
+const _COATRr = "CreateOAuth2TokenResponse";
+const _COATWIAM = "CreateOAuth2TokenWithIAM";
+const _COATWIAMR = "CreateOAuth2TokenWithIAMRequest";
+const _COATWIAMRr = "CreateOAuth2TokenWithIAMResponse";
+const _COATWTE = "CreateOAuth2TokenWithTokenExchange";
+const _COATWTER = "CreateOAuth2TokenWithTokenExchangeRequest";
+const _COATWTERr = "CreateOAuth2TokenWithTokenExchangeResponse";
+const _DCAC = "DeleteConsoleAuthorizationConfiguration";
+const _DCACI = "DeleteConsoleAuthorizationConfigurationInput";
+const _DCACO = "DeleteConsoleAuthorizationConfigurationOutput";
+const _DRPS = "DeleteResourcePermissionStatement";
+const _DRPSI = "DeleteResourcePermissionStatementInput";
+const _DRPSO = "DeleteResourcePermissionStatementOutput";
+const _E = "Effect";
+const _GCAC = "GetConsoleAuthorizationConfiguration";
+const _GCACI = "GetConsoleAuthorizationConfigurationInput";
+const _GCACO = "GetConsoleAuthorizationConfigurationOutput";
+const _GRP = "GetResourcePolicy";
+const _GRPI = "GetResourcePolicyInput";
+const _GRPO = "GetResourcePolicyOutput";
+const _IGE = "InvalidGrantException";
+const _IOATWIAM = "IntrospectOAuth2TokenWithIAM";
+const _IOATWIAMR = "IntrospectOAuth2TokenWithIAMRequest";
+const _IOATWIAMRn = "IntrospectOAuth2TokenWithIAMResponse";
+const _ISE = "InternalServerException";
+const _ISEn = "InvalidScopeException";
+const _IT = "IntrospectionToken";
+const _LRPS = "ListResourcePermissionStatements";
+const _LRPSI = "ListResourcePermissionStatementsInput";
+const _LRPSO = "ListResourcePermissionStatementsOutput";
+const _OAAT = "OAuthAccessToken";
+const _P = "Principal";
+const _PCAC = "PutConsoleAuthorizationConfiguration";
+const _PCACI = "PutConsoleAuthorizationConfigurationInput";
+const _PCACO = "PutConsoleAuthorizationConfigurationOutput";
+const _PRPS = "PutResourcePermissionStatement";
+const _PRPSI = "PutResourcePermissionStatementInput";
+const _PRPSO = "PutResourcePermissionStatementOutput";
+const _PS = "PolicyStatement";
+const _PSS = "PermissionStatementSummary";
+const _PSSe = "PermissionStatementSummaries";
+const _PSo = "PolicyStatements";
+const _R = "Resource";
+const _RNFE = "ResourceNotFoundException";
+const _ROATWIAM = "RevokeOAuth2TokenWithIAM";
+const _ROATWIAMR = "RevokeOAuth2TokenWithIAMRequest";
+const _ROATWIAMRe = "RevokeOAuth2TokenWithIAMResponse";
+const _RT = "RefreshToken";
+const _RTe = "RevocationToken";
+const _S = "Statement";
+const _SQEE = "ServiceQuotaExceededException";
+const _SRBP = "SigninResourceBasedPolicy";
+const _ST = "SubjectToken";
+const _SUE = "ServiceUnavailableException";
+const _TMRE = "TooManyRequestsError";
+const _V = "Version";
+const _VE = "ValidationException";
+const _a = "active";
+const _aI = "accountId";
+const _aKI = "accessKeyId";
+const _aT = "accessToken";
+const _ac = "action";
+const _ai = "account_id";
+const _at = "access_token";
+const _au = "aud";
+const _c = "client";
+const _cAE = "consoleAuthorizationEnabled";
+const _cI = "clientId";
+const _cSV = "consoleSourceVpce";
+const _cT = "clientToken";
+const _cV = "codeVerifier";
+const _ci = "client_id";
+const _co = "code";
+const _con = "condition";
+const _d = "duration";
+const _dS = "durationSeconds";
+const _e = "error";
+const _eI = "expiresIn";
+const _eP = "excludedPrincipal";
+const _ef = "effect";
+const _ei = "expires_in";
+const _ex = "exp";
+const _gT = "grantType";
+const _gt = "grant_type";
+const _h = "http";
+const _hE = "httpError";
+const _i = "iat";
+const _iT = "idToken";
+const _iTT = "issuedTokenType";
+const _is = "iss";
+const _itt = "issued_token_type";
+const _j = "jti";
+const _jN = "jsonName";
+const _m = "message";
+const _mR = "maxResults";
+const _n = "nbf";
+const _nT = "nextToken";
+const _p = "principal";
+const _pS = "permissionStatements";
+const _r = "resource";
+const _rR = "requestedRegion";
+const _rT = "refreshToken";
+const _rU = "redirectUri";
+const _s = "smithy.ts.sdk.synthetic.com.amazonaws.signin";
+const _sAK = "secretAccessKey";
+const _sI = "statementId";
+const _sIo = "sourceIp";
+const _sRBP = "signinResourceBasedPolicy";
+const _sS = "signinSession";
+const _sSV = "signinSourceVpce";
+const _sT = "sessionToken";
+const _sTT = "subjectTokenType";
+const _sTu = "subjectToken";
+const _sV = "sourceVpc";
+const _sc = "scope";
+const _se = "server";
+const _si = "sid";
+const _ss = "signin_session";
+const _st = "subject_token";
+const _sta = "statement";
+const _stt = "subject_token_type";
+const _su = "sub";
+const _t = "token";
+const _tI = "tokenInput";
+const _tIa = "targetId";
+const _tO = "tokenOutput";
+const _tT = "tokenType";
+const _tTH = "tokenTypeHint";
+const _tt = "token_type";
+const _tth = "token_type_hint";
+const _uI = "userId";
+const _ui = "user_id";
+const _v = "version";
+const _vSI = "vpcSourceIp";
+const n0 = "com.amazonaws.signin";
+const _s_registry = new TypeRegistry(_s);
+var SigninServiceException$ = [-3, _s, "SigninServiceException", 0, [], []];
+_s_registry.registerError(SigninServiceException$, SigninServiceException);
+const n0_registry = new TypeRegistry(n0);
+var AccessDeniedException$ = [-3, n0, _ADE,
+    { [_e]: _c },
+    [_e, _m],
+    [0, 0], 2
+];
+n0_registry.registerError(AccessDeniedException$, AccessDeniedException);
+var ConflictException$ = [-3, n0, _CE,
+    { [_e]: _c, [_hE]: 409 },
+    [_e, _m],
+    [0, 0], 2
+];
+n0_registry.registerError(ConflictException$, ConflictException);
+var InternalServerException$ = [-3, n0, _ISE,
+    { [_e]: _se, [_hE]: 500 },
+    [_e, _m],
+    [0, 0], 2
+];
+n0_registry.registerError(InternalServerException$, InternalServerException);
+var InvalidGrantException$ = [-3, n0, _IGE,
+    { [_e]: _c, [_hE]: 400 },
+    [_e, _m],
+    [0, 0], 2
+];
+n0_registry.registerError(InvalidGrantException$, InvalidGrantException);
+var InvalidScopeException$ = [-3, n0, _ISEn,
+    { [_e]: _c, [_hE]: 400 },
+    [_e, _m],
+    [0, 0], 2
+];
+n0_registry.registerError(InvalidScopeException$, InvalidScopeException);
+var ResourceNotFoundException$ = [-3, n0, _RNFE,
+    { [_e]: _c, [_hE]: 404 },
+    [_e, _m],
+    [0, 0], 2
+];
+n0_registry.registerError(ResourceNotFoundException$, ResourceNotFoundException);
+var ServiceQuotaExceededException$ = [-3, n0, _SQEE,
+    { [_e]: _c, [_hE]: 402 },
+    [_e, _m],
+    [0, 0], 2
+];
+n0_registry.registerError(ServiceQuotaExceededException$, ServiceQuotaExceededException);
+var ServiceUnavailableException$ = [-3, n0, _SUE,
+    { [_e]: _se, [_hE]: 503 },
+    [_e, _m],
+    [0, 0], 2
+];
+n0_registry.registerError(ServiceUnavailableException$, ServiceUnavailableException);
+var TooManyRequestsError$ = [-3, n0, _TMRE,
+    { [_e]: _c, [_hE]: 429 },
+    [_e, _m],
+    [0, 0], 2
+];
+n0_registry.registerError(TooManyRequestsError$, TooManyRequestsError);
+var ValidationException$ = [-3, n0, _VE,
+    { [_e]: _c, [_hE]: 400 },
+    [_e, _m],
+    [0, 0], 2
+];
+n0_registry.registerError(ValidationException$, ValidationException);
+const errorTypeRegistries = [
+    _s_registry,
+    n0_registry,
+];
+var IntrospectionToken = [0, n0, _IT, 8, 0];
+var OAuthAccessToken = [0, n0, _OAAT, 8, 0];
+var RefreshToken = [0, n0, _RT, 8, 0];
+var RevocationToken = [0, n0, _RTe, 8, 0];
+var SubjectToken = [0, n0, _ST, 8, 0];
+var AccessToken$ = [3, n0, _AT,
+    8,
+    [_aKI, _sAK, _sT],
+    [[0, { [_jN]: _aKI }], [0, { [_jN]: _sAK }], [0, { [_jN]: _sT }]], 3
+];
+var CreateBearerTokenRequest$ = [3, n0, _CBTR,
+    0,
+    [_gT, _r, _dS],
+    [[0, { [_jN]: _gt }], 0, [1, { [_jN]: _d }]], 2
+];
+var CreateBearerTokenResponse$ = [3, n0, _CBTRr,
+    0,
+    [_aT, _tT, _eI],
+    [[() => OAuthAccessToken, { [_jN]: _at }], [0, { [_jN]: _tt }], [1, { [_jN]: _ei }]], 3
+];
+var CreateOAuth2TokenRequest$ = [3, n0, _COATR,
+    0,
+    [_tI],
+    [[() => CreateOAuth2TokenRequestBody$, 16]], 1
+];
+var CreateOAuth2TokenRequestBody$ = [3, n0, _COATRB,
+    0,
+    [_cI, _gT, _co, _rU, _cV, _rT],
+    [[0, { [_jN]: _cI }], [0, { [_jN]: _gT }], 0, [0, { [_jN]: _rU }], [0, { [_jN]: _cV }], [() => RefreshToken, { [_jN]: _rT }]], 2
+];
+var CreateOAuth2TokenResponse$ = [3, n0, _COATRr,
+    0,
+    [_tO],
+    [[() => CreateOAuth2TokenResponseBody$, 16]], 1
+];
+var CreateOAuth2TokenResponseBody$ = [3, n0, _COATRBr,
+    0,
+    [_aT, _tT, _eI, _rT, _iT],
+    [[() => AccessToken$, { [_jN]: _aT }], [0, { [_jN]: _tT }], [1, { [_jN]: _eI }], [() => RefreshToken, { [_jN]: _rT }], [0, { [_jN]: _iT }]], 4
+];
+var CreateOAuth2TokenWithIAMRequest$ = [3, n0, _COATWIAMR,
+    0,
+    [_gT, _r],
+    [[0, { [_jN]: _gt }], 0], 2
+];
+var CreateOAuth2TokenWithIAMResponse$ = [3, n0, _COATWIAMRr,
+    0,
+    [_aT, _tT, _eI],
+    [[() => OAuthAccessToken, { [_jN]: _at }], [0, { [_jN]: _tt }], [1, { [_jN]: _ei }]], 3
+];
+var CreateOAuth2TokenWithTokenExchangeRequest$ = [3, n0, _COATWTER,
+    0,
+    [_gT, _sTu, _sTT, _r, _sc],
+    [[0, { [_jN]: _gt }], [() => SubjectToken, { [_jN]: _st }], [0, { [_jN]: _stt }], 0, 0], 1
+];
+var CreateOAuth2TokenWithTokenExchangeResponse$ = [3, n0, _COATWTERr,
+    0,
+    [_aT, _tT, _eI, _iTT],
+    [[() => OAuthAccessToken, { [_jN]: _at }], [0, { [_jN]: _tt }], [1, { [_jN]: _ei }], [0, { [_jN]: _itt }]], 3
+];
+var DeleteConsoleAuthorizationConfigurationInput$ = [3, n0, _DCACI,
+    0,
+    [_tIa],
+    [0]
+];
+var DeleteConsoleAuthorizationConfigurationOutput$ = [3, n0, _DCACO,
+    0,
+    [_tIa, _sc, _cAE],
+    [0, 0, 2], 3
+];
+var DeleteResourcePermissionStatementInput$ = [3, n0, _DRPSI,
+    0,
+    [_sI, _cT],
+    [0, [0, 4]], 1
+];
+var DeleteResourcePermissionStatementOutput$ = [3, n0, _DRPSO,
+    0,
+    [],
+    []
+];
+var GetConsoleAuthorizationConfigurationInput$ = [3, n0, _GCACI,
+    0,
+    [_tIa],
+    [0]
+];
+var GetConsoleAuthorizationConfigurationOutput$ = [3, n0, _GCACO,
+    0,
+    [_tIa, _sc, _cAE],
+    [0, 0, 2], 3
+];
+var GetResourcePolicyInput$ = [3, n0, _GRPI,
+    0,
+    [],
+    []
+];
+var GetResourcePolicyOutput$ = [3, n0, _GRPO,
+    0,
+    [_sRBP],
+    [[() => SigninResourceBasedPolicy$, 0]], 1
+];
+var IntrospectOAuth2TokenWithIAMRequest$ = [3, n0, _IOATWIAMR,
+    0,
+    [_t, _tTH],
+    [[() => IntrospectionToken, { [_jN]: _t }], [0, { [_jN]: _tth }]], 1
+];
+var IntrospectOAuth2TokenWithIAMResponse$ = [3, n0, _IOATWIAMRn,
+    0,
+    [_a, _cI, _uI, _tT, _ex, _i, _n, _su, _au, _is, _j, _aI, _sS, _r],
+    [2, [0, { [_jN]: _ci }], [0, { [_jN]: _ui }], [0, { [_jN]: _tt }], [1, { [_jN]: _ex }], [1, { [_jN]: _i }], [1, { [_jN]: _n }], [0, { [_jN]: _su }], [0, { [_jN]: _au }], [0, { [_jN]: _is }], [0, { [_jN]: _j }], [0, { [_jN]: _ai }], [0, { [_jN]: _ss }], [0, { [_jN]: _r }]], 1
+];
+var ListResourcePermissionStatementsInput$ = [3, n0, _LRPSI,
+    0,
+    [_mR, _nT],
+    [1, 0]
+];
+var ListResourcePermissionStatementsOutput$ = [3, n0, _LRPSO,
+    0,
+    [_pS, _nT],
+    [() => PermissionStatementSummaries, 0], 1
+];
+var PermissionStatementSummary$ = [3, n0, _PSS,
+    0,
+    [_si, _con],
+    [0, [2, n0, _CB, 0, 0, [2, n0, _C, 0, 0, 64 | 0]]], 1
+];
+var PolicyStatement$ = [3, n0, _PS,
+    0,
+    [_ef, _p, _ac, _r, _con],
+    [[0, { [_jN]: _E }], [128 | 0, { [_jN]: _P }], [64 | 0, { [_jN]: _A }], [0, { [_jN]: _R }], [[2, n0, _CB, 0, 0, [2, n0, _C, 0, 0, 64 | 0]], { [_jN]: _C }]]
+];
+var PutConsoleAuthorizationConfigurationInput$ = [3, n0, _PCACI,
+    0,
+    [_tIa],
+    [0]
+];
+var PutConsoleAuthorizationConfigurationOutput$ = [3, n0, _PCACO,
+    0,
+    [_tIa, _sc, _cAE],
+    [0, 0, 2], 3
+];
+var PutResourcePermissionStatementInput$ = [3, n0, _PRPSI,
+    0,
+    [_sV, _sSV, _cSV, _vSI, _sIo, _rR, _eP, _cT],
+    [0, 0, 0, 0, 0, 0, 0, [0, 4]]
+];
+var PutResourcePermissionStatementOutput$ = [3, n0, _PRPSO,
+    0,
+    [_sI],
+    [0], 1
+];
+var RevokeOAuth2TokenWithIAMRequest$ = [3, n0, _ROATWIAMR,
+    0,
+    [_t],
+    [[() => RevocationToken, { [_jN]: _t }]], 1
+];
+var RevokeOAuth2TokenWithIAMResponse$ = [3, n0, _ROATWIAMRe,
+    0,
+    [],
+    []
+];
+var SigninResourceBasedPolicy$ = [3, n0, _SRBP,
+    0,
+    [_v, _sta],
+    [[0, { [_jN]: _V }], [() => PolicyStatements, { [_jN]: _S }]]
+];
+var PermissionStatementSummaries = [1, n0, _PSSe,
+    0, () => PermissionStatementSummary$
+];
+var PolicyStatements = [1, n0, _PSo,
+    0, [() => PolicyStatement$,
+        0]
+];
+var CreateBearerToken$ = [9, n0, _CBT,
+    { [_h]: ["POST", "/v1/token?x-amz-token-request-type=bearer", 200] }, () => CreateBearerTokenRequest$, () => CreateBearerTokenResponse$
+];
+var CreateOAuth2Token$ = [9, n0, _COAT,
+    { [_h]: ["POST", "/v1/token", 200] }, () => CreateOAuth2TokenRequest$, () => CreateOAuth2TokenResponse$
+];
+var CreateOAuth2TokenWithIAM$ = [9, n0, _COATWIAM,
+    { [_h]: ["POST", "/v1/token?x-amz-client-auth-method=iam", 200] }, () => CreateOAuth2TokenWithIAMRequest$, () => CreateOAuth2TokenWithIAMResponse$
+];
+var CreateOAuth2TokenWithTokenExchange$ = [9, n0, _COATWTE,
+    { [_h]: ["POST", "/v1/token?x-amz-oauth-token-method=token-exchange", 200] }, () => CreateOAuth2TokenWithTokenExchangeRequest$, () => CreateOAuth2TokenWithTokenExchangeResponse$
+];
+var DeleteConsoleAuthorizationConfiguration$ = [9, n0, _DCAC,
+    { [_h]: ["POST", "/delete-console-authorization-configuration", 200] }, () => DeleteConsoleAuthorizationConfigurationInput$, () => DeleteConsoleAuthorizationConfigurationOutput$
+];
+var DeleteResourcePermissionStatement$ = [9, n0, _DRPS,
+    { [_h]: ["POST", "/delete-resource-permission-statement", 200] }, () => DeleteResourcePermissionStatementInput$, () => DeleteResourcePermissionStatementOutput$
+];
+var GetConsoleAuthorizationConfiguration$ = [9, n0, _GCAC,
+    { [_h]: ["POST", "/get-console-authorization-configuration", 200] }, () => GetConsoleAuthorizationConfigurationInput$, () => GetConsoleAuthorizationConfigurationOutput$
+];
+var GetResourcePolicy$ = [9, n0, _GRP,
+    { [_h]: ["POST", "/get-resource-policy", 200] }, () => GetResourcePolicyInput$, () => GetResourcePolicyOutput$
+];
+var IntrospectOAuth2TokenWithIAM$ = [9, n0, _IOATWIAM,
+    { [_h]: ["POST", "/v1/introspect?x-amz-client-auth-method=iam", 200] }, () => IntrospectOAuth2TokenWithIAMRequest$, () => IntrospectOAuth2TokenWithIAMResponse$
+];
+var ListResourcePermissionStatements$ = [9, n0, _LRPS,
+    { [_h]: ["POST", "/list-resource-permission-statements", 200] }, () => ListResourcePermissionStatementsInput$, () => ListResourcePermissionStatementsOutput$
+];
+var PutConsoleAuthorizationConfiguration$ = [9, n0, _PCAC,
+    { [_h]: ["POST", "/put-console-authorization-configuration", 200] }, () => PutConsoleAuthorizationConfigurationInput$, () => PutConsoleAuthorizationConfigurationOutput$
+];
+var PutResourcePermissionStatement$ = [9, n0, _PRPS,
+    { [_h]: ["POST", "/put-resource-permission-statement", 200] }, () => PutResourcePermissionStatementInput$, () => PutResourcePermissionStatementOutput$
+];
+var RevokeOAuth2TokenWithIAM$ = [9, n0, _ROATWIAM,
+    { [_h]: ["POST", "/v1/revoke?x-amz-client-auth-method=iam", 200] }, () => RevokeOAuth2TokenWithIAMRequest$, () => RevokeOAuth2TokenWithIAMResponse$
+];
+
+const getRuntimeConfig$1 = (config) => {
+    return {
+        apiVersion: "2023-01-01",
+        base64Decoder: config?.base64Decoder ?? fromBase64,
+        base64Encoder: config?.base64Encoder ?? toBase64,
+        disableHostPrefix: config?.disableHostPrefix ?? false,
+        endpointProvider: config?.endpointProvider ?? defaultEndpointResolver,
+        extensions: config?.extensions ?? [],
+        httpAuthSchemeProvider: config?.httpAuthSchemeProvider ?? defaultSigninHttpAuthSchemeProvider,
+        httpAuthSchemes: config?.httpAuthSchemes ?? [
+            {
+                schemeId: "aws.auth#sigv4",
+                identityProvider: (ipc) => ipc.getIdentityProvider("aws.auth#sigv4"),
+                signer: new AwsSdkSigV4Signer(),
+            },
+            {
+                schemeId: "smithy.api#noAuth",
+                identityProvider: (ipc) => ipc.getIdentityProvider("smithy.api#noAuth") || (async () => ({})),
+                signer: new NoAuthSigner(),
+            },
+        ],
+        logger: config?.logger ?? new NoOpLogger(),
+        protocol: config?.protocol ?? AwsRestJsonProtocol,
+        protocolSettings: config?.protocolSettings ?? {
+            defaultNamespace: "com.amazonaws.signin",
+            errorTypeRegistries,
+            version: "2023-01-01",
+            serviceTarget: "Signin",
+        },
+        serviceId: config?.serviceId ?? "Signin",
+        sha256: config?.sha256 ?? Sha256,
+        urlParser: config?.urlParser ?? parseUrl,
+        utf8Decoder: config?.utf8Decoder ?? fromUtf8,
+        utf8Encoder: config?.utf8Encoder ?? toUtf8,
+    };
+};
+
+const getRuntimeConfig = (config) => {
+    emitWarningIfUnsupportedVersion(process.version);
+    const defaultsMode = resolveDefaultsModeConfig(config);
+    const defaultConfigProvider = () => defaultsMode().then(loadConfigsForDefaultMode);
+    const clientSharedValues = getRuntimeConfig$1(config);
+    emitWarningIfUnsupportedVersion$1(process.version);
+    const loaderConfig = {
+        profile: config?.profile,
+        logger: clientSharedValues.logger,
+    };
+    return {
+        ...clientSharedValues,
+        ...config,
+        runtime: "node",
+        defaultsMode,
+        authSchemePreference: config?.authSchemePreference ?? loadConfig(NODE_AUTH_SCHEME_PREFERENCE_OPTIONS, loaderConfig),
+        bodyLengthChecker: config?.bodyLengthChecker ?? calculateBodyLength,
+        credentialDefaultProvider: config?.credentialDefaultProvider ?? defaultProvider,
+        defaultSocketTimeout: getDefaultSocketTimeout(config?.requestHandler, 300_000),
+        defaultUserAgentProvider: config?.defaultUserAgentProvider ?? createDefaultUserAgentProvider({ serviceId: clientSharedValues.serviceId, clientVersion: packageInfo.version }),
+        maxAttempts: config?.maxAttempts ?? loadConfig(NODE_MAX_ATTEMPT_CONFIG_OPTIONS, config),
+        region: config?.region ?? loadConfig(NODE_REGION_CONFIG_OPTIONS, { ...NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig }),
+        requestHandler: NodeHttpHandler.create(config?.requestHandler ?? defaultConfigProvider),
+        retryMode: config?.retryMode ??
+            loadConfig({
+                ...NODE_RETRY_MODE_CONFIG_OPTIONS,
+                default: async () => (await defaultConfigProvider()).retryMode || DEFAULT_RETRY_MODE,
+            }, config),
+        streamCollector: config?.streamCollector ?? streamCollector,
+        useDualstackEndpoint: config?.useDualstackEndpoint ?? loadConfig(NODE_USE_DUALSTACK_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
+        useFipsEndpoint: config?.useFipsEndpoint ?? loadConfig(NODE_USE_FIPS_ENDPOINT_CONFIG_OPTIONS, loaderConfig),
+        userAgentAppId: config?.userAgentAppId ?? loadConfig(NODE_APP_ID_CONFIG_OPTIONS, loaderConfig),
+    };
+};
+
+const getHttpAuthExtensionConfiguration = (runtimeConfig) => {
+    const _httpAuthSchemes = runtimeConfig.httpAuthSchemes;
+    let _httpAuthSchemeProvider = runtimeConfig.httpAuthSchemeProvider;
+    let _credentials = runtimeConfig.credentials;
+    return {
+        setHttpAuthScheme(httpAuthScheme) {
+            const index = _httpAuthSchemes.findIndex((scheme) => scheme.schemeId === httpAuthScheme.schemeId);
+            if (index === -1) {
+                _httpAuthSchemes.push(httpAuthScheme);
+            }
+            else {
+                _httpAuthSchemes.splice(index, 1, httpAuthScheme);
+            }
+        },
+        httpAuthSchemes() {
+            return _httpAuthSchemes;
+        },
+        setHttpAuthSchemeProvider(httpAuthSchemeProvider) {
+            _httpAuthSchemeProvider = httpAuthSchemeProvider;
+        },
+        httpAuthSchemeProvider() {
+            return _httpAuthSchemeProvider;
+        },
+        setCredentials(credentials) {
+            _credentials = credentials;
+        },
+        credentials() {
+            return _credentials;
+        },
+    };
+};
+const resolveHttpAuthRuntimeConfig = (config) => {
+    return {
+        httpAuthSchemes: config.httpAuthSchemes(),
+        httpAuthSchemeProvider: config.httpAuthSchemeProvider(),
+        credentials: config.credentials(),
+    };
+};
+
+const resolveRuntimeExtensions = (runtimeConfig, extensions) => {
+    const extensionConfiguration = Object.assign(getAwsRegionExtensionConfiguration(runtimeConfig), getDefaultExtensionConfiguration(runtimeConfig), getHttpHandlerExtensionConfiguration(runtimeConfig), getHttpAuthExtensionConfiguration(runtimeConfig));
+    extensions.forEach((extension) => extension.configure(extensionConfiguration));
+    return Object.assign(runtimeConfig, resolveAwsRegionExtensionConfiguration(extensionConfiguration), resolveDefaultRuntimeConfig(extensionConfiguration), resolveHttpHandlerRuntimeConfig(extensionConfiguration), resolveHttpAuthRuntimeConfig(extensionConfiguration));
+};
+
+class SigninClient extends Client {
+    config;
+    constructor(...[configuration]) {
+        const _config_0 = getRuntimeConfig(configuration || {});
+        super(_config_0);
+        this.initConfig = _config_0;
+        const _config_1 = resolveClientEndpointParameters(_config_0);
+        const _config_2 = resolveUserAgentConfig(_config_1);
+        const _config_3 = resolveRetryConfig(_config_2);
+        const _config_4 = resolveRegionConfig(_config_3);
+        const _config_5 = resolveHostHeaderConfig(_config_4);
+        const _config_6 = resolveEndpointConfig(_config_5);
+        const _config_7 = resolveHttpAuthSchemeConfig(_config_6);
+        const _config_8 = resolveRuntimeExtensions(_config_7, configuration?.extensions || []);
+        this.config = _config_8;
+        this.middlewareStack.use(getSchemaSerdePlugin(this.config));
+        this.middlewareStack.use(getUserAgentPlugin(this.config));
+        this.middlewareStack.use(getRetryPlugin(this.config));
+        this.middlewareStack.use(getContentLengthPlugin(this.config));
+        this.middlewareStack.use(getHostHeaderPlugin(this.config));
+        this.middlewareStack.use(getLoggerPlugin(this.config));
+        this.middlewareStack.use(getRecursionDetectionPlugin(this.config));
+        this.middlewareStack.use(getHttpAuthSchemeEndpointRuleSetPlugin(this.config, {
+            httpAuthSchemeParametersProvider: defaultSigninHttpAuthSchemeParametersProvider,
+            identityProviderConfigProvider: async (config) => new DefaultIdentityProviderConfig({
+                "aws.auth#sigv4": config.credentials,
+            }),
+        }));
+        this.middlewareStack.use(getHttpSigningPlugin(this.config));
+    }
+    destroy() {
+        super.destroy();
+    }
+}
+
+const command = makeBuilder(commonParams, "Signin", "SigninClient", getEndpointPlugin);
+const _ep0 = {
+    IsOAuthEndpoint: { type: "staticContextParams", value: true },
+};
+const _ep1 = {
+    IsControlPlane: { type: "staticContextParams", value: false },
+};
+const _ep2 = {
+    IsControlPlane: { type: "staticContextParams", value: true },
+};
+const _mw0 = (Command, cs, config, o) => [];
+
+class CreateBearerTokenCommand extends command(_ep0, _mw0, "CreateBearerToken", CreateBearerToken$) {
+}
+
+class CreateOAuth2TokenCommand extends command(_ep1, _mw0, "CreateOAuth2Token", CreateOAuth2Token$) {
+}
+
+class CreateOAuth2TokenWithIAMCommand extends command(_ep0, _mw0, "CreateOAuth2TokenWithIAM", CreateOAuth2TokenWithIAM$) {
+}
+
+class CreateOAuth2TokenWithTokenExchangeCommand extends command(_ep0, _mw0, "CreateOAuth2TokenWithTokenExchange", CreateOAuth2TokenWithTokenExchange$) {
+}
+
+class DeleteConsoleAuthorizationConfigurationCommand extends command(_ep2, _mw0, "DeleteConsoleAuthorizationConfiguration", DeleteConsoleAuthorizationConfiguration$) {
+}
+
+class DeleteResourcePermissionStatementCommand extends command(_ep2, _mw0, "DeleteResourcePermissionStatement", DeleteResourcePermissionStatement$) {
+}
+
+class GetConsoleAuthorizationConfigurationCommand extends command(_ep2, _mw0, "GetConsoleAuthorizationConfiguration", GetConsoleAuthorizationConfiguration$) {
+}
+
+class GetResourcePolicyCommand extends command(_ep2, _mw0, "GetResourcePolicy", GetResourcePolicy$) {
+}
+
+class IntrospectOAuth2TokenWithIAMCommand extends command(_ep0, _mw0, "IntrospectOAuth2TokenWithIAM", IntrospectOAuth2TokenWithIAM$) {
+}
+
+class ListResourcePermissionStatementsCommand extends command(_ep2, _mw0, "ListResourcePermissionStatements", ListResourcePermissionStatements$) {
+}
+
+class PutConsoleAuthorizationConfigurationCommand extends command(_ep2, _mw0, "PutConsoleAuthorizationConfiguration", PutConsoleAuthorizationConfiguration$) {
+}
+
+class PutResourcePermissionStatementCommand extends command(_ep2, _mw0, "PutResourcePermissionStatement", PutResourcePermissionStatement$) {
+}
+
+class RevokeOAuth2TokenWithIAMCommand extends command(_ep0, _mw0, "RevokeOAuth2TokenWithIAM", RevokeOAuth2TokenWithIAM$) {
+}
+
+const paginateListResourcePermissionStatements = createPaginator(SigninClient, ListResourcePermissionStatementsCommand, "nextToken", "nextToken", "maxResults");
+
+const commands = {
+    CreateBearerTokenCommand,
+    CreateOAuth2TokenCommand,
+    CreateOAuth2TokenWithIAMCommand,
+    CreateOAuth2TokenWithTokenExchangeCommand,
+    DeleteConsoleAuthorizationConfigurationCommand,
+    DeleteResourcePermissionStatementCommand,
+    GetConsoleAuthorizationConfigurationCommand,
+    GetResourcePolicyCommand,
+    IntrospectOAuth2TokenWithIAMCommand,
+    ListResourcePermissionStatementsCommand,
+    PutConsoleAuthorizationConfigurationCommand,
+    PutResourcePermissionStatementCommand,
+    RevokeOAuth2TokenWithIAMCommand,
+};
+const paginators = {
+    paginateListResourcePermissionStatements,
+};
+class Signin extends SigninClient {
+}
+createAggregatedClient(commands, Signin, { paginators });
+
+const OAuth2ErrorCode = {
+    AUTHCODE_EXPIRED: "AUTHCODE_EXPIRED",
+    CONFLICT: "CONFLICT",
+    INSUFFICIENT_PERMISSIONS: "INSUFFICIENT_PERMISSIONS",
+    INVALID_REQUEST: "INVALID_REQUEST",
+    OAUTH_INVALID_GRANT: "invalid_grant",
+    OAUTH_INVALID_REQUEST: "invalid_request",
+    OAUTH_INVALID_SCOPE: "invalid_scope",
+    OAUTH_INVALID_TARGET: "invalid_target",
+    OAUTH_RATE_EXCEEDED: "rate_exceeded",
+    OAUTH_SERVICE_UNAVAILABLE: "service_unavailable",
+    OAUTH_UNSUPPORTED_GRANT_TYPE: "unsupported_grant_type",
+    RESOURCE_NOT_FOUND: "RESOURCE_NOT_FOUND",
+    SERVER_ERROR: "server_error",
+    SERVICE_QUOTA_EXCEEDED: "SERVICE_QUOTA_EXCEEDED",
+    TOKEN_EXPIRED: "TOKEN_EXPIRED",
+    USER_CREDENTIALS_CHANGED: "USER_CREDENTIALS_CHANGED",
+};
+
+__webpack_unused_export__ = AccessDeniedException;
+__webpack_unused_export__ = AccessDeniedException$;
+__webpack_unused_export__ = AccessToken$;
+__webpack_unused_export__ = ConflictException;
+__webpack_unused_export__ = ConflictException$;
+__webpack_unused_export__ = CreateBearerToken$;
+exports.m7 = CreateBearerTokenCommand;
+__webpack_unused_export__ = CreateBearerTokenRequest$;
+__webpack_unused_export__ = CreateBearerTokenResponse$;
+__webpack_unused_export__ = CreateOAuth2Token$;
+__webpack_unused_export__ = CreateOAuth2TokenCommand;
+__webpack_unused_export__ = CreateOAuth2TokenRequest$;
+__webpack_unused_export__ = CreateOAuth2TokenRequestBody$;
+__webpack_unused_export__ = CreateOAuth2TokenResponse$;
+__webpack_unused_export__ = CreateOAuth2TokenResponseBody$;
+__webpack_unused_export__ = CreateOAuth2TokenWithIAM$;
+__webpack_unused_export__ = CreateOAuth2TokenWithIAMCommand;
+__webpack_unused_export__ = CreateOAuth2TokenWithIAMRequest$;
+__webpack_unused_export__ = CreateOAuth2TokenWithIAMResponse$;
+__webpack_unused_export__ = CreateOAuth2TokenWithTokenExchange$;
+__webpack_unused_export__ = CreateOAuth2TokenWithTokenExchangeCommand;
+__webpack_unused_export__ = CreateOAuth2TokenWithTokenExchangeRequest$;
+__webpack_unused_export__ = CreateOAuth2TokenWithTokenExchangeResponse$;
+__webpack_unused_export__ = DeleteConsoleAuthorizationConfiguration$;
+__webpack_unused_export__ = DeleteConsoleAuthorizationConfigurationCommand;
+__webpack_unused_export__ = DeleteConsoleAuthorizationConfigurationInput$;
+__webpack_unused_export__ = DeleteConsoleAuthorizationConfigurationOutput$;
+__webpack_unused_export__ = DeleteResourcePermissionStatement$;
+__webpack_unused_export__ = DeleteResourcePermissionStatementCommand;
+__webpack_unused_export__ = DeleteResourcePermissionStatementInput$;
+__webpack_unused_export__ = DeleteResourcePermissionStatementOutput$;
+__webpack_unused_export__ = GetConsoleAuthorizationConfiguration$;
+__webpack_unused_export__ = GetConsoleAuthorizationConfigurationCommand;
+__webpack_unused_export__ = GetConsoleAuthorizationConfigurationInput$;
+__webpack_unused_export__ = GetConsoleAuthorizationConfigurationOutput$;
+__webpack_unused_export__ = GetResourcePolicy$;
+__webpack_unused_export__ = GetResourcePolicyCommand;
+__webpack_unused_export__ = GetResourcePolicyInput$;
+__webpack_unused_export__ = GetResourcePolicyOutput$;
+__webpack_unused_export__ = InternalServerException;
+__webpack_unused_export__ = InternalServerException$;
+__webpack_unused_export__ = IntrospectOAuth2TokenWithIAM$;
+__webpack_unused_export__ = IntrospectOAuth2TokenWithIAMCommand;
+__webpack_unused_export__ = IntrospectOAuth2TokenWithIAMRequest$;
+__webpack_unused_export__ = IntrospectOAuth2TokenWithIAMResponse$;
+__webpack_unused_export__ = InvalidGrantException;
+__webpack_unused_export__ = InvalidGrantException$;
+__webpack_unused_export__ = InvalidScopeException;
+__webpack_unused_export__ = InvalidScopeException$;
+__webpack_unused_export__ = ListResourcePermissionStatements$;
+__webpack_unused_export__ = ListResourcePermissionStatementsCommand;
+__webpack_unused_export__ = ListResourcePermissionStatementsInput$;
+__webpack_unused_export__ = ListResourcePermissionStatementsOutput$;
+__webpack_unused_export__ = OAuth2ErrorCode;
+__webpack_unused_export__ = PermissionStatementSummary$;
+__webpack_unused_export__ = PolicyStatement$;
+__webpack_unused_export__ = PutConsoleAuthorizationConfiguration$;
+__webpack_unused_export__ = PutConsoleAuthorizationConfigurationCommand;
+__webpack_unused_export__ = PutConsoleAuthorizationConfigurationInput$;
+__webpack_unused_export__ = PutConsoleAuthorizationConfigurationOutput$;
+__webpack_unused_export__ = PutResourcePermissionStatement$;
+__webpack_unused_export__ = PutResourcePermissionStatementCommand;
+__webpack_unused_export__ = PutResourcePermissionStatementInput$;
+__webpack_unused_export__ = PutResourcePermissionStatementOutput$;
+__webpack_unused_export__ = ResourceNotFoundException;
+__webpack_unused_export__ = ResourceNotFoundException$;
+__webpack_unused_export__ = RevokeOAuth2TokenWithIAM$;
+__webpack_unused_export__ = RevokeOAuth2TokenWithIAMCommand;
+__webpack_unused_export__ = RevokeOAuth2TokenWithIAMRequest$;
+__webpack_unused_export__ = RevokeOAuth2TokenWithIAMResponse$;
+__webpack_unused_export__ = ServiceQuotaExceededException;
+__webpack_unused_export__ = ServiceQuotaExceededException$;
+__webpack_unused_export__ = ServiceUnavailableException;
+__webpack_unused_export__ = ServiceUnavailableException$;
+__webpack_unused_export__ = Signin;
+exports.Yl = SigninClient;
+__webpack_unused_export__ = SigninResourceBasedPolicy$;
+__webpack_unused_export__ = SigninServiceException;
+__webpack_unused_export__ = SigninServiceException$;
+__webpack_unused_export__ = TooManyRequestsError;
+__webpack_unused_export__ = TooManyRequestsError$;
+__webpack_unused_export__ = ValidationException;
+__webpack_unused_export__ = ValidationException$;
+__webpack_unused_export__ = errorTypeRegistries;
+__webpack_unused_export__ = paginateListResourcePermissionStatements;
+
+
+/***/ }),
+
+/***/ 6148:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+const { hasOwn } = __nccwpck_require__(2430);
+const { streamCollector } = __nccwpck_require__(2430);
+exports.streamCollector = streamCollector;
+const { buildQueryString, HttpResponse } = __nccwpck_require__(3422);
+const node_https = __nccwpck_require__(4708);
+const { Readable } = __nccwpck_require__(7075);
+const http2 = __nccwpck_require__(2467);
+
+function buildAbortError(abortSignal) {
+    const reason = abortSignal && typeof abortSignal === "object" && "reason" in abortSignal
+        ? abortSignal.reason
+        : undefined;
+    if (reason) {
+        if (reason instanceof Error) {
+            const abortError = new Error("Request aborted");
+            abortError.name = "AbortError";
+            abortError.cause = reason;
+            return abortError;
+        }
+        const abortError = new Error(String(reason));
+        abortError.name = "AbortError";
+        return abortError;
+    }
+    const abortError = new Error("Request aborted");
+    abortError.name = "AbortError";
+    return abortError;
+}
+
+const NODEJS_TIMEOUT_ERROR_CODES = ["ECONNRESET", "EPIPE", "ETIMEDOUT"];
+
+const getTransformedHeaders = (headers) => {
+    const transformedHeaders = {};
+    for (const name in headers) {
+        if (!hasOwn(headers, name)) {
+            continue;
+        }
+        const headerValues = headers[name];
+        transformedHeaders[name] = Array.isArray(headerValues) ? headerValues.join(",") : headerValues;
+    }
+    return transformedHeaders;
+};
+
+const timing = {
+    setTimeout: (cb, ms) => setTimeout(cb, ms),
+    clearTimeout: (timeoutId) => clearTimeout(timeoutId),
+};
+
+const DEFER_EVENT_LISTENER_TIME$2 = 1000;
+const setConnectionTimeout = (request, reject, timeoutInMs = 0) => {
+    if (!timeoutInMs) {
+        return -1;
+    }
+    const registerTimeout = (offset) => {
+        const timeoutId = timing.setTimeout(() => {
+            request.destroy();
+            reject(Object.assign(new Error(`@smithy/node-http-handler - the request socket did not establish a connection with the server within the configured timeout of ${timeoutInMs} ms.`), {
+                name: "TimeoutError",
+            }));
+        }, timeoutInMs - offset);
+        const doWithSocket = (socket) => {
+            if (socket?.connecting) {
+                socket.on("connect", () => {
+                    timing.clearTimeout(timeoutId);
+                });
+            }
+            else {
+                timing.clearTimeout(timeoutId);
+            }
+        };
+        if (request.socket) {
+            doWithSocket(request.socket);
+        }
+        else {
+            request.on("socket", doWithSocket);
+        }
+    };
+    if (timeoutInMs < 2000) {
+        registerTimeout(0);
+        return 0;
+    }
+    return timing.setTimeout(registerTimeout.bind(null, DEFER_EVENT_LISTENER_TIME$2), DEFER_EVENT_LISTENER_TIME$2);
+};
+
+const setRequestTimeout = (req, reject, timeoutInMs = 0, throwOnRequestTimeout, logger) => {
+    if (timeoutInMs) {
+        return timing.setTimeout(() => {
+            let msg = `@smithy/node-http-handler - [${throwOnRequestTimeout ? "ERROR" : "WARN"}] a request has exceeded the configured ${timeoutInMs} ms requestTimeout.`;
+            if (throwOnRequestTimeout) {
+                const error = Object.assign(new Error(msg), {
+                    name: "TimeoutError",
+                    code: "ETIMEDOUT",
+                });
+                req.destroy(error);
+                reject(error);
+            }
+            else {
+                msg += ` Init client requestHandler with throwOnRequestTimeout=true to turn this into an error.`;
+                logger?.warn?.(msg);
+            }
+        }, timeoutInMs);
+    }
+    return -1;
+};
+
+const DEFER_EVENT_LISTENER_TIME$1 = 3000;
+const setSocketKeepAlive = (request, { keepAlive, keepAliveMsecs }, deferTimeMs = DEFER_EVENT_LISTENER_TIME$1) => {
+    if (keepAlive !== true) {
+        return -1;
+    }
+    const registerListener = () => {
+        if (request.socket) {
+            request.socket.setKeepAlive(keepAlive, keepAliveMsecs || 0);
+        }
+        else {
+            request.on("socket", (socket) => {
+                socket.setKeepAlive(keepAlive, keepAliveMsecs || 0);
+            });
+        }
+    };
+    if (deferTimeMs === 0) {
+        registerListener();
+        return 0;
+    }
+    return timing.setTimeout(registerListener, deferTimeMs);
+};
+
+const resolveDefaultSocketTimeout = (config) => {
+    const value = config?.defaultSocketTimeout;
+    return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
+};
+
+const DEFER_EVENT_LISTENER_TIME = 3000;
+const setSocketTimeout = (request, reject, timeoutInMs = 0, isServiceDefault = false) => {
+    if (!Number.isFinite(timeoutInMs) || timeoutInMs <= 0) {
+        return;
+    }
+    let response;
+    request.once("response", (res) => (response = res));
+    const onTimeout = () => {
+        if (response?.complete) {
+            request.socket?.destroy();
+            return;
+        }
+        const error = Object.assign(new Error(`@smithy/node-http-handler - the request socket timed out after ${timeoutInMs} ms of inactivity (${isServiceDefault ? "service default socket timeout" : "configured by client requestHandler"}).`), { name: "TimeoutError" });
+        response?.destroy(error);
+        request.destroy();
+        reject(error);
+    };
+    const registerTimeout = () => {
+        const { socket } = request;
+        if (!socket) {
+            request.once("socket", registerTimeout);
+        }
+        else if (socket.connecting) {
+            socket.once("connect", registerTimeout);
+        }
+        else {
+            socket.setTimeout(timeoutInMs, onTimeout);
+            request.on("close", () => socket.removeListener("timeout", onTimeout));
+        }
+    };
+    if (timeoutInMs < 6000) {
+        registerTimeout();
+        return;
+    }
+    const deferralId = timing.setTimeout(registerTimeout, DEFER_EVENT_LISTENER_TIME);
+    request.once("close", () => timing.clearTimeout(deferralId));
+};
+
+const MIN_WAIT_TIME = 6_000;
+async function writeRequestBody(httpRequest, request, maxContinueTimeoutMs = MIN_WAIT_TIME, externalAgent = false) {
+    const headers = request.headers;
+    const expect = headers ? headers.Expect || headers.expect : undefined;
+    let timeoutId = -1;
+    let sendBody = true;
+    if (!externalAgent && expect === "100-continue") {
+        sendBody = await Promise.race([
+            new Promise((resolve) => {
+                timeoutId = Number(timing.setTimeout(() => resolve(true), Math.max(MIN_WAIT_TIME, maxContinueTimeoutMs)));
+            }),
+            new Promise((resolve) => {
+                httpRequest.on("continue", () => {
+                    timing.clearTimeout(timeoutId);
+                    resolve(true);
+                });
+                httpRequest.on("response", () => {
+                    timing.clearTimeout(timeoutId);
+                    resolve(false);
+                });
+                httpRequest.on("error", () => {
+                    timing.clearTimeout(timeoutId);
+                    resolve(false);
+                });
+            }),
+        ]);
+    }
+    if (sendBody) {
+        writeBody(httpRequest, request.body);
+    }
+}
+function writeBody(httpRequest, body) {
+    if (body instanceof Readable) {
+        body.pipe(httpRequest);
+        return;
+    }
+    if (body) {
+        const isBuffer = Buffer.isBuffer(body);
+        const isString = typeof body === "string";
+        if (isBuffer || isString) {
+            if (isBuffer && body.byteLength === 0) {
+                httpRequest.end();
+            }
+            else {
+                httpRequest.end(body);
+            }
+            return;
+        }
+        const uint8 = body;
+        if (typeof uint8 === "object" &&
+            uint8.buffer &&
+            typeof uint8.byteOffset === "number" &&
+            typeof uint8.byteLength === "number") {
+            httpRequest.end(Buffer.from(uint8.buffer, uint8.byteOffset, uint8.byteLength));
+            return;
+        }
+        httpRequest.end(Buffer.from(body));
+        return;
+    }
+    httpRequest.end();
+}
+
+const DEFAULT_REQUEST_TIMEOUT = 0;
+let hAgent = undefined;
+let hRequest = undefined;
+class NodeHttpHandler {
+    config;
+    configProvider;
+    socketWarningTimestamp = 0;
+    externalAgent = false;
+    metadata = { handlerProtocol: "http/1.1" };
+    static create(instanceOrOptions) {
+        if (typeof instanceOrOptions?.handle === "function") {
+            return instanceOrOptions;
+        }
+        return new NodeHttpHandler(instanceOrOptions);
+    }
+    static checkSocketUsage(agent, socketWarningTimestamp, logger = console) {
+        const { sockets, requests, maxSockets } = agent;
+        if (typeof maxSockets !== "number" || maxSockets === Infinity) {
+            return socketWarningTimestamp;
+        }
+        const interval = 15_000;
+        if (Date.now() - interval < socketWarningTimestamp) {
+            return socketWarningTimestamp;
+        }
+        if (sockets && requests) {
+            for (const origin in sockets) {
+                if (!hasOwn(sockets, origin)) {
+                    continue;
+                }
+                const socketsInUse = sockets[origin]?.length ?? 0;
+                const requestsEnqueued = requests[origin]?.length ?? 0;
+                if (socketsInUse >= maxSockets && requestsEnqueued >= 2 * maxSockets) {
+                    logger?.warn?.(`@smithy/node-http-handler:WARN - socket usage at capacity=${socketsInUse} and ${requestsEnqueued} additional requests are enqueued.
+See https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/node-configuring-maxsockets.html
+or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler config.`);
+                    return Date.now();
+                }
+            }
+        }
+        return socketWarningTimestamp;
+    }
+    constructor(options) {
+        this.configProvider = new Promise((resolve, reject) => {
+            if (typeof options === "function") {
+                options()
+                    .then((_options) => {
+                    resolve(this.resolveDefaultConfig(_options));
+                })
+                    .catch(reject);
+            }
+            else {
+                resolve(this.resolveDefaultConfig(options));
+            }
+        });
+    }
+    destroy() {
+        this.config?.httpAgent?.destroy();
+        this.config?.httpsAgent?.destroy();
+    }
+    async handle(request, { abortSignal, requestTimeout } = {}) {
+        if (!this.config) {
+            this.config = await this.configProvider;
+        }
+        const config = this.config;
+        const logger = config.logger;
+        const isSSL = request.protocol === "https:";
+        if (!isSSL && !this.config.httpAgent) {
+            this.config.httpAgent = await this.config.httpAgentProvider();
+        }
+        return new Promise((_resolve, _reject) => {
+            let writeRequestBodyPromise = undefined;
+            let socketWarningTimeoutId = -1;
+            let connectionTimeoutId = -1;
+            let requestTimeoutId = -1;
+            let keepAliveTimeoutId = -1;
+            const clearTimeouts = () => {
+                timing.clearTimeout(socketWarningTimeoutId);
+                timing.clearTimeout(connectionTimeoutId);
+                timing.clearTimeout(requestTimeoutId);
+                timing.clearTimeout(keepAliveTimeoutId);
+            };
+            const resolve = async (arg) => {
+                await writeRequestBodyPromise;
+                clearTimeouts();
+                _resolve(arg);
+            };
+            const reject = async (arg) => {
+                await writeRequestBodyPromise;
+                clearTimeouts();
+                _reject(arg);
+            };
+            if (abortSignal?.aborted) {
+                const abortError = buildAbortError(abortSignal);
+                reject(abortError);
+                return;
+            }
+            const headers = request.headers;
+            const expectContinue = headers ? (headers.Expect ?? headers.expect) === "100-continue" : false;
+            let agent = isSSL ? config.httpsAgent : config.httpAgent;
+            if (expectContinue && !this.externalAgent) {
+                agent = new (isSSL ? node_https.Agent : hAgent)({
+                    keepAlive: false,
+                    maxSockets: Infinity,
+                });
+            }
+            socketWarningTimeoutId = timing.setTimeout(() => {
+                this.socketWarningTimestamp = NodeHttpHandler.checkSocketUsage(agent, this.socketWarningTimestamp, logger);
+            }, config.socketAcquisitionWarningTimeout ?? (config.requestTimeout ?? 2000) + (config.connectionTimeout ?? 1000));
+            const queryString = request.query ? buildQueryString(request.query) : "";
+            let auth = undefined;
+            if (request.username != null || request.password != null) {
+                const username = request.username ?? "";
+                const password = request.password ?? "";
+                auth = `${username}:${password}`;
+            }
+            let path = request.path;
+            if (queryString) {
+                path += `?${queryString}`;
+            }
+            if (request.fragment) {
+                path += `#${request.fragment}`;
+            }
+            let hostname = request.hostname ?? "";
+            if (hostname[0] === "[" && hostname.endsWith("]")) {
+                hostname = request.hostname.slice(1, -1);
+            }
+            else {
+                hostname = request.hostname;
+            }
+            const nodeHttpsOptions = {
+                headers: request.headers,
+                host: hostname,
+                method: request.method,
+                path,
+                port: request.port,
+                agent,
+                auth,
+            };
+            const requestFunc = isSSL ? node_https.request : hRequest;
+            const req = requestFunc(nodeHttpsOptions, (res) => {
+                const httpResponse = new HttpResponse({
+                    statusCode: res.statusCode || -1,
+                    reason: res.statusMessage,
+                    headers: getTransformedHeaders(res.headers),
+                    body: res,
+                });
+                resolve({ response: httpResponse });
+            });
+            req.on("error", (err) => {
+                if (NODEJS_TIMEOUT_ERROR_CODES.includes(err.code)) {
+                    reject(Object.assign(err, { name: "TimeoutError" }));
+                }
+                else {
+                    reject(err);
+                }
+            });
+            if (abortSignal) {
+                const onAbort = () => {
+                    req.destroy();
+                    const abortError = buildAbortError(abortSignal);
+                    reject(abortError);
+                };
+                if (typeof abortSignal.addEventListener === "function") {
+                    const signal = abortSignal;
+                    signal.addEventListener("abort", onAbort, { once: true });
+                    req.once("close", () => signal.removeEventListener("abort", onAbort));
+                }
+                else {
+                    abortSignal.onabort = onAbort;
+                }
+            }
+            const effectiveRequestTimeout = requestTimeout ?? config.requestTimeout;
+            connectionTimeoutId = setConnectionTimeout(req, reject, config.connectionTimeout);
+            requestTimeoutId = setRequestTimeout(req, reject, effectiveRequestTimeout, config.throwOnRequestTimeout, logger ?? console);
+            const defaultSocketTimeout = config.socketTimeout === undefined ? resolveDefaultSocketTimeout(config) : undefined;
+            if (defaultSocketTimeout) {
+                setSocketTimeout(req, reject, defaultSocketTimeout, true);
+            }
+            else {
+                setSocketTimeout(req, reject, config.socketTimeout);
+            }
+            const httpAgent = nodeHttpsOptions.agent;
+            if (typeof httpAgent === "object" && "keepAlive" in httpAgent) {
+                keepAliveTimeoutId = setSocketKeepAlive(req, {
+                    keepAlive: httpAgent.keepAlive,
+                    keepAliveMsecs: httpAgent.keepAliveMsecs,
+                });
+            }
+            writeRequestBodyPromise = writeRequestBody(req, request, effectiveRequestTimeout, this.externalAgent).catch((e) => {
+                clearTimeouts();
+                return _reject(e);
+            });
+        });
+    }
+    updateHttpClientConfig(key, value) {
+        this.config = undefined;
+        this.configProvider = this.configProvider.then((config) => {
+            switch (key) {
+                case Symbol.for("logger"):
+                    key = "logger";
+                    value = config.logger ?? value;
+                    break;
+                case Symbol.for("@smithy/defaultSocketTimeout"):
+                    key = "defaultSocketTimeout";
+                    value = resolveDefaultSocketTimeout(config) ?? value;
+                    break;
+            }
+            return {
+                ...config,
+                [key]: value,
+            };
+        });
+    }
+    httpHandlerConfigs() {
+        return this.config ?? {};
+    }
+    resolveDefaultConfig(options) {
+        const { requestTimeout, connectionTimeout, socketTimeout, socketAcquisitionWarningTimeout, httpAgent, httpsAgent, throwOnRequestTimeout, logger, } = options || {};
+        const keepAlive = true;
+        const maxSockets = 50;
+        let httpAgentPromise;
+        return {
+            connectionTimeout,
+            requestTimeout,
+            socketTimeout,
+            defaultSocketTimeout: resolveDefaultSocketTimeout(options),
+            socketAcquisitionWarningTimeout,
+            throwOnRequestTimeout,
+            httpAgentProvider: () => (httpAgentPromise ??= (async () => {
+                const node_http = __nccwpck_require__(7067);
+                const { Agent, request } = node_http.default ?? node_http;
+                hRequest = request;
+                hAgent = Agent;
+                if (httpAgent instanceof hAgent || typeof httpAgent?.destroy === "function") {
+                    this.externalAgent = true;
+                    return httpAgent;
+                }
+                return new hAgent({ keepAlive, maxSockets, ...httpAgent });
+            })()),
+            httpsAgent: (() => {
+                if (httpsAgent instanceof node_https.Agent || typeof httpsAgent?.destroy === "function") {
+                    this.externalAgent = true;
+                    return httpsAgent;
+                }
+                return new node_https.Agent({ keepAlive, maxSockets, ...httpsAgent });
+            })(),
+            logger,
+        };
+    }
+}
+
+const ids = new Uint16Array(1);
+class ClientHttp2SessionRef {
+    id = ids[0]++;
+    total = 0;
+    max = 0;
+    session;
+    refs = 0;
+    constructor(session) {
+        session.unref();
+        this.session = session;
+    }
+    retain() {
+        if (this.session.destroyed) {
+            throw new Error("@smithy/node-http-handler - cannot acquire reference to destroyed session.");
+        }
+        this.refs += 1;
+        this.total += 1;
+        this.max = Math.max(this.refs, this.max);
+        this.session.ref();
+    }
+    free() {
+        if (this.session.destroyed) {
+            return;
+        }
+        this.refs -= 1;
+        if (this.refs === 0) {
+            this.session.unref();
+        }
+        if (this.refs < 0) {
+            throw new Error("@smithy/node-http-handler - ClientHttp2Session refcount at zero, cannot decrement.");
+        }
+    }
+    deref() {
+        return this.session;
+    }
+    close() {
+        if (!this.session.closed) {
+            this.session.close();
+        }
+    }
+    destroy() {
+        this.refs = 0;
+        if (!this.session.destroyed) {
+            this.session.setTimeout(0);
+            this.session.destroy();
+        }
+    }
+    useCount() {
+        return this.refs;
+    }
+}
+
+class NodeHttp2ConnectionPool {
+    sessions = [];
+    maxConcurrency = 0;
+    constructor(sessions) {
+        this.sessions = (sessions ?? []).map((session) => new ClientHttp2SessionRef(session));
+    }
+    poll() {
+        let cleanup = false;
+        for (const session of this.sessions) {
+            if (session.deref().destroyed) {
+                cleanup = true;
+                continue;
+            }
+            if (!this.maxConcurrency || session.useCount() < this.maxConcurrency) {
+                return session;
+            }
+        }
+        if (cleanup) {
+            for (const session of this.sessions) {
+                if (session.deref().destroyed) {
+                    this.remove(session);
+                }
+            }
+        }
+    }
+    offerLast(ref) {
+        this.sessions.push(ref);
+    }
+    remove(ref) {
+        const ix = this.sessions.indexOf(ref);
+        if (ix > -1) {
+            this.sessions.splice(ix, 1);
+        }
+    }
+    [Symbol.iterator]() {
+        return this.sessions[Symbol.iterator]();
+    }
+    setMaxConcurrency(maxConcurrency) {
+        this.maxConcurrency = maxConcurrency;
+    }
+    destroy(ref) {
+        this.remove(ref);
+        ref.destroy();
+    }
+}
+
+class NodeHttp2ConnectionManager {
+    config;
+    connectOptions;
+    connectionPools = new Map();
+    constructor(config) {
+        this.config = config;
+        if (this.config.maxConcurrency && this.config.maxConcurrency <= 0) {
+            throw new RangeError("maxConcurrency must be greater than zero.");
+        }
+    }
+    lease(requestContext, connectionConfiguration) {
+        const url = this.getUrlString(requestContext);
+        const pool = this.getPool(url);
+        if (!this.config.disableConcurrency && !connectionConfiguration.isEventStream) {
+            const available = pool.poll();
+            if (available) {
+                available.retain();
+                return available;
+            }
+        }
+        const ref = new ClientHttp2SessionRef(this.connect(url));
+        const session = ref.deref();
+        if (this.config.maxConcurrency) {
+            session.settings({ maxConcurrentStreams: this.config.maxConcurrency }, (err) => {
+                if (err) {
+                    throw new Error("Fail to set maxConcurrentStreams to " +
+                        this.config.maxConcurrency +
+                        "when creating new session for " +
+                        requestContext.destination.toString());
+                }
+            });
+        }
+        const graceful = () => {
+            this.removeFromPoolAndClose(url, ref);
+        };
+        const ensureDestroyed = () => {
+            this.removeFromPoolAndCheckedDestroy(url, ref);
+        };
+        session.on("goaway", graceful);
+        session.on("error", ensureDestroyed);
+        session.on("frameError", ensureDestroyed);
+        session.on("close", ensureDestroyed);
+        if (connectionConfiguration.requestTimeout) {
+            session.setTimeout(connectionConfiguration.requestTimeout, ensureDestroyed);
+        }
+        pool.offerLast(ref);
+        ref.retain();
+        return ref;
+    }
+    release(_requestContext, ref) {
+        ref.free();
+    }
+    createIsolatedSession(requestContext, connectionConfiguration) {
+        const url = this.getUrlString(requestContext);
+        const ref = new ClientHttp2SessionRef(this.connect(url));
+        const session = ref.deref();
+        session.settings({ maxConcurrentStreams: 1 });
+        const ensureDestroyed = () => {
+            ref.destroy();
+        };
+        session.on("error", ensureDestroyed);
+        session.on("frameError", ensureDestroyed);
+        session.on("close", ensureDestroyed);
+        const timeout = connectionConfiguration.requestTimeout ?? 300_000;
+        session.setTimeout(timeout, ensureDestroyed);
+        ref.retain();
+        return ref;
+    }
+    destroy() {
+        for (const [url, connectionPool] of this.connectionPools) {
+            for (const session of [...connectionPool]) {
+                session.destroy();
+            }
+            this.connectionPools.delete(url);
+        }
+    }
+    setMaxConcurrentStreams(maxConcurrentStreams) {
+        if (maxConcurrentStreams && maxConcurrentStreams <= 0) {
+            throw new RangeError("maxConcurrentStreams must be greater than zero.");
+        }
+        this.config.maxConcurrency = maxConcurrentStreams;
+        for (const pool of this.connectionPools.values()) {
+            pool.setMaxConcurrency(maxConcurrentStreams);
+        }
+    }
+    setDisableConcurrentStreams(disableConcurrentStreams) {
+        this.config.disableConcurrency = disableConcurrentStreams;
+    }
+    setNodeHttp2ConnectOptions(nodeHttp2ConnectOptions) {
+        this.connectOptions = nodeHttp2ConnectOptions;
+    }
+    debug() {
+        const pools = {};
+        for (const [url, pool] of this.connectionPools) {
+            const sessions = [];
+            for (const ref of pool) {
+                sessions.push({
+                    id: ref.id,
+                    active: ref.useCount(),
+                    maxConcurrent: ref.max,
+                    totalRequests: ref.total,
+                });
+            }
+            pools[url] = { sessions };
+        }
+        return pools;
+    }
+    removeFromPoolAndClose(authority, ref) {
+        this.connectionPools.get(authority)?.remove(ref);
+        ref.close();
+    }
+    removeFromPoolAndCheckedDestroy(authority, ref) {
+        this.connectionPools.get(authority)?.remove(ref);
+        ref.destroy();
+    }
+    getPool(url) {
+        if (!this.connectionPools.has(url)) {
+            const pool = new NodeHttp2ConnectionPool();
+            if (this.config.maxConcurrency) {
+                pool.setMaxConcurrency(this.config.maxConcurrency);
+            }
+            this.connectionPools.set(url, pool);
+        }
+        return this.connectionPools.get(url);
+    }
+    getUrlString(request) {
+        return request.destination.toString();
+    }
+    connect(url) {
+        return this.connectOptions === undefined ? http2.connect(url) : http2.connect(url, this.connectOptions);
+    }
+}
+
+const { constants } = http2;
+class NodeHttp2Handler {
+    config;
+    configProvider;
+    metadata = { handlerProtocol: "h2" };
+    connectionManager = new NodeHttp2ConnectionManager({});
+    static create(instanceOrOptions) {
+        if (typeof instanceOrOptions?.handle === "function") {
+            return instanceOrOptions;
+        }
+        return new NodeHttp2Handler(instanceOrOptions);
+    }
+    constructor(options) {
+        this.configProvider = new Promise((resolve, reject) => {
+            if (typeof options === "function") {
+                options()
+                    .then((opts) => {
+                    resolve(opts || {});
+                })
+                    .catch(reject);
+            }
+            else {
+                resolve(options || {});
+            }
+        });
+    }
+    destroy() {
+        this.connectionManager.destroy();
+    }
+    async handle(request, { abortSignal, requestTimeout, isEventStream } = {}) {
+        if (!this.config) {
+            const config = await this.configProvider;
+            this.config = { ...config, defaultSocketTimeout: resolveDefaultSocketTimeout(config) };
+            const { disableConcurrentStreams, maxConcurrentStreams, nodeHttp2ConnectOptions } = this.config;
+            this.connectionManager.setDisableConcurrentStreams(disableConcurrentStreams ?? false);
+            if (maxConcurrentStreams) {
+                this.connectionManager.setMaxConcurrentStreams(maxConcurrentStreams);
+            }
+            if (nodeHttp2ConnectOptions) {
+                this.connectionManager.setNodeHttp2ConnectOptions(nodeHttp2ConnectOptions);
+            }
+        }
+        const { requestTimeout: configRequestTimeout, disableConcurrentStreams, sessionTimeout } = this.config;
+        const useIsolatedSession = disableConcurrentStreams || isEventStream;
+        const effectiveRequestTimeout = requestTimeout ?? configRequestTimeout;
+        const defaultSocketTimeout = effectiveRequestTimeout === undefined && sessionTimeout === undefined
+            ? this.config.defaultSocketTimeout
+            : undefined;
+        return new Promise((_resolve, _reject) => {
+            let fulfilled = false;
+            let writeRequestBodyPromise = undefined;
+            const resolve = async (arg) => {
+                await writeRequestBodyPromise;
+                _resolve(arg);
+            };
+            const reject = async (arg) => {
+                await writeRequestBodyPromise;
+                _reject(arg);
+            };
+            if (abortSignal?.aborted) {
+                fulfilled = true;
+                const abortError = buildAbortError(abortSignal);
+                reject(abortError);
+                return;
+            }
+            const { hostname, method, port, protocol, query } = request;
+            let auth = "";
+            if (request.username != null || request.password != null) {
+                const username = request.username ?? "";
+                const password = request.password ?? "";
+                auth = `${username}:${password}@`;
+            }
+            const authority = `${protocol}//${auth}${hostname}${port ? `:${port}` : ""}`;
+            const requestContext = { destination: new URL(authority) };
+            const connectConfig = {
+                requestTimeout: this.config?.sessionTimeout,
+                isEventStream,
+            };
+            const ref = useIsolatedSession
+                ? this.connectionManager.createIsolatedSession(requestContext, connectConfig)
+                : this.connectionManager.lease(requestContext, connectConfig);
+            const session = ref.deref();
+            const rejectWithDestroy = (err) => {
+                if (useIsolatedSession) {
+                    ref.destroy();
+                }
+                fulfilled = true;
+                reject(err);
+            };
+            const queryString = query ? buildQueryString(query) : "";
+            let path = request.path;
+            if (queryString) {
+                path += `?${queryString}`;
+            }
+            if (request.fragment) {
+                path += `#${request.fragment}`;
+            }
+            const clientHttp2Stream = session.request({
+                ...request.headers,
+                [constants.HTTP2_HEADER_PATH]: path,
+                [constants.HTTP2_HEADER_METHOD]: method,
+            });
+            if (effectiveRequestTimeout) {
+                clientHttp2Stream.setTimeout(effectiveRequestTimeout, () => {
+                    clientHttp2Stream.close();
+                    const timeoutError = new Error(`Stream timed out because of no activity for ${effectiveRequestTimeout} ms`);
+                    timeoutError.name = "TimeoutError";
+                    rejectWithDestroy(timeoutError);
+                });
+            }
+            else if (defaultSocketTimeout) {
+                clientHttp2Stream.setTimeout(defaultSocketTimeout, () => {
+                    const timeoutError = new Error(`Stream timed out because of no activity for ${defaultSocketTimeout} ms`);
+                    timeoutError.name = "TimeoutError";
+                    fulfilled = true;
+                    reject(timeoutError);
+                    clientHttp2Stream.destroy(timeoutError);
+                    if (useIsolatedSession) {
+                        ref.destroy();
+                    }
+                });
+                clientHttp2Stream.once("response", () => clientHttp2Stream.setTimeout(defaultSocketTimeout));
+            }
+            if (abortSignal) {
+                const onAbort = () => {
+                    clientHttp2Stream.close();
+                    const abortError = buildAbortError(abortSignal);
+                    rejectWithDestroy(abortError);
+                };
+                if (typeof abortSignal.addEventListener === "function") {
+                    const signal = abortSignal;
+                    signal.addEventListener("abort", onAbort, { once: true });
+                    clientHttp2Stream.once("close", () => signal.removeEventListener("abort", onAbort));
+                }
+                else {
+                    abortSignal.onabort = onAbort;
+                }
+            }
+            clientHttp2Stream.on("frameError", (type, code, id) => {
+                rejectWithDestroy(new Error(`Frame type id ${type} in stream id ${id} has failed with code ${code}.`));
+            });
+            clientHttp2Stream.on("error", rejectWithDestroy);
+            clientHttp2Stream.on("aborted", () => {
+                rejectWithDestroy(new Error(`HTTP/2 stream is abnormally aborted in mid-communication with result code ${clientHttp2Stream.rstCode}.`));
+            });
+            clientHttp2Stream.on("response", (headers) => {
+                const httpResponse = new HttpResponse({
+                    statusCode: headers[":status"] ?? -1,
+                    headers: getTransformedHeaders(headers),
+                    body: clientHttp2Stream,
+                });
+                fulfilled = true;
+                resolve({ response: httpResponse });
+                if (useIsolatedSession) {
+                    session.close();
+                    clientHttp2Stream.on("end", () => {
+                        ref.destroy();
+                    });
+                }
+            });
+            clientHttp2Stream.on("close", () => {
+                if (useIsolatedSession) {
+                    ref.destroy();
+                }
+                else {
+                    this.connectionManager.release(requestContext, ref);
+                }
+                if (!fulfilled) {
+                    const error = new Error("Unexpected error: http2 request did not get a response");
+                    if (session.destroyed) {
+                        error.name = "TimeoutError";
+                    }
+                    rejectWithDestroy(error);
+                }
+            });
+            writeRequestBodyPromise = writeRequestBody(clientHttp2Stream, request, effectiveRequestTimeout);
+        });
+    }
+    updateHttpClientConfig(key, value) {
+        this.config = undefined;
+        this.configProvider = this.configProvider.then((config) => {
+            switch (key) {
+                case Symbol.for("@smithy/defaultSocketTimeout"):
+                    key = "defaultSocketTimeout";
+                    value = resolveDefaultSocketTimeout(config) ?? value;
+                    break;
+            }
+            return {
+                ...config,
+                [key]: value,
+            };
+        });
+    }
+    httpHandlerConfigs() {
+        return this.config ?? {};
+    }
+}
+
+exports.DEFAULT_REQUEST_TIMEOUT = DEFAULT_REQUEST_TIMEOUT;
+exports.NodeHttp2Handler = NodeHttp2Handler;
+exports.NodeHttpHandler = NodeHttpHandler;
+
+
+/***/ }),
+
 /***/ 5152:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
-const { Retry, RETRY_MODES } = __nccwpck_require__(3609);
 const { HttpRequest, parseUrl } = __nccwpck_require__(3422);
 const { InvokeStore } = __nccwpck_require__(9320);
 const { normalizeProvider } = __nccwpck_require__(402);
+const { RETRY_MODES } = __nccwpck_require__(3609);
 const { platform, release } = __nccwpck_require__(8161);
 const { versions, env } = __nccwpck_require__(1708);
 const { isValidHostLabel, isIpAddress, customEndpointFunctions } = __nccwpck_require__(2085);
@@ -7623,7 +9673,6 @@ function setCredentialFeature(credentials, feature, value) {
     return credentials;
 }
 
-Retry.v2026 ||= typeof process === "object" && process.env?.AWS_NEW_RETRIES_2026 === "true";
 function setFeature(context, feature, value) {
     if (!context.__aws_sdk_context) {
         context.__aws_sdk_context = {
@@ -7933,11 +9982,17 @@ const partitionsInfo = {
                 "me-south-1": {
                     "description": "Middle East (Bahrain)"
                 },
+                "me-west-1": {
+                    "description": "Middle East (Saudi Arabia)"
+                },
                 "mx-central-1": {
                     "description": "Mexico (Central)"
                 },
                 "sa-east-1": {
                     "description": "South America (Sao Paulo)"
+                },
+                "sa-west-1": {
+                    "description": "South America (Chile)"
                 },
                 "us-east-1": {
                     "description": "US East (N. Virginia)"
@@ -8588,6 +10643,9 @@ const getUpdatedSystemClockOffset = (clockTime, currentSystemClockOffset, timeRe
         return currentSystemClockOffset;
     }
     const serverTime = Date.parse(clockTime);
+    if (Number.isNaN(serverTime)) {
+        return currentSystemClockOffset;
+    }
     const timeResponseReceived = Date.now();
     if (timeRequestSent !== undefined && timeResponseReceived - timeRequestSent > 900_000) {
         return currentSystemClockOffset;
@@ -11134,39 +13192,41 @@ const resolveDefaultSocketTimeout = (config) => {
 };
 
 const DEFER_EVENT_LISTENER_TIME = 3000;
-const setSocketTimeout = (request, reject, timeoutInMs = 0, destroyResponseBodyOnTimeout = false) => {
-    let response;
-    if (destroyResponseBodyOnTimeout) {
-        request.once("response", (res) => (response = res));
+const setSocketTimeout = (request, reject, timeoutInMs = 0, isServiceDefault = false) => {
+    if (!Number.isFinite(timeoutInMs) || timeoutInMs <= 0) {
+        return;
     }
-    const registerTimeout = (offset) => {
-        const timeout = timeoutInMs - offset;
-        const onTimeout = () => {
-            const error = Object.assign(new Error(`@smithy/node-http-handler - the request socket timed out after ${timeoutInMs} ms of inactivity (${destroyResponseBodyOnTimeout ? "service default socket timeout" : "configured by client requestHandler"}).`), { name: "TimeoutError" });
-            if (destroyResponseBodyOnTimeout) {
-                response?.destroy(error);
-            }
-            request.destroy();
-            reject(error);
-        };
-        if (request.socket) {
-            request.socket.setTimeout(timeout, onTimeout);
-            request.on("close", () => request.socket?.removeListener("timeout", onTimeout));
+    let response;
+    request.once("response", (res) => (response = res));
+    const onTimeout = () => {
+        if (response?.complete) {
+            request.socket?.destroy();
+            return;
+        }
+        const error = Object.assign(new Error(`@smithy/node-http-handler - the request socket timed out after ${timeoutInMs} ms of inactivity (${isServiceDefault ? "service default socket timeout" : "configured by client requestHandler"}).`), { name: "TimeoutError" });
+        response?.destroy(error);
+        request.destroy();
+        reject(error);
+    };
+    const registerTimeout = () => {
+        const { socket } = request;
+        if (!socket) {
+            request.once("socket", registerTimeout);
+        }
+        else if (socket.connecting) {
+            socket.once("connect", registerTimeout);
         }
         else {
-            request.setTimeout(timeout, onTimeout);
+            socket.setTimeout(timeoutInMs, onTimeout);
+            request.on("close", () => socket.removeListener("timeout", onTimeout));
         }
     };
-    if (0 < timeoutInMs && timeoutInMs < 6000) {
-        registerTimeout(0);
-        return 0;
+    if (timeoutInMs < 6000) {
+        registerTimeout();
+        return;
     }
-    const deferralId = timing.setTimeout(registerTimeout.bind(null, timeoutInMs === 0 ? 0 : DEFER_EVENT_LISTENER_TIME), DEFER_EVENT_LISTENER_TIME);
-    if (destroyResponseBodyOnTimeout) {
-        request.once("close", () => timing.clearTimeout(deferralId));
-        return 0;
-    }
-    return deferralId;
+    const deferralId = timing.setTimeout(registerTimeout, DEFER_EVENT_LISTENER_TIME);
+    request.once("close", () => timing.clearTimeout(deferralId));
 };
 
 const MIN_WAIT_TIME = 6_000;
@@ -11305,13 +13365,11 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             let socketWarningTimeoutId = -1;
             let connectionTimeoutId = -1;
             let requestTimeoutId = -1;
-            let socketTimeoutId = -1;
             let keepAliveTimeoutId = -1;
             const clearTimeouts = () => {
                 timing.clearTimeout(socketWarningTimeoutId);
                 timing.clearTimeout(connectionTimeoutId);
                 timing.clearTimeout(requestTimeoutId);
-                timing.clearTimeout(socketTimeoutId);
                 timing.clearTimeout(keepAliveTimeoutId);
             };
             const resolve = async (arg) => {
@@ -11409,10 +13467,10 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             requestTimeoutId = setRequestTimeout(req, reject, effectiveRequestTimeout, config.throwOnRequestTimeout, logger ?? console);
             const defaultSocketTimeout = config.socketTimeout === undefined ? resolveDefaultSocketTimeout(config) : undefined;
             if (defaultSocketTimeout) {
-                socketTimeoutId = setSocketTimeout(req, reject, defaultSocketTimeout, true);
+                setSocketTimeout(req, reject, defaultSocketTimeout, true);
             }
             else {
-                socketTimeoutId = setSocketTimeout(req, reject, config.socketTimeout);
+                setSocketTimeout(req, reject, config.socketTimeout);
             }
             const httpAgent = nodeHttpsOptions.agent;
             if (typeof httpAgent === "object" && "keepAlive" in httpAgent) {
@@ -12224,7 +14282,10 @@ class LoginCredentialsFetcher {
         const requestHandler = isH2(this.callerClientConfig?.requestHandler)
             ? undefined
             : this.callerClientConfig?.requestHandler;
-        const region = this.profileData.region ?? (await this.callerClientConfig?.region?.()) ?? process.env.AWS_REGION;
+        const signInRegion = typeof freshToken.signInRegion === "string" && freshToken.signInRegion.length > 0
+            ? freshToken.signInRegion
+            : undefined;
+        const region = signInRegion ?? this.profileData.region ?? (await this.callerClientConfig?.region?.()) ?? process.env.AWS_REGION;
         const client = new SigninClient({
             credentials: {
                 accessKeyId: "",
@@ -12235,6 +14296,7 @@ class LoginCredentialsFetcher {
             logger,
             userAgentAppId,
             ...this.init?.clientConfig,
+            ...(signInRegion && { region: signInRegion }),
         });
         this.createDPoPInterceptor(client.middlewareStack);
         const commandInput = {
@@ -13373,7 +15435,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.998.0";
+var version = "3.998.2";
 var packageInfo = {
 	version: version};
 
@@ -14002,7 +16064,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.998.0";
+var version = "3.998.2";
 var packageInfo = {
 	version: version};
 
@@ -14612,7 +16674,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.998.0";
+var version = "3.998.2";
 var packageInfo = {
 	version: version};
 
@@ -15306,7 +17368,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.998.0";
+var version = "3.998.2";
 var packageInfo = {
 	version: version};
 
@@ -15967,7 +18029,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.998.0";
+var version = "3.998.2";
 var packageInfo = {
 	version: version};
 
@@ -28993,21 +31055,21 @@ class DefaultRateLimiter {
 }
 
 class Retry {
-    static v2026 = typeof process !== "undefined" && process.env?.SMITHY_NEW_RETRIES_2026 === "true";
+    static v2026 = true;
     static delay() {
-        return Retry.v2026 ? 50 : 100;
+        return 50;
     }
     static throttlingDelay() {
-        return Retry.v2026 ? 1_000 : 500;
+        return 1_000;
     }
     static cost() {
-        return Retry.v2026 ? 14 : 5;
+        return 14;
     }
     static throttlingCost() {
-        return Retry.v2026 ? 5 : 10;
+        return 5;
     }
     static modifiedCostType() {
-        return Retry.v2026 ? "THROTTLING" : "TRANSIENT";
+        return "THROTTLING";
     }
 }
 
@@ -29088,7 +31150,7 @@ let StandardRetryStrategy$1 = class StandardRetryStrategy {
         this.retryBackoffStrategy ??= new DefaultRetryBackoffStrategy();
     }
     async acquireInitialRetryToken(retryTokenScope) {
-        return new DefaultRetryToken(Retry.delay(), 0, undefined, Retry.v2026 && retryTokenScope.includes(":longpoll"));
+        return new DefaultRetryToken(Retry.delay(), 0, undefined, retryTokenScope.includes(":longpoll"));
     }
     async refreshRetryTokenForRetry(token, errorInfo) {
         const maxAttempts = await this.getMaxAttempts();
@@ -29104,7 +31166,7 @@ let StandardRetryStrategy$1 = class StandardRetryStrategy {
                 retryDelay = Math.max(delayFromErrorType, Math.min(errorInfo.retryAfterHint.getTime() - Date.now(), delayFromErrorType + 5_000));
             }
             if (!shouldRetry) {
-                const longPollBackoff = Retry.v2026 && retryCode === refusal.capacity && isLongPoll ? retryDelay : 0;
+                const longPollBackoff = retryCode === refusal.capacity && isLongPoll ? retryDelay : 0;
                 if (longPollBackoff > 0) {
                     await new Promise((r) => setTimeout(r, longPollBackoff));
                 }
@@ -68533,6 +70595,8 @@ var credential_providers_dist_cjs = __nccwpck_require__(9719);
 var client_ecr_dist_cjs = __nccwpck_require__(8249);
 // EXTERNAL MODULE: ./node_modules/@aws-sdk/client-ecr-public/dist-cjs/index.js
 var client_ecr_public_dist_cjs = __nccwpck_require__(9821);
+// EXTERNAL MODULE: ./node_modules/@aws-sdk/client-signin/dist-cjs/index.js
+var client_signin_dist_cjs = __nccwpck_require__(1703);
 // EXTERNAL MODULE: external "node:fs"
 var external_node_fs_ = __nccwpck_require__(3024);
 // EXTERNAL MODULE: external "node:url"
@@ -68548,14 +70612,20 @@ var external_node_url_ = __nccwpck_require__(3136);
 
 
 
+
 const ECR_LOGIN_GITHUB_ACTION_USER_AGENT = 'amazon-ecr-login-for-github-actions';
 const ECR_PUBLIC_REGISTRY_URI = 'public.ecr.aws';
+const ECR_REGISTRY_ID_PATTERN = /^\d{12}$/;
+const CALLER_PRINCIPAL_ARN_PATTERN = /^arn:[a-z0-9-]+:(?:iam|sts)::(\d{12}):/;
+const SIGNIN_GRANT_TYPE = 'client_credentials';
+const SIGNIN_RESOURCE = 'ecr.amazonaws.com';
 
 const INPUTS = {
   httpProxy: 'http-proxy',
   maskPassword: 'mask-password',
   registries: 'registries',
   registryType: 'registry-type',
+  tokenType: 'ecr-private-token-type',
   skipLogout: 'skip-logout'
 };
 
@@ -68572,6 +70642,11 @@ const STATES = {
 const REGISTRY_TYPES = {
   private: 'private',
   public: 'public'
+};
+
+const TOKEN_TYPES = {
+  regional: 'regional-token',
+  global: 'global-token'
 };
 
 function configureProxy(httpProxy) {
@@ -68611,8 +70686,8 @@ function getCredentials() {
   return undefined;
 }
 
-async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
-  const ecrClient = new client_ecr_dist_cjs/* ECRClient */.S70({
+function getEcrClient(httpsProxyAgent) {
+  return new client_ecr_dist_cjs/* ECRClient */.S70({
     customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
     credentials: getCredentials(), // Added credentials setting
     requestHandler: new dist_cjs.NodeHttpHandler({
@@ -68620,6 +70695,10 @@ async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
       httpsAgent: httpsProxyAgent
     }),
   });
+}
+
+async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
+  const ecrClient = getEcrClient(httpsProxyAgent);
   const command = new client_ecr_dist_cjs/* GetAuthorizationTokenCommand */.Eu6(authTokenRequest);
   const authTokenResponse = await ecrClient.send(command);
   if (!authTokenResponse) {
@@ -68631,6 +70710,91 @@ async function getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
   }
 
   return authTokenResponse;
+}
+
+function getEcrRegistryEndpoint(registryId, ecrApiHostname) {
+  // Global mode constructs the Docker target locally, so validate before retrieving a token.
+  if (!ECR_REGISTRY_ID_PATTERN.test(registryId)) {
+    throw new Error(`Invalid ECR registry account ID: '${registryId}'`);
+  }
+
+  // Map the ECR API hostname to the ECR registry hostname.
+  const registryHostname = ecrApiHostname.startsWith('api.')
+    ? `dkr.${ecrApiHostname.slice('api.'.length)}`
+    : `dkr-${ecrApiHostname.replace('.api.', '.on.')}`;
+  return `https://${registryId}.${registryHostname}`;
+}
+
+function getCallerAccountId(accessToken) {
+  let subject;
+  try {
+    subject = JSON.parse(Buffer.from(accessToken.split('.')[1], 'base64url').toString('utf-8')).sub;
+  } catch {
+    // Not a readable token; reported below.
+  }
+  const match = typeof subject === 'string' && CALLER_PRINCIPAL_ARN_PATTERN.exec(subject);
+  if (!match) {
+    throw new Error(`Could not read the caller account ID from the ECR global token; set '${INPUTS.registries}'`);
+  }
+  return match[1];
+}
+
+async function getEcrGlobalAuthTokenWrapper(registryIds, httpsProxyAgent) {
+  // Match the regional-token interface: registries selects accounts, defaulting
+  // to the caller's account, and the configured SDK region selects the regional
+  // registry endpoints.
+  const ecrClient = getEcrClient(httpsProxyAgent);
+  const region = await ecrClient.config.region();
+
+  // Resolve the ECR API endpoint for the configured region.
+  const ecrApiEndpoint = await ecrClient.config.endpointProvider({
+    Region: region,
+    UseFIPS: await ecrClient.config.useFipsEndpoint(),
+    UseDualStack: await ecrClient.config.useDualstackEndpoint()
+  });
+  const ecrApiHostname = ecrApiEndpoint.url.hostname;
+  let proxyEndpoints = registryIds.map(
+    (accountId) => getEcrRegistryEndpoint(accountId, ecrApiHostname));
+
+  const signinClient = new client_signin_dist_cjs/* SigninClient */.Yl({
+    customUserAgent: ECR_LOGIN_GITHUB_ACTION_USER_AGENT,
+    credentials: getCredentials(),
+    ignoreConfiguredEndpointUrls: true,
+    requestHandler: new dist_cjs.NodeHttpHandler({
+      httpAgent: httpsProxyAgent,
+      httpsAgent: httpsProxyAgent
+    }),
+  });
+  const command = new client_signin_dist_cjs/* CreateBearerTokenCommand */.m7({
+    grantType: SIGNIN_GRANT_TYPE,
+    resource: SIGNIN_RESOURCE
+  });
+  let bearerTokenResponse;
+  try {
+    bearerTokenResponse = await signinClient.send(command);
+  } catch (error) {
+    const registryUris = proxyEndpoints.map((proxyEndpoint) => proxyEndpoint.replace(/^https?:\/\//, ''));
+    throw new Error(
+      `Could not get an ECR global token for ${registryUris.join(', ') || 'the default registry'} ` +
+      `in region ${region}: ${error.message}`,
+      { cause: error });
+  }
+  if (!bearerTokenResponse) {
+    throw new Error('Amazon SignIn bearer token returned no data');
+  } else if (!bearerTokenResponse.accessToken) {
+    throw new Error('Amazon SignIn bearer token is invalid');
+  }
+  if (!proxyEndpoints.length) {
+    proxyEndpoints = [getEcrRegistryEndpoint(getCallerAccountId(bearerTokenResponse.accessToken), ecrApiHostname)];
+  }
+
+  return {
+    authorizationData: proxyEndpoints.map((proxyEndpoint) => ({
+      username: 'AWS',
+      password: bearerTokenResponse.accessToken,
+      proxyEndpoint
+    }))
+  };
 }
 
 async function getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent) {
@@ -68674,6 +70838,7 @@ async function run() {
   const maskPassword = (getInput(INPUTS.maskPassword, { required: false }).toLowerCase() || 'true') !== 'false';
   const registries = getInput(INPUTS.registries, { required: false });
   const registryType = getInput(INPUTS.registryType, { required: false }).toLowerCase() || REGISTRY_TYPES.private;
+  const tokenType = (getInput(INPUTS.tokenType, { required: false }) || TOKEN_TYPES.regional).toLowerCase();
   const skipLogout = getInput(INPUTS.skipLogout, { required: false }).toLowerCase() === 'true';
 
   const registryUriState = [];
@@ -68682,6 +70847,13 @@ async function run() {
     if (registryType !== REGISTRY_TYPES.private && registryType !== REGISTRY_TYPES.public) {
       throw new Error(`Invalid input for '${INPUTS.registryType}', possible options are [${REGISTRY_TYPES.private}, ${REGISTRY_TYPES.public}]`);
     }
+    if (registryType === REGISTRY_TYPES.private &&
+        tokenType !== TOKEN_TYPES.regional &&
+        tokenType !== TOKEN_TYPES.global) {
+      throw new Error(`Invalid input for '${INPUTS.tokenType}', possible options are [${TOKEN_TYPES.regional}, ${TOKEN_TYPES.global}]`);
+    }
+    const useGlobalToken = registryType === REGISTRY_TYPES.private &&
+      tokenType === TOKEN_TYPES.global;
 
     // Notify customer if they don't have their password masked
     if (!maskPassword) {
@@ -68694,22 +70866,29 @@ async function run() {
 
     // Get the ECR/ECR Public authorization token(s)
     const authTokenRequest = {};
+    let registryIds = [];
     if (registryType === REGISTRY_TYPES.private && registries) {
-      const registryIds = registries.split(',');
-      core_debug(`Requesting auth token for ${registryIds.length} registries:`);
+      registryIds = registries.split(',');
+      core_debug(`${useGlobalToken ? 'Preparing login for' : 'Requesting auth token for'} ${registryIds.length} registries:`);
       for (const id of registryIds) {
         core_debug(`  '${id}'`);
       }
       authTokenRequest.registryIds = registryIds;
     }
-    const authTokenResponse = registryType === REGISTRY_TYPES.private ?
-      await getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent) :
-      await getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent);
+    let authTokenResponse;
+    if (registryType === REGISTRY_TYPES.public) {
+      authTokenResponse = await getEcrPublicAuthTokenWrapper(authTokenRequest, httpsProxyAgent);
+    } else if (useGlobalToken) {
+      authTokenResponse = await getEcrGlobalAuthTokenWrapper(registryIds, httpsProxyAgent);
+    } else {
+      authTokenResponse = await getEcrAuthTokenWrapper(authTokenRequest, httpsProxyAgent);
+    }
 
     // Login to each registry
     for (const authData of authTokenResponse.authorizationData) {
-      const authToken = Buffer.from(authData.authorizationToken, 'base64').toString('utf-8');
-      const creds = authToken.split(':', 2);
+      const creds = useGlobalToken
+        ? [authData.username, authData.password]
+        : Buffer.from(authData.authorizationToken, 'base64').toString('utf-8').split(':', 2);
       const proxyEndpoint = authData.proxyEndpoint;
       const registryUri = proxyEndpoint.replace(/^https?:\/\//, '');
 
