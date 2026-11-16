@@ -27,6 +27,12 @@ inputs:
       Options: [private, public]
     required: false
     default: private
+  ecr-private-token-type:
+    description: >-
+      Choose the token type for ECR Private registries.
+      Options: [regional-token, global-token]
+    required: false
+    default: regional-token
   skip-logout:
     description: >-
       Whether to skip explicit logout of the registries during post-job cleanup.
