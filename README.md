@@ -12,6 +12,7 @@ Logs in the local Docker client to one or more Amazon ECR Private registries or 
   - [Using an image as a service](#using-an-image-as-a-service)
 - [Credentials](#credentials)
   - [AWS credentials](#aws-credentials)
+  - [ECR Private token type](#ecr-private-token-type)
   - [Docker credentials](#docker-credentials)
 - [Self-Hosted Runners](#self-hosted-runners)
   - [Proxy configuration](#proxy-configuration)
@@ -227,6 +228,25 @@ We recommend following [Amazon IAM best practices](https://docs.aws.amazon.com/I
 * [Grant least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege) to the IAM role used in GitHub Actions workflows.  Grant only the permissions required to perform the actions in your GitHub Actions workflows.  See the Permissions section below for the permissions required by this action.
 * [Monitor the activity](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#remove-credentials) of the IAM role used in GitHub Actions workflows.
 
+### ECR Private token type
+
+`ecr-private-token-type` accepts `regional-token` (the default) or `global-token`. Existing workflows are unchanged: without `ecr-private-token-type`, the action uses regional tokens.
+
+Set `ecr-private-token-type: global-token` explicitly to use a global token for private ECR registries.
+
+The input does not apply to ECR Public.
+
+```yaml
+      - name: Login to Amazon ECR with a global token
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          ecr-private-token-type: global-token
+          registries: "123456789012"
+```
+
+See the [Amazon ECR registry authentication documentation](https://docs.aws.amazon.com/AmazonECR/latest/userguide/registry_auth.html) for details.
+
 ### Docker Credentials
 The registry URIs for ECR Private and ECR Public are as follows:
 - Registry URI for ECR Private: `123456789012.dkr.ecr.aws-region-1.amazonaws.com`
@@ -291,6 +311,24 @@ This action requires the following minimum set of permissions to login to ECR Pr
         "ecr:GetAuthorizationToken"
       ],
       "Resource": "*"
+    }
+  ]
+}
+```
+
+Workflows that set `ecr-private-token-type: global-token` require `signin:CreateBearerToken` instead of `ecr:GetAuthorizationToken`:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "CreateBearerToken",
+      "Effect": "Allow",
+      "Action": [
+        "signin:CreateBearerToken"
+      ],
+      "Resource": "arn:aws:signin:*:*:service-principal/ecr.amazonaws.com"
     }
   ]
 }
