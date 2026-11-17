@@ -28,7 +28,7 @@
   "dependencies": {
     "@actions/core": "^3.0.1",
     "@actions/exec": "^3.0.0",
-    "@aws-sdk/client-ecr": "^3.1164.0",
+    "@aws-sdk/client-ecr": "^3.1169.0",
     "@aws-sdk/client-ecr-public": "^3.1164.0",
     "@aws-sdk/client-signin": "^3.1165.0",
     "@aws-sdk/node-http-handler": "^3.374.0",
