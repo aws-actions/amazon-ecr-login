@@ -2683,7 +2683,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.1163.0";
+var version = "3.1168.0";
 var packageInfo = {
 	version: version};
 
@@ -6766,39 +6766,41 @@ const resolveDefaultSocketTimeout = (config) => {
 };
 
 const DEFER_EVENT_LISTENER_TIME = 3000;
-const setSocketTimeout = (request, reject, timeoutInMs = 0, destroyResponseBodyOnTimeout = false) => {
-    let response;
-    if (destroyResponseBodyOnTimeout) {
-        request.once("response", (res) => (response = res));
+const setSocketTimeout = (request, reject, timeoutInMs = 0, isServiceDefault = false) => {
+    if (!Number.isFinite(timeoutInMs) || timeoutInMs <= 0) {
+        return;
     }
-    const registerTimeout = (offset) => {
-        const timeout = timeoutInMs - offset;
-        const onTimeout = () => {
-            const error = Object.assign(new Error(`@smithy/node-http-handler - the request socket timed out after ${timeoutInMs} ms of inactivity (${destroyResponseBodyOnTimeout ? "service default socket timeout" : "configured by client requestHandler"}).`), { name: "TimeoutError" });
-            if (destroyResponseBodyOnTimeout) {
-                response?.destroy(error);
-            }
-            request.destroy();
-            reject(error);
-        };
-        if (request.socket) {
-            request.socket.setTimeout(timeout, onTimeout);
-            request.on("close", () => request.socket?.removeListener("timeout", onTimeout));
+    let response;
+    request.once("response", (res) => (response = res));
+    const onTimeout = () => {
+        if (response?.complete) {
+            request.socket?.destroy();
+            return;
+        }
+        const error = Object.assign(new Error(`@smithy/node-http-handler - the request socket timed out after ${timeoutInMs} ms of inactivity (${isServiceDefault ? "service default socket timeout" : "configured by client requestHandler"}).`), { name: "TimeoutError" });
+        response?.destroy(error);
+        request.destroy();
+        reject(error);
+    };
+    const registerTimeout = () => {
+        const { socket } = request;
+        if (!socket) {
+            request.once("socket", registerTimeout);
+        }
+        else if (socket.connecting) {
+            socket.once("connect", registerTimeout);
         }
         else {
-            request.setTimeout(timeout, onTimeout);
+            socket.setTimeout(timeoutInMs, onTimeout);
+            request.on("close", () => socket.removeListener("timeout", onTimeout));
         }
     };
-    if (0 < timeoutInMs && timeoutInMs < 6000) {
-        registerTimeout(0);
-        return 0;
+    if (timeoutInMs < 6000) {
+        registerTimeout();
+        return;
     }
-    const deferralId = timing.setTimeout(registerTimeout.bind(null, timeoutInMs === 0 ? 0 : DEFER_EVENT_LISTENER_TIME), DEFER_EVENT_LISTENER_TIME);
-    if (destroyResponseBodyOnTimeout) {
-        request.once("close", () => timing.clearTimeout(deferralId));
-        return 0;
-    }
-    return deferralId;
+    const deferralId = timing.setTimeout(registerTimeout, DEFER_EVENT_LISTENER_TIME);
+    request.once("close", () => timing.clearTimeout(deferralId));
 };
 
 const MIN_WAIT_TIME = 6_000;
@@ -6937,13 +6939,11 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             let socketWarningTimeoutId = -1;
             let connectionTimeoutId = -1;
             let requestTimeoutId = -1;
-            let socketTimeoutId = -1;
             let keepAliveTimeoutId = -1;
             const clearTimeouts = () => {
                 timing.clearTimeout(socketWarningTimeoutId);
                 timing.clearTimeout(connectionTimeoutId);
                 timing.clearTimeout(requestTimeoutId);
-                timing.clearTimeout(socketTimeoutId);
                 timing.clearTimeout(keepAliveTimeoutId);
             };
             const resolve = async (arg) => {
@@ -7041,10 +7041,10 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             requestTimeoutId = setRequestTimeout(req, reject, effectiveRequestTimeout, config.throwOnRequestTimeout, logger ?? console);
             const defaultSocketTimeout = config.socketTimeout === undefined ? resolveDefaultSocketTimeout(config) : undefined;
             if (defaultSocketTimeout) {
-                socketTimeoutId = setSocketTimeout(req, reject, defaultSocketTimeout, true);
+                setSocketTimeout(req, reject, defaultSocketTimeout, true);
             }
             else {
-                socketTimeoutId = setSocketTimeout(req, reject, config.socketTimeout);
+                setSocketTimeout(req, reject, config.socketTimeout);
             }
             const httpAgent = nodeHttpsOptions.agent;
             if (typeof httpAgent === "object" && "keepAlive" in httpAgent) {
