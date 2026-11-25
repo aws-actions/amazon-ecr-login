@@ -2683,7 +2683,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.1168.0";
+var version = "3.1174.0";
 var packageInfo = {
 	version: version};
 
@@ -3495,7 +3495,7 @@ const _DPTCRe = "DescribePullThroughCacheRules";
 const _DPTUE = "DeregisterPullTimeUpdateExclusion";
 const _DPTUER = "DeregisterPullTimeUpdateExclusionRequest";
 const _DPTUERe = "DeregisterPullTimeUpdateExclusionResponse";
-const _DR = "DeleteRepository";
+const _DR = "DeleteReplication";
 const _DRBR = "DescribeReplicationBackfillResults";
 const _DRBRR = "DescribeReplicationBackfillResultsRequest";
 const _DRBRRe = "DescribeReplicationBackfillResultsResponse";
@@ -3517,8 +3517,9 @@ const _DRRes = "DescribeRegistryRequest";
 const _DRResc = "DescribeRegistryResponse";
 const _DRRescr = "DescribeRepositoriesRequest";
 const _DRRescri = "DescribeRepositoriesResponse";
-const _DRe = "DescribeRegistry";
-const _DRes = "DescribeRepositories";
+const _DRe = "DeleteRepository";
+const _DRes = "DescribeRegistry";
+const _DResc = "DescribeRepositories";
 const _DSC = "DeleteSigningConfiguration";
 const _DSCR = "DeleteSigningConfigurationRequest";
 const _DSCRe = "DeleteSigningConfigurationResponse";
@@ -3795,6 +3796,7 @@ const _cRA = "customRoleArn";
 const _cRC = "completedReplicationCount";
 const _cv = "cvss";
 const _d = "description";
+const _dR = "deleteReplication";
 const _dU = "downloadUrl";
 const _de = "destination";
 const _des = "destinations";
@@ -3810,6 +3812,7 @@ const _eITC = "expiringImageTotalCount";
 const _eRP = "ecrRepositoryPrefix";
 const _eRPc = "ecrRepositoryPrefixes";
 const _eT = "encryptionType";
+const _en = "enabled";
 const _ep = "epoch";
 const _f = "failures";
 const _fA = "findingArn";
@@ -4424,6 +4427,11 @@ var DeleteRegistryPolicyResponse$ = [3, n0, _DRPRe,
     [_rI, _pT],
     [0, 0]
 ];
+var DeleteReplication$ = [3, n0, _DR,
+    0,
+    [_en],
+    [2], 1
+];
 var DeleteRepositoryCreationTemplateRequest$ = [3, n0, _DRCTR,
     0,
     [_pr],
@@ -4996,8 +5004,8 @@ var ReplicationDestination$ = [3, n0, _RD,
 ];
 var ReplicationRule$ = [3, n0, _RR,
     0,
-    [_des, _rF],
-    [() => ReplicationDestinationList, () => RepositoryFilterList], 1
+    [_des, _rF, _dR],
+    [() => ReplicationDestinationList, () => RepositoryFilterList, () => DeleteReplication$], 1
 ];
 var Repository$ = [3, n0, _Rep,
     0,
@@ -5337,7 +5345,7 @@ var DeletePullThroughCacheRule$ = [9, n0, _DPTCR,
 var DeleteRegistryPolicy$ = [9, n0, _DRP,
     0, () => DeleteRegistryPolicyRequest$, () => DeleteRegistryPolicyResponse$
 ];
-var DeleteRepository$ = [9, n0, _DR,
+var DeleteRepository$ = [9, n0, _DRe,
     0, () => DeleteRepositoryRequest$, () => DeleteRepositoryResponse$
 ];
 var DeleteRepositoryCreationTemplate$ = [9, n0, _DRCT,
@@ -5367,13 +5375,13 @@ var DescribeImageSigningStatus$ = [9, n0, _DISS,
 var DescribePullThroughCacheRules$ = [9, n0, _DPTCRe,
     0, () => DescribePullThroughCacheRulesRequest$, () => DescribePullThroughCacheRulesResponse$
 ];
-var DescribeRegistry$ = [9, n0, _DRe,
+var DescribeRegistry$ = [9, n0, _DRes,
     0, () => DescribeRegistryRequest$, () => DescribeRegistryResponse$
 ];
 var DescribeReplicationBackfillResults$ = [9, n0, _DRBR,
     0, () => DescribeReplicationBackfillResultsRequest$, () => DescribeReplicationBackfillResultsResponse$
 ];
-var DescribeRepositories$ = [9, n0, _DRes,
+var DescribeRepositories$ = [9, n0, _DResc,
     0, () => DescribeRepositoriesRequest$, () => DescribeRepositoriesResponse$
 ];
 var DescribeRepositoryCreationTemplates$ = [9, n0, _DRCTe,
@@ -6104,6 +6112,7 @@ const ScanStatus = {
     FAILED: "FAILED",
     FINDINGS_UNAVAILABLE: "FINDINGS_UNAVAILABLE",
     IMAGE_ARCHIVED: "IMAGE_ARCHIVED",
+    IMAGE_SIZE_EXCEEDED: "IMAGE_SIZE_EXCEEDED",
     IN_PROGRESS: "IN_PROGRESS",
     LIMIT_EXCEEDED: "LIMIT_EXCEEDED",
     PENDING: "PENDING",
@@ -6226,6 +6235,7 @@ __webpack_unused_export__ = DeleteRegistryPolicy$;
 __webpack_unused_export__ = DeleteRegistryPolicyCommand;
 __webpack_unused_export__ = DeleteRegistryPolicyRequest$;
 __webpack_unused_export__ = DeleteRegistryPolicyResponse$;
+__webpack_unused_export__ = DeleteReplication$;
 __webpack_unused_export__ = DeleteRepository$;
 __webpack_unused_export__ = DeleteRepositoryCommand;
 __webpack_unused_export__ = DeleteRepositoryCreationTemplate$;
@@ -9606,6 +9616,7 @@ exports.NodeHttpHandler = NodeHttpHandler;
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 const { HttpRequest, parseUrl } = __nccwpck_require__(3422);
+const { NoOpLogger } = __nccwpck_require__(2658);
 const { InvokeStore } = __nccwpck_require__(9320);
 const { normalizeProvider } = __nccwpck_require__(402);
 const { RETRY_MODES } = __nccwpck_require__(3609);
@@ -9742,18 +9753,22 @@ const getHostHeaderPlugin = (options) => ({
 const loggerMiddleware = () => (next, context) => async (args) => {
     try {
         const response = await next(args);
-        const { clientName, commandName, logger, dynamoDbDocumentClientOptions = {} } = context;
-        const { overrideInputFilterSensitiveLog, overrideOutputFilterSensitiveLog } = dynamoDbDocumentClientOptions;
-        const inputFilterSensitiveLog = overrideInputFilterSensitiveLog ?? context.inputFilterSensitiveLog;
-        const outputFilterSensitiveLog = overrideOutputFilterSensitiveLog ?? context.outputFilterSensitiveLog;
-        const { $metadata, ...outputWithoutMetadata } = response.output;
-        logger?.info?.({
-            clientName,
-            commandName,
-            input: inputFilterSensitiveLog(args.input),
-            output: outputFilterSensitiveLog(outputWithoutMetadata),
-            metadata: $metadata,
-        });
+        const { logger } = context;
+        const isNoOpLogger = logger instanceof NoOpLogger;
+        if (logger && !isNoOpLogger) {
+            const { clientName, commandName, dynamoDbDocumentClientOptions = {} } = context;
+            const { overrideInputFilterSensitiveLog, overrideOutputFilterSensitiveLog } = dynamoDbDocumentClientOptions;
+            const inputFilterSensitiveLog = overrideInputFilterSensitiveLog ?? context.inputFilterSensitiveLog;
+            const outputFilterSensitiveLog = overrideOutputFilterSensitiveLog ?? context.outputFilterSensitiveLog;
+            const { $metadata, ...outputWithoutMetadata } = response.output;
+            logger.info?.({
+                clientName,
+                commandName,
+                input: inputFilterSensitiveLog(args.input),
+                output: outputFilterSensitiveLog(outputWithoutMetadata),
+                metadata: $metadata,
+            });
+        }
         return response;
     }
     catch (error) {
@@ -15435,7 +15450,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.998.2";
+var version = "3.998.3";
 var packageInfo = {
 	version: version};
 
@@ -16064,7 +16079,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.998.2";
+var version = "3.998.3";
 var packageInfo = {
 	version: version};
 
@@ -16674,7 +16689,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.998.2";
+var version = "3.998.3";
 var packageInfo = {
 	version: version};
 
@@ -17368,7 +17383,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.998.2";
+var version = "3.998.3";
 var packageInfo = {
 	version: version};
 
@@ -18029,7 +18044,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.998.2";
+var version = "3.998.3";
 var packageInfo = {
 	version: version};
 
