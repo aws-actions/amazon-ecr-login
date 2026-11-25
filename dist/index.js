@@ -9606,6 +9606,7 @@ exports.NodeHttpHandler = NodeHttpHandler;
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 const { HttpRequest, parseUrl } = __nccwpck_require__(3422);
+const { NoOpLogger } = __nccwpck_require__(2658);
 const { InvokeStore } = __nccwpck_require__(9320);
 const { normalizeProvider } = __nccwpck_require__(402);
 const { RETRY_MODES } = __nccwpck_require__(3609);
@@ -9742,18 +9743,22 @@ const getHostHeaderPlugin = (options) => ({
 const loggerMiddleware = () => (next, context) => async (args) => {
     try {
         const response = await next(args);
-        const { clientName, commandName, logger, dynamoDbDocumentClientOptions = {} } = context;
-        const { overrideInputFilterSensitiveLog, overrideOutputFilterSensitiveLog } = dynamoDbDocumentClientOptions;
-        const inputFilterSensitiveLog = overrideInputFilterSensitiveLog ?? context.inputFilterSensitiveLog;
-        const outputFilterSensitiveLog = overrideOutputFilterSensitiveLog ?? context.outputFilterSensitiveLog;
-        const { $metadata, ...outputWithoutMetadata } = response.output;
-        logger?.info?.({
-            clientName,
-            commandName,
-            input: inputFilterSensitiveLog(args.input),
-            output: outputFilterSensitiveLog(outputWithoutMetadata),
-            metadata: $metadata,
-        });
+        const { logger } = context;
+        const isNoOpLogger = logger instanceof NoOpLogger;
+        if (logger && !isNoOpLogger) {
+            const { clientName, commandName, dynamoDbDocumentClientOptions = {} } = context;
+            const { overrideInputFilterSensitiveLog, overrideOutputFilterSensitiveLog } = dynamoDbDocumentClientOptions;
+            const inputFilterSensitiveLog = overrideInputFilterSensitiveLog ?? context.inputFilterSensitiveLog;
+            const outputFilterSensitiveLog = overrideOutputFilterSensitiveLog ?? context.outputFilterSensitiveLog;
+            const { $metadata, ...outputWithoutMetadata } = response.output;
+            logger.info?.({
+                clientName,
+                commandName,
+                input: inputFilterSensitiveLog(args.input),
+                output: outputFilterSensitiveLog(outputWithoutMetadata),
+                metadata: $metadata,
+            });
+        }
         return response;
     }
     catch (error) {
@@ -15435,7 +15440,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.998.2";
+var version = "3.998.3";
 var packageInfo = {
 	version: version};
 
@@ -16064,7 +16069,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.998.2";
+var version = "3.998.3";
 var packageInfo = {
 	version: version};
 
@@ -16674,7 +16679,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.998.2";
+var version = "3.998.3";
 var packageInfo = {
 	version: version};
 
@@ -17368,7 +17373,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.998.2";
+var version = "3.998.3";
 var packageInfo = {
 	version: version};
 
@@ -18029,7 +18034,7 @@ const commonParams = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.998.2";
+var version = "3.998.3";
 var packageInfo = {
 	version: version};
 
